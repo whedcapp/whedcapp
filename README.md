@@ -1,4 +1,10 @@
-### Hi there 👋
+### Well-being Health Environment Data Collection App
+
+The purpose of this app is to collect data about well-being, health and the environment in a secure way following GDPR. In particular, it supports longitudinal studies where participant repeatedly provides self-evaluations on a periodic basis (e.., daily). The targer audience are researchers within the field of healthcare.
+
+The system follows a client/server rchitecture in Dart on Flutter and use MySQL as a back-end. It uses firebase authentication in a way that dows not violate GDPR. 
+
+Whedcapp support multiple roles: whedcapp administrator, project owner, questionnaire maintainer, researcher, supported and participant Whedcapp also support blinding of studies, since no real identities are stored in the system and the connection between the aliases and the identities used internally must be looked up to obtain the alias.
 
 <!--
 **whedcapp/whedcapp** is a ✨ _special_ ✨ repository because its `README.md` (this file) appears on your GitHub profile.
