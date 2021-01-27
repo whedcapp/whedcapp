@@ -6,8 +6,22 @@ def dbDefPath() {
     return "${rootProject.buildDir}/"+project(':database').name+"/${ext.dbDefName}"
 }
 
+def dbCrudCfgPath() {
+    return "${rootProject.buildDir}/"+project(':database').name+"/${ext.dbCrudCfgName}"
+}
+
+def dbCrudSqlSrcPath() {
+    return "${rootProject.buildDir}/"+project(':database').name+"/${ext.dbCrudSqlSrcName}"
+}
+
+def dbCrudDartSrcPath() {
+    return "${rootProject.buildDir}/"+project(':database').name+"/${ext.dbCrudDartSrcName}"
+}
 
 ext {
     crudGenToolPath = this.&crudGenToolPath
     dbDefPath = this.&dbDefPath
+    dbCrudCfgPath = this.&dbCrudCfgPath
+    dbCrudSqlSrcPath = this.&dbCrudSqlSrcPath
+    dbCrudDartSrcPath = this.&dbCrudDartSrcPath
 }
