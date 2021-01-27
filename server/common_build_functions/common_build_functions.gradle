@@ -1,0 +1,13 @@
+def crudGenToolPath() {
+    return "${rootProject.buildDir}/"+project(':crud_gen_tool').name+"/${ext.crudGenToolName}"
+}
+
+def dbDefPath() {
+    return "${rootProject.buildDir}/"+project(':database').name+"/${ext.dbDefName}"
+}
+
+
+ext {
+    crudGenToolPath = this.&crudGenToolPath
+    dbDefPath = this.&dbDefPath
+}

@@ -7,24 +7,24 @@
 
 
 def cppSrcFiles = ["**/*.cc", "**/*.hh", "**/*.y", "**/*.l"].inject([]) {acc,val -> acc+project.fileTree(dir: "${projectDir}/src", include: val)}
-logger.info("CppSrcFiles = "+cppSrcFiles.join(", "))
+logger.debug("CppSrcFiles = "+cppSrcFiles.join(", "))
 def inputFiles1 = ["**/CMakeLists.txt","**/*.in"].inject([]) {acc,val -> acc+project.fileTree(dir: "${projectDir}/src", include: val)}
-logger.info("InputFiles1 = "+inputFiles1.join(", "))
+logger.debug("InputFiles1 = "+inputFiles1.join(", "))
 def outputFiles1 =  [
     "${parent.buildDir}/crud_gen_tool/Makefile"
     ,"${parent.buildDir}/crud_gen_tool/partialCrudGenConfig.h"
     ,"${parent.buildDir}/crud_gen_tool/CMakeCache.txt"
     ,"${parent.buildDir}/crud_gen_tool/cmake_install.cmake"
 ]
-logger.info("OutputFiles1 = "+outputFiles1.join(", "))
+logger.debug("OutputFiles1 = "+outputFiles1.join(", "))
 def inputFiles2 = cppSrcFiles + inputFiles1 + outputFiles1
 def outputFiles2 = [
-    "${parent.buildDir}/crud_gen_tool/parser"
+    crudGenToolPath()
 ]
-
+logger.debug("OutputFiles2 = "+outputFiles2.join(", "))
 defaultTasks 'CmakeDebugBuild'
 task CmakeDebug(type:Exec) {
-     workingDir "${parent.buildDir}/crud_gen_tool"
+     workingDir "${parent.buildDir}/${project.name}"
      inputs.files(inputFiles1)
      outputs.files(outputFiles1)
      group = 'Crud_gen_tool'
@@ -35,6 +35,7 @@ task CmakeDebug(type:Exec) {
           return standardOutput.toString();
      }
      doFirst {
+             environment "CRUD_GEN_TOOL_NAME",crudGenToolName
              mkdir "${project.buildDir}/crud_gen_tool"
      }
 }
@@ -47,13 +48,11 @@ task CmakeDebugBuild(type:Exec) {
      description = 'Builds the crud_gen_tool'
      commandLine 'make','-k','-j'
      standardOutput = new ByteArrayOutputStream()
-     errorOutput = new ByteArrayOutputStream()
      ext.output = {
           return standardOutput.toString();
      }
      doLast {
             logger.info(standardOutput.toString())
-            logger.info(errorOutput.toString())
      }
 }
 task CmakeRelease(type:Exec) {

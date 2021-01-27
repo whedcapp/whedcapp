@@ -24,6 +24,12 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 find_package(BISON)
 find_package(FLEX)
 
+if (DEFINED ENV{CRUD_GEN_TOOL_NAME}) 
+  set(TARGET $ENV{CRUD_GEN_TOOL_NAME})
+else()
+  set(TARGET parser)
+endif()
+
 
 
 BISON_TARGET(Parser partialSql.y ${CMAKE_CURRENT_BINARY_DIR}/partialSql.tab.cc
@@ -31,12 +37,13 @@ BISON_TARGET(Parser partialSql.y ${CMAKE_CURRENT_BINARY_DIR}/partialSql.tab.cc
 FLEX_TARGET(Scanner partialSql.l ${CMAKE_CURRENT_BINARY_DIR}/lex.yy.cc)
 ADD_FLEX_BISON_DEPENDENCY(Scanner Parser)
 
+add_executable(${TARGET}  configuration.cc  common.cc  driver.cc  generatorSql.cc  genConfig.cc  identity.cc  igenerator.cc  lex.yy.cc  options.cc  parse.cc   relationalOperator.cc  table.cc  tableSpecItem.cc  type.cc ${BISON_Parser_OUTPUTS} ${FLEX_Scanner_OUTPUTS})
 
-add_executable(parser  configuration.cc  common.cc  driver.cc  generatorSql.cc  genConfig.cc  identity.cc  igenerator.cc  lex.yy.cc  options.cc  parse.cc   relationalOperator.cc  table.cc  tableSpecItem.cc  type.cc ${BISON_Parser_OUTPUTS} ${FLEX_Scanner_OUTPUTS})
+  
 
 configure_file(partialCrudGenConfig.h.in partialCrudGenConfig.h)
 
-target_include_directories(parser PUBLIC "${PROJECT_BINARY_DIR}" ${PROJECT_SOURCE_DIR} ${PROJECT_SOURCE_DIR}/../thirdparty)
+target_include_directories(${TARGET} PUBLIC "${PROJECT_BINARY_DIR}" ${PROJECT_SOURCE_DIR} ${PROJECT_SOURCE_DIR}/../thirdparty)
 
 
 

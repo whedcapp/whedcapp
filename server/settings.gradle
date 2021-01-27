@@ -15,7 +15,9 @@ include 'api'
 include 'services:webservice'
 */
 
-rootProject.name = 'server'
+rootProject.name = 'whedcappserver'
+
+include 'server:'
 include 'crud_gen_tool'
 include 'database'
 include 'service'

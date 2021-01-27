@@ -29,7 +29,7 @@ namespace PartSqlCrudGen {
   private:
     class Cmp {
     public:
-      bool operator() (ShPtr2Reference sp2r1, ShPtr2Reference sp2r2) {
+      bool operator() (ShPtr2Reference sp2r1, ShPtr2Reference sp2r2) const {
         return (sp2r1->getTableIdentity()<sp2r2->getTableIdentity()) ||
           (sp2r1->getTableIdentity()==sp2r2->getTableIdentity() &&
            sp2r1->getColumnIdentity()<sp2r2->getColumnIdentity());
