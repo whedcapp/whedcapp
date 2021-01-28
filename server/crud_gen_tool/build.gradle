@@ -44,14 +44,30 @@ task CmakeDebug(type:Exec) {
      outputs.files(outputFiles1)
      group = groupName
      description = "Creates a build directory with UNIX Makefiles in ${project.buildDir}/${project.name}"
+     ignoreExitValue true
      commandLine 'cmake',"${project.projectDir}/src/",'-DCMAKE_BUILD_TYPE=Debug'
      standardOutput = new ByteArrayOutputStream()
      ext.output = {
           return standardOutput.toString();
      }
+     errorOutput = new ByteArrayOutputStream()
+     ext.errorOutput = {
+         return errorOutput.toString()
+     }
      doFirst {
              environment "CRUD_GEN_TOOL_NAME",crudGenToolName
              mkdir "${rootProject.buildDir}/${project.name}"
+     }
+     doLast {
+         logger.error("Result")
+         if (execResult.exitValue) {
+            logger.error(output())
+            logger.error(errorOutput())
+            throw new TaskExecutionException(it,
+                new Exception("Command '${commandLine.join(' ')}' failed; "
+                              + "see task output for details.")
+            )
+         }
      }
 }
 task CmakeDebugBuild(type:Exec) {
@@ -59,6 +75,7 @@ task CmakeDebugBuild(type:Exec) {
      workingDir "${rootProject.buildDir}/${project.name}"
      inputs.files(inputFiles2)
      outputs.files(outputFiles2)
+     ignoreExitValue true
      group = groupName
      description = "Builds the ${project.name}"
      commandLine 'make','-k','-j'
@@ -67,9 +84,19 @@ task CmakeDebugBuild(type:Exec) {
      ext.output = {
           return standardOutput.toString();
      }
+     ext.errorOutput = {
+          return errorOutput.toString();
+     }
      doLast {
-            logger.info(standardOutput.toString())
-            logger.info(errorOutput.toString())
+         logger.error("Result")
+         if (execResult.exitValue) {
+            logger.error(output())
+            logger.error(errorOutput())
+            throw new TaskExecutionException(it,
+                new Exception("Command '${commandLine.join(' ')}' failed; "
+                              + "see task output for details.")
+            )
+         }
      }
 }
 task CmakeRelease(type:Exec) {
@@ -78,10 +105,15 @@ task CmakeRelease(type:Exec) {
      outputs.files(outputFiles1)
      group = groupName
      description = "Creates a build directory with UNIX Makefiles in ${rootProject.buildDir}/${project.name}"
+     ignoreExitValue true
      commandLine 'cmake',"${project.projectDir}/src/",'-DCMAKE_BUILD_TYPE=Release'
      standardOutput = new ByteArrayOutputStream()
      ext.output = {
           return standardOutput.toString();
+     }
+     errorOutput = new ByteArrayOutputStream()
+     ext.errorOutput = {
+         return errorOutput.toString()
      }
      doFirst {
              // send target to cmake via CRUD_GEN_TOOL_NAME variable
@@ -89,8 +121,17 @@ task CmakeRelease(type:Exec) {
              mkdir "${rootProject.buildDir}/${project.name}"
      }
      doLast {
-            logger.info(standardOutput.toString())
+         logger.error("Result")
+         if (execResult.exitValue) {
+            logger.error(output())
+            logger.error(errorOutput())
+            throw new TaskExecutionException(it,
+                new Exception("Command '${commandLine.join(' ')}' failed; "
+                              + "see task output for details.")
+            )
+         }
      }
+
 }
 task CmakeReleaseBuild(type:Exec) {
      dependsOn CmakeRelease

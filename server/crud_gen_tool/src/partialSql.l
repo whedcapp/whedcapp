@@ -153,6 +153,7 @@ citation \"
 <INITIAL>(?i:signal)            return yy::parser::make_SIGNAL(loc); 
 <INITIAL>(?i:sqlstate)          return yy::parser::make_SQLSTATE(loc); 
 <INITIAL>(?i:table)             return yy::parser::make_TABLE(loc); 
+<INITIAL>(?i:temporary)         return yy::parser::make_TEMPORARY(loc); 
 <INITIAL>(?i:then)              return yy::parser::make_THEN(loc); 
 <INITIAL>(?i:timestamp)         return yy::parser::make_TIMESTAMP(loc); 
 <INITIAL>(?i:trigger)           return yy::parser::make_TRIGGER(loc); 
@@ -169,6 +170,7 @@ citation \"
 <INITIAL>(?i:where)             return yy::parser::make_WHERE(loc);
 <INITIAL>(?i:when)              return yy::parser::make_WHEN(loc);
 <INITIAL>(?i:while)             return yy::parser::make_WHILE(loc);
+<INITIAL>(?i:xor)               return yy::parser::make_XOR(loc);
 <INITIAL>"<"                    return yy::parser::make_LT(loc);
 <INITIAL>"<="                   return yy::parser::make_LE(loc);
 <INITIAL>"="                    return yy::parser::make_EQ(loc);

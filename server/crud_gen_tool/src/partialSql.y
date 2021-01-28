@@ -160,9 +160,10 @@
 %token SIGNAL
 %token <std::string> STRING
 %token TABLE
+%token TEMPORARY
+%token THEN
 %token TIMES
 %token TIMESTAMP
-%token THEN
 %token TRIGGER
 %token TRUE
 %token UNIQUE
@@ -178,6 +179,7 @@
 %token WHEN
 %token WHERE
 %token WHILE
+%token XOR
 
 %token LT
 %token LE
@@ -242,21 +244,25 @@ DECLARATION_OR_OPERATION_STATEMENTS: /* empty */ { $$ = std::make_shared<VecOfSh
 
 // Handling changing delimiters
 
-DD_DELIMITER_OR_SEMICOLON: SEMICOLON DD_DELIMITER { if((!drv.atTopLevel && drv.inDifferentDelimiter)) { yy::parser::error(drv.location,"Cannot be a ';' and '$$' ending a statement, must be only a ';' "); } } | SEMICOLON { if((drv.atTopLevel && drv.inDifferentDelimiter)) { yy::parser::error(drv.location,"Cannot only be a ';' ending a statement, must be both a ';' and '$$'"); } }
 
-DATABASE_OR_PROCEDURE_OR_TRIGGER: DATABASE | PROCEDURE | TRIGGER
+DD_DELIMITER_OR_SEMICOLON: SEMICOLON DD_DELIMITER DD_DELIMITERS { if((!drv.atTopLevel && drv.inDifferentDelimiter)) { yy::parser::error(drv.location,"Cannot be a ';' and '$$' ending a statement, must be only a ';' "); } } | SEMICOLON { if((drv.atTopLevel && drv.inDifferentDelimiter)) { yy::parser::error(drv.location,"Cannot only be a ';' ending a statement, must be both a ';' and '$$'"); } }
 
-CREATE_TABLE_STATEMENT:   CREATE TABLE IF_NOT_EXISTS ID LEFT_PAR TABLE_SPEC RIGHT_PAR OPT_ENGINE_SPEC
+DD_DELIMITERS: /* empty */ | DD_DELIMITER DD_DELIMITERS
+
+
+DATABASE_OR_PROCEDURE_OR_TRIGGER: DATABASE | PROCEDURE | TRIGGER | TABLE
+
+CREATE_TABLE_STATEMENT:   CREATE OPT_TEMPORARY TABLE IF_NOT_EXISTS ID LEFT_PAR TABLE_SPEC RIGHT_PAR OPT_ENGINE_SPEC
 {
 
   Identity id;
-  if (drv.optSelectedDatabase.has_value() && !$4.isSplitIdentifier()) {
-    id = Identity(drv.optSelectedDatabase.value(),$4);
+  if (drv.optSelectedDatabase.has_value() && !$5.isSplitIdentifier()) {
+    id = Identity(drv.optSelectedDatabase.value(),$5);
   } else {
-    id = $4;
+    id = $5;
   }
   auto tmp = std::make_shared<Table>(id);
-  tmp->addShPtr2VecOfShPtr2TableSpecItem($6);
+  tmp->addShPtr2VecOfShPtr2TableSpecItem($7);
   $$ = tmp;
 }
 
@@ -274,7 +280,11 @@ VALUES_OR_SELECT_LIST: /* empty */ | COMMA LEFT_PAR NON_EMPTY_ID_OR_VALUE_LIST R
 
 CREATE_VIEW_STATEMENT: CREATE VIEW ID AS SELECT_STATEMENT
 
-SELECT_STATEMENT: SELECT NON_EMPTY_ID_OR_VALUE_LIST FROM ID_LIST JOIN_PART_LIST WHERE CONDITION
+SELECT_STATEMENT: SELECT NON_EMPTY_ID_OR_VALUE_LIST SELECT_STATEMENT_END
+
+SELECT_STATEMENT_END: /* empty */ | FROM ID_LIST JOIN_PART_LIST SELECT_STATEMENT_WHERE
+
+SELECT_STATEMENT_WHERE: /* empty */ | WHERE CONDITION
 
 JOIN_PART_LIST: /* empty */ | JOIN_PART JOIN_PART_LIST
 
@@ -293,7 +303,7 @@ ID: QID {  $$ = Identity($1);  }| QID PERIOD QID {$$ = Identity($1,$3); }
 
 ID_LIST: ID COMMA ID_LIST | ID
 
-NON_EMPTY_ID_OR_VALUE_LIST: FUNCTION_ID_OR_VALUE OPT_INTO_SPEC COMMA NON_EMPTY_ID_OR_VALUE_LIST | FUNCTION_ID_OR_VALUE OPT_INTO_SPEC
+NON_EMPTY_ID_OR_VALUE_LIST: EXPRESSION OPT_INTO_SPEC COMMA NON_EMPTY_ID_OR_VALUE_LIST | EXPRESSION OPT_INTO_SPEC
 
 OPT_INTO_SPEC: /* empty */ | INTO ID
 
@@ -346,7 +356,7 @@ CONDITION:
 SET_OF_VALUES: SELECT_STATEMENT | ID_OR_VALUE_LIST 
 
 CONJUNCTION:
-  CONDITION AND CONDITION
+  CONDITION AND CONDITION | CONDITION XOR CONDITION
 
 DISJUNCTION:
   CONDITION OR CONDITION
@@ -411,7 +421,7 @@ DECLARATION_STATEMENTS: /* empty */ { $$ = std::make_shared<VecOfShPtr2Table>();
 
 DECLARATION_DEFAULT_SPEC: /* empty */  | DEFAULT VALUE
 
-DECLARATION_STATEMENT: DECLARE ID COL_TYPE_SPEC DECLARATION_DEFAULT_SPEC { $$ = std::make_shared<VecOfShPtr2Table>(); }
+DECLARATION_STATEMENT: DECLARE ID_LIST COL_TYPE_SPEC DECLARATION_DEFAULT_SPEC { $$ = std::make_shared<VecOfShPtr2Table>(); }
 
 OPERATION_STATEMENTS: /* empty */ { $$ = std::make_shared<VecOfShPtr2Table>();} | OPERATION_STATEMENT DD_DELIMITER_OR_SEMICOLON OPERATION_STATEMENTS { $$ = $1; $$->insert($$->end(),$3->begin(),$3->end()); }
 
@@ -433,13 +443,13 @@ OPERATION_STATEMENT:
   | CREATE_PROCEDURE_STATEMENT  { $$ = std::make_shared<VecOfShPtr2Table>(); }
   | CREATE_TRIGGER_STATEMENT  { $$ = std::make_shared<VecOfShPtr2Table>(); }
   | CREATE_FUNCTION_STATEMENT  { $$ = std::make_shared<VecOfShPtr2Table>(); }
-  | DROP DATABASE_OR_PROCEDURE_OR_TRIGGER IF_EXISTS ID  { $$ = std::make_shared<VecOfShPtr2Table>(); }
+  | DROP OPT_TEMPORARY DATABASE_OR_PROCEDURE_OR_TRIGGER IF_EXISTS ID  { $$ = std::make_shared<VecOfShPtr2Table>(); }
   | CREATE DATABASE QID  { $$ = std::make_shared<VecOfShPtr2Table>(); }
   | USE  QID  { drv.optSelectedDatabase = $2; $$ = std::make_shared<VecOfShPtr2Table>();}
   | TRUNCATE_TABLE_STATEMENT  { $$ = std::make_shared<VecOfShPtr2Table>(); }
   | SIGNAL_STATEMENT { $$ = std::make_shared<VecOfShPtr2Table>(); }
 
-
+OPT_TEMPORARY: /* empty */ | TEMPORARY
 
 
 LABEL: ID { $$ = std::make_shared<VecOfShPtr2Table>(); }
@@ -482,7 +492,7 @@ LEAVE_STATEMENT: LEAVE ID { $$ = std::make_shared<VecOfShPtr2Table>(); }| LEAVE 
 
 SET_STATEMENT: SET ID EQ EXPRESSION { $$ = std::make_shared<VecOfShPtr2Table>(); }
 
-EXPRESSION: FUNCTION_ID_OR_VALUE | LEFT_PAR EXPRESSION RIGHT_PAR | FEXPRESSION PLUS FEXPRESSION | FEXPRESSION MINUS FEXPRESSION | BEXPRESSION | BEXPRESSION OR BEXPRESSION
+EXPRESSION: FUNCTION_ID_OR_VALUE | LEFT_PAR EXPRESSION RIGHT_PAR | FEXPRESSION PLUS FEXPRESSION | FEXPRESSION MINUS FEXPRESSION | BEXPRESSION 
 
 FEXPRESSION: EXPRESSION TIMES EXPRESSION | EXPRESSION DIVIDE_BY EXPRESSION
 
@@ -490,9 +500,9 @@ RETURN_STATEMENT: RETURN EXPRESSION { $$ = std::make_shared<VecOfShPtr2Table>();
 
 CALL_STATEMENT: CALL ID LEFT_PAR ID_OR_VALUE_LIST RIGHT_PAR { $$ = std::make_shared<VecOfShPtr2Table>(); }
 
-BEXPRESSION: AEXPRESSION | AEXPRESSION AND AEXPRESSION
+BEXPRESSION: AEXPRESSION | AEXPRESSION AND AEXPRESSION | AEXPRESSION XOR AEXPRESSION
 
-AEXPRESSION: EXPRESSION | EXPRESSION RELOP EXPRESSION
+AEXPRESSION: EXPRESSION RELOP EXPRESSION | EXPRESSION IS NUL | EXPRESSION IS NOT NUL
 
 // Signal
 SIGNAL_STATEMENT: SIGNAL SQLSTATE STRING SET MESSAGE_TEXT EQ STRING
