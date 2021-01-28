@@ -56,7 +56,11 @@ task CrudGeneration(type:Exec) {
      group = 'Database'
      description = "Creates CRUD stored procedures based on ${parent}/build/ddl.sql"
      def cmd = crudGenToolPath()
-     commandLine cmd,'-p',dbDefPath(),'-c',dbCrudCfgPath(),'-s',dbCrudSqlSrcPath()
+     if (project.ext.traceParser == 'Yes') {
+          commandLine cmd,'-p',dbDefPath(),'-c',dbCrudCfgPath(),'-s',dbCrudSqlSrcPath(),'-t'
+     } else {
+          commandLine cmd,'-p',dbDefPath(),'-c',dbCrudCfgPath(),'-s',dbCrudSqlSrcPath()
+     }
      standardOutput = new ByteArrayOutputStream()
      ext.output = {
           return standardOutput.toString();

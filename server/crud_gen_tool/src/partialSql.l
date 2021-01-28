@@ -78,6 +78,7 @@ citation \"
 <INITIAL>(?i:begin)             return yy::parser::make_WBEGIN(loc); 
 <INITIAL>(?i:boolean)           return yy::parser::make_BOOLEAN(loc); 
 <INITIAL>(?i:by)                return yy::parser::make_BY(loc); 
+<INITIAL>(?i:call)              return yy::parser::make_CALL(loc); 
 <INITIAL>(?i:case)              return yy::parser::make_CASE(loc); 
 <INITIAL>(?i:cascade)           return yy::parser::make_CASCADE(loc); 
 <INITIAL>(?i:check)             return yy::parser::make_CHECK(loc); 
@@ -91,8 +92,10 @@ citation \"
 <INITIAL>(?i:$$)                return yy::parser::make_DD_DELIMITER(loc); 
 <INITIAL>(?i:declare)           return yy::parser::make_DECLARE(loc); 
 <INITIAL>(?i:default)           return yy::parser::make_DEFAULT(loc); 
-<INITIAL>(?i:delimiter)         return yy::parser::make_DELIMITER(loc); 
 <INITIAL>(?i:delete)            return yy::parser::make_DELETE(loc); 
+<INITIAL>(?i:delimiter)         return yy::parser::make_DELIMITER(loc); 
+<INITIAL>(?i:deterministic)     return yy::parser::make_DETERMINISTIC(loc); 
+<INITIAL>(?i:distinct)          return yy::parser::make_DISTINCT(loc); 
 <INITIAL>(?i:double)            return yy::parser::make_DOUBLE(loc); 
 <INITIAL>(?i:drop)              return yy::parser::make_DROP(loc); 
 <INITIAL>(?i:do)                return yy::parser::make_DO(loc); 
@@ -107,6 +110,7 @@ citation \"
 <INITIAL>(?i:foreign)           return yy::parser::make_FOREIGN(loc); 
 <INITIAL>(?i:from)              return yy::parser::make_FROM(loc); 
 <INITIAL>(?i:full)              return yy::parser::make_FULL(loc); 
+<INITIAL>(?i:function)          return yy::parser::make_FUNCTION(loc); 
 <INITIAL>(?i:group)             return yy::parser::make_GROUP(loc); 
 <INITIAL>(?i:having)            return yy::parser::make_HAVING(loc); 
 <INITIAL>(?i:if)                return yy::parser::make_IF(loc); 
@@ -140,6 +144,7 @@ citation \"
 <INITIAL>(?i:references)        return yy::parser::make_REFERENCES(loc);
 <INITIAL>(?i:repeat)            return yy::parser::make_REPEAT(loc);
 <INITIAL>(?i:return)            return yy::parser::make_RETURN(loc);
+<INITIAL>(?i:returns)           return yy::parser::make_RETURNS(loc);
 <INITIAL>")"                    return yy::parser::make_RIGHT_PAR(loc); 
 <INITIAL>(?i:row)               return yy::parser::make_ROW(loc);
 <INITIAL>(?i:select)            return yy::parser::make_SELECT(loc);
@@ -149,15 +154,14 @@ citation \"
 <INITIAL>(?i:sqlstate)          return yy::parser::make_SQLSTATE(loc); 
 <INITIAL>(?i:table)             return yy::parser::make_TABLE(loc); 
 <INITIAL>(?i:then)              return yy::parser::make_THEN(loc); 
+<INITIAL>(?i:timestamp)         return yy::parser::make_TIMESTAMP(loc); 
 <INITIAL>(?i:trigger)           return yy::parser::make_TRIGGER(loc); 
 <INITIAL>(?i:true)              return yy::parser::make_TRUE(loc); 
+<INITIAL>(?i:truncate)          return yy::parser::make_TRUNCATE(loc); 
 <INITIAL>(?i:unique)            return yy::parser::make_UNIQUE(loc); 
 <INITIAL>(?i:until)             return yy::parser::make_UNTIL(loc); 
 <INITIAL>(?i:update)            return yy::parser::make_UPDATE(loc); 
 <INITIAL>(?i:use)               return yy::parser::make_USE(loc); 
-<INITIAL>(?i:timestamp)         return yy::parser::make_TIMESTAMP(loc); 
-<INITIAL>(?i:trigger)           return yy::parser::make_TRIGGER(loc); 
-<INITIAL>(?i:truncate)          return yy::parser::make_TRUNCATE(loc); 
 <INITIAL>(?i:values)            return yy::parser::make_VALUES(loc); 
 <INITIAL>(?i:varchar)           return yy::parser::make_VARCHAR(loc); 
 <INITIAL>(?i:view)              return yy::parser::make_VIEW(loc); 

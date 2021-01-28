@@ -26,6 +26,12 @@ allprojects {
      ext.buildType = 'Debug'
   }
   assert ext.buildType == 'Debug' || ext.buildType == 'Release'
+
+  if (!ext.has('traceParser')) {
+     ext.traceParser = 'No'
+  }
+  assert ext.traceParser == 'Yes' || ext.traceParser == 'No'
+  
   if (!ext.has('crudGenToolName')) {
      ext.crudGenToolName = 'crud_gen_tool'
   }

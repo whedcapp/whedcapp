@@ -1430,7 +1430,7 @@ CREATE TRIGGER `whedcapp`.`project_round_insert_check`
     ON `whedcapp`.`project_round` FOR EACH ROW
 BEGIN
    CALL `whedcapp`.`project_round_insert_or_update_check`(NEW.start_date,NEW.end_date,NEW.id_proj,NEW.id_proj_round);
-END
+END;
 $$
 CREATE TRIGGER `whedcapp`.`project_round_update_check`
 	BEFORE UPDATE
@@ -1441,7 +1441,7 @@ BEGIN
         SET MESSAGE_TEXT = 'Cannot move a project round from one project to another';
 	END IF;
    CALL `whedcapp`.`check_project_round`(NEW.start_date,NEW.end_date,NEW.id_proj,NEW.id_proj_round);
-END
+END;
 $$
 /* RQ_REL
  ######   #####     ######  ####### #       
