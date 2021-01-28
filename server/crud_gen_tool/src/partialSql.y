@@ -239,7 +239,24 @@ TOP: CMDS YYEOF { std::cout << "Hello\n"; drv.shPtr2VecOfShPtr2Table = $1; }
 CMDS: DECLARATION_OR_OPERATION_STATEMENTS { $$ = $1; }
 
 // On top level, we can mix declaration and operational statements
-DECLARATION_OR_OPERATION_STATEMENTS: /* empty */ { $$ = std::make_shared<VecOfShPtr2Table>();} | DECLARATION_STATEMENT DD_DELIMITER_OR_SEMICOLON DECLARATION_OR_OPERATION_STATEMENTS { $$ = $2;  $$->insert($$->end(),$1->begin(),$1->end()); }| OPERATION_STATEMENT DD_DELIMITER_OR_SEMICOLON DECLARATION_OR_OPERATION_STATEMENTS { $$ = $1;  $$->insert($$->end(),$1->begin(),$1->end()); } | DELIMITER_STATEMENT DECLARATION_OR_OPERATION_STATEMENTS { $$ = $2; }
+DECLARATION_OR_OPERATION_STATEMENTS: /* empty */ {
+  $$ = std::make_shared<VecOfShPtr2Table>();
+}
+  | DECLARATION_STATEMENT DD_DELIMITER_OR_SEMICOLON DECLARATION_OR_OPERATION_STATEMENTS {
+    auto& tmp1 = $1;
+    auto& tmp3 = $3;
+    tmp1->insert(tmp1->end(),tmp3->begin(),tmp3->end()); 
+    $$ = tmp1;
+}
+  | OPERATION_STATEMENT DD_DELIMITER_OR_SEMICOLON DECLARATION_OR_OPERATION_STATEMENTS {
+    auto& tmp1 = $1;
+    auto& tmp3 = $3;
+    tmp1->insert(tmp1->end(),tmp3->begin(),tmp3->end()); 
+    $$ = tmp1;
+}
+  | DELIMITER_STATEMENT DECLARATION_OR_OPERATION_STATEMENTS {
+    $$ = $2;
+ }
 
 
 // Handling changing delimiters
@@ -417,13 +434,29 @@ IN_OR_OUT: /* empty */ | IN | OUT | INOUT
 
 STATEMENT_SECTIONS: DECLARATION_STATEMENTS  OPERATION_STATEMENTS { $$ = $1; $$ -> insert($$->begin(),$2->begin(),$2->end()); }
 
-DECLARATION_STATEMENTS: /* empty */ { $$ = std::make_shared<VecOfShPtr2Table>();} | DECLARATION_STATEMENT DD_DELIMITER_OR_SEMICOLON DECLARATION_STATEMENTS { $$ = $1; $$->insert($$->end(),$3->begin(),$3->end()); }
+DECLARATION_STATEMENTS: /* empty */ {
+  $$ = std::make_shared<VecOfShPtr2Table>();
+}
+  | DECLARATION_STATEMENT DD_DELIMITER_OR_SEMICOLON DECLARATION_STATEMENTS {
+    auto& tmp1 = $1;
+    auto& tmp3 = $3;
+  tmp1 -> insert(tmp1->end(),tmp3->begin(),tmp3->end());
+  $$ = tmp1;
+}
 
 DECLARATION_DEFAULT_SPEC: /* empty */  | DEFAULT VALUE
 
 DECLARATION_STATEMENT: DECLARE ID_LIST COL_TYPE_SPEC DECLARATION_DEFAULT_SPEC { $$ = std::make_shared<VecOfShPtr2Table>(); }
 
-OPERATION_STATEMENTS: /* empty */ { $$ = std::make_shared<VecOfShPtr2Table>();} | OPERATION_STATEMENT DD_DELIMITER_OR_SEMICOLON OPERATION_STATEMENTS { $$ = $1; $$->insert($$->end(),$3->begin(),$3->end()); }
+OPERATION_STATEMENTS: /* empty */ {
+  $$ = std::make_shared<VecOfShPtr2Table>();
+}
+  | OPERATION_STATEMENT DD_DELIMITER_OR_SEMICOLON OPERATION_STATEMENTS {
+  auto& tmp1 = $1;
+  auto& tmp3 = $3;
+  tmp1->insert(tmp1->end(),tmp3->begin(),tmp3->end());
+  $$ = tmp1;
+}
 
 OPERATION_STATEMENT:
     IF_STATEMENT { $$ = std::make_shared<VecOfShPtr2Table>(); }
@@ -436,7 +469,12 @@ OPERATION_STATEMENT:
   | RETURN_STATEMENT  { $$ = std::make_shared<VecOfShPtr2Table>(); }
   | CALL_STATEMENT  { $$ = std::make_shared<VecOfShPtr2Table>(); }
   | LABEL  { $$ = std::make_shared<VecOfShPtr2Table>(); }
-  | CREATE_TABLE_STATEMENT  { $$ = std::make_shared<VecOfShPtr2Table>(); $$->push_back($1); }
+  | CREATE_TABLE_STATEMENT  {
+    auto tmp = std::make_shared<VecOfShPtr2Table>();
+    auto& tmp1 = $1;
+    tmp->push_back(tmp1);
+    $$ = tmp;
+    }
   | SELECT_STATEMENT  { $$ = std::make_shared<VecOfShPtr2Table>(); }
   | INSERT_STATEMENT  { $$ = std::make_shared<VecOfShPtr2Table>(); }
   | CREATE_VIEW_STATEMENT  { $$ = std::make_shared<VecOfShPtr2Table>(); }

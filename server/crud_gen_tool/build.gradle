@@ -91,7 +91,7 @@ task CmakeDebugBuild(type:Exec) {
          logger.error("Result")
          if (execResult.exitValue) {
             logger.error(output())
-            logger.error(errorOutput())
+            logger.error(ext.errorOutput())
             throw new TaskExecutionException(it,
                 new Exception("Command '${commandLine.join(' ')}' failed; "
                               + "see task output for details.")
@@ -124,7 +124,7 @@ task CmakeRelease(type:Exec) {
          logger.error("Result")
          if (execResult.exitValue) {
             logger.error(output())
-            logger.error(errorOutput())
+            logger.error(ext.errorOutput())
             throw new TaskExecutionException(it,
                 new Exception("Command '${commandLine.join(' ')}' failed; "
                               + "see task output for details.")
