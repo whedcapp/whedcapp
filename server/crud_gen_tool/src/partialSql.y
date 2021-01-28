@@ -239,7 +239,7 @@ TOP: CMDS YYEOF { std::cout << "Hello\n"; drv.shPtr2VecOfShPtr2Table = $1; }
 CMDS: DECLARATION_OR_OPERATION_STATEMENTS { $$ = $1; }
 
 // On top level, we can mix declaration and operational statements
-DECLARATION_OR_OPERATION_STATEMENTS: /* empty */ { $$ = std::make_shared<VecOfShPtr2Table>();} | DECLARATION_STATEMENT DD_DELIMITER_OR_SEMICOLON DECLARATION_OR_OPERATION_STATEMENTS { $$ = $1;  $$->insert($$->end(),$1->begin(),$1->end()); }| OPERATION_STATEMENT DD_DELIMITER_OR_SEMICOLON DECLARATION_OR_OPERATION_STATEMENTS { $$ = $1;  $$->insert($$->end(),$1->begin(),$1->end()); } | DELIMITER_STATEMENT DECLARATION_OR_OPERATION_STATEMENTS { $$ = $2; }
+DECLARATION_OR_OPERATION_STATEMENTS: /* empty */ { $$ = std::make_shared<VecOfShPtr2Table>();} | DECLARATION_STATEMENT DD_DELIMITER_OR_SEMICOLON DECLARATION_OR_OPERATION_STATEMENTS { $$ = $2;  $$->insert($$->end(),$1->begin(),$1->end()); }| OPERATION_STATEMENT DD_DELIMITER_OR_SEMICOLON DECLARATION_OR_OPERATION_STATEMENTS { $$ = $1;  $$->insert($$->end(),$1->begin(),$1->end()); } | DELIMITER_STATEMENT DECLARATION_OR_OPERATION_STATEMENTS { $$ = $2; }
 
 
 // Handling changing delimiters
