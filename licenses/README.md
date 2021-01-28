@@ -1,5 +1,8 @@
 # Third party licenses:
 
+These are third party components compatible with GPLv3 that are used in this
+project. 
+
 ## nlohmann json version 3.9.1 available at https://github.com/nlohmann/json
 
 ### MIT License 
