@@ -264,7 +264,7 @@ CREATE TABLE `whedcapp`.`project_round` (
 );
 
 
-CREATE TABLE `whedcapp`.`proj_round_locale` (
+CREATE TABLE `whedcapp`.`project_round_locale` (
     `id_proj_round_loc` INTEGER NOT NULL AUTO_INCREMENT,
     `id_loc` INTEGER NOT NULL,
     `title` VARCHAR(256) NOT NULL,

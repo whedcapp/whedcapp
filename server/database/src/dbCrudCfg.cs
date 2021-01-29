@@ -11,6 +11,7 @@
         "SQL": {
             "writeSelf": {
                 "$ADMIN$": "calling_uid_key_par VARCHAR(64),",
+                "$ADMIN_LIMITED_SELECT$": "calling_uid_key_par VARCHAR(64),",
                 "$SELECT_ONLY$": "calling_uid_key_par VARCHAR(64),",
                 "$PROJECT$": "calling_uid_key_par VARCHAR(64), proj_key_par VARCHAR(32),",
                 "$ANSWER$": "calling_uid_key_par VARCHAR(64), proj_key_par VARCHAR(32), proj_round_key_par VARCHAR(32),",
@@ -18,6 +19,7 @@
             },
             "writeOther": {
                 "$ADMIN$": "calling_uid_key_par VARCHAR(64), other_uid_key_par VARCHAR(64),",
+                "$ADMIN$_LIMITED_SELECT$": "calling_uid_key_par VARCHAR(64), other_uid_key_par VARCHAR(64),",
                 "$SELECT_ONLY$": "calling_uid_key_par VARCHAR(64), other_uid_key_par VARCHAR(64),",
                 "$PROJECT$": "calling_uid_key_par VARCHAR(64), proj_key_par VARCHAR(32), other_uid_key_par VARCHAR(64),",
                 "$ANSWER$": "calling_uid_key_par VARCHAR(64), proj_key_par VARCHAR(32), proj_round_key_par VARCHAR(32), other_uid_key_par VARCHAR(64),",
@@ -25,6 +27,7 @@
             },
             "readSelf": {
                 "$ADMIN$": "calling_uid_key_par VARCHAR(64),",
+                "$ADMIN_LIMITED_SELECT$": "calling_uid_key_par VARCHAR(64),",
                 "$SELECT_ONLY$": "calling_uid_key_par VARCHAR(64),",
                 "$PROJECT$": "calling_uid_key_par VARCHAR(64), proj_key_par VARCHAR(32),",
                 "$ANSWER$": "calling_uid_key_par VARCHAR(64), proj_key_par VARCHAR(32), proj_round_key_par VARCHAR(32),",
@@ -32,6 +35,7 @@
             },
             "readOther": {
                 "$ADMIN$": "calling_uid_key_par VARCHAR(64), other_uid_key_par VARCHAR(64),",
+                "$ADMIN_LIMITED_SELECT$": "calling_uid_key_par VARCHAR(64), other_uid_key_par VARCHAR(64),",
                 "$SELECT_ONLY$": "calling_uid_key_par VARCHAR(64), other_uid_key_par VARCHAR(64),",
                 "$PROJECT$": "calling_uid_key_par VARCHAR(64), proj_key_par VARCHAR(32), other_uid_key_par VARCHAR(64),",
                 "$ANSWER$": "calling_uid_key_par VARCHAR(64), proj_key_par VARCHAR(32), proj_round_key_par VARCHAR(32), other_uid_key_par VARCHAR(64),",
@@ -45,7 +49,10 @@
         
         "$ADMIN$":
         "\tIF NOT `whedcapp`.`check_top_administrator_rights`(calling_uid_key_par) THEN\n\t\tSIGNAL SQLSTATE '4<ERR>'\n\t\t\tSET MESSAGE_TEXT = 'You are not allowed to <OPERATION> <A_TABLE> for <DOMAIN>. You must be either a superuser or a whedcapp administrator.';\n\tEND IF;\n",
-        
+
+        "$ADMIN_LIMITED_SELECT$":
+        "\tIF NOT `whedcapp`.`check_top_administrator_limited_select_rights`(calling_uid_key_par) THEN\n\t\tSIGNAL SQLSTATE '4<ERR>'\n\t\t\tSET MESSAGE_TEXT = 'You are not allowed to <OPERATION> <A_TABLE> for <DOMAIN>. You must be either a superuser, a whedcapp administrator, a project owner or a researcher.';\n\tEND IF;\n",
+
         "$PROJECT$":
         "\tIF NOT `whedcapp`.`check_project_owner_rights`(calling_uid_key_par,proj_key_par) THEN\n\t\tSIGNAL SQLSTATE '4<ERR>'\n\t\t\tSET MESSAGE_TEXT = 'You are not allowed to <OPERATION> <A_TABLE> for <DOMAIN>. You must be either a superuser, a whedcapp administrator or a project owner.';\n\tEND IF;\n",
 
@@ -390,6 +397,34 @@
                 "eidBase": 5600,
                 "hasKeyAttribute": false
             },
+            "GDPR_STATUS":
+            {
+                "insert":
+                {"link": "$SELECT_ONLY$"},
+                "update":
+                {"link": "$SELECT_ONLY$"},
+                "delete":
+                {"link": "$SELECT_ONLY$"},
+                "select":
+                {"link": "$SELECT_ONLY$"},
+                "eidBase": 8300,
+                "acronym":"gdpr_stat",
+                "hasKeyAttribute": false
+            },
+            "GDPR_STATUS_LOCALE":
+            {
+                "insert":
+                {"link": "$SELECT_ONLY$"},
+                "update":
+                {"link": "$SELECT_ONLY$"},
+                "delete":
+                {"link": "$SELECT_ONLY$"},
+                "select":
+                {"link": "$SELECT_ONLY$"},
+                "eidBase": 8400,
+                "acronym":"gdpr_stat_loc",
+                "hasKeyAttribute": false
+            },
             "ETHICAL_APPROVAL":
             {
                 "insert":
@@ -415,6 +450,7 @@
                 "select":
                 {"link": "$SELECT_ONLY$"},
                 "eidBase": 7900,
+                "acronym":"loc",
                 "hasKeyAttribute": false
             }
             ,
@@ -526,6 +562,20 @@
                 "acronym": "proj_round",
                 "hasKeyAttribute":true
             },
+            "PROJECT_ROUND_LOCALE":
+            {
+                "insert":
+                {"link":"$PROJECT$"},
+                "update":
+                {"link":"$PROJECT$"},
+                "delete":
+                {"link":"$PROJECT$"},
+                "select":
+                {"link":"$PROJECT$"},
+                "eidBase": 8100,
+                "acronym": "proj_round_loc",
+                "hasKeyAttribute":false
+            },
             "QQ_REL":
             {
                 "insert":
@@ -631,7 +681,23 @@
                 {"link":"$QUESTIONNAIRE$"},
                 "eidBase": 7300,
                 "hasKeyAttribute": false
-            },
+            }
+            ,
+            "QUESTION_TYPE":
+            {
+                "insert":
+                {"link": "$SELECT_ONLY$"},
+                "update":
+                {"link": "$SELECT_ONLY$"},
+                "delete":
+                {"link": "$SELECT_ONLY$"},
+                "select":
+                {"link": "$SELECT_ONLY$"},
+                "eidBase": 8300,
+                "acronym":"quest_type",
+                "hasKeyAttribute": false
+            }
+            ,
             "QUESTION_TYPE_SPECIFICATION":
             {
                 "insert":
@@ -644,6 +710,20 @@
                 {"link":"$QUESTIONNAIRE$"},
                 "eidBase": 7400,
                 "hasKeyAttribute": false
+            },
+            "RQ_REL":
+            {
+                "insert":
+                {"link":"$ANSWER$"},
+                "update":
+                {"link":"$ADMIN$"},
+                "delete":
+                {"link":"$ADMIN$"},
+                "select":
+                {"link":"$ADMIN$"},
+                "eidBase": 8400,
+                "hasKeyAttribute":false
+                
             },
             "RQQ_REL":
             {
@@ -696,6 +776,35 @@
                 "select":
                 {"link":"$ADMIN$"},
                 "eidBase": 7800,
+                "hasKeyAttribute":false
+                
+            }
+            ,
+            "UID_PROJECT_ACL_CHANGE_LOG":
+            {
+                "insert":
+                {"link": "$SELECT_ONLY$"},
+                "update":
+                {"link": "$SELECT_ONLY$"},
+                "delete":
+                {"link": "$SELECT_ONLY$"},
+                "select":
+                {"link": "$SELECT_ONLY$"},
+                "eidBase": 8200,
+                "acronym":"uid_proj_acl_chg_log",
+                "hasKeyAttribute": false
+            },
+            "UQ_REL":
+            {
+                "insert":
+                {"link":"$ADMIN$"},
+                "update":
+                {"link":"$ADMIN$"},
+                "delete":
+                {"link":"$ADMIN$"},
+                "select":
+                {"link":"$ADMIN$"},
+                "eidBase": 8300,
                 "hasKeyAttribute":false
                 
             }
