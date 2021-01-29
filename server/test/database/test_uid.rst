@@ -13,7 +13,7 @@ ${UID_NO3}     100
 ${UID_SPEC1}   email@somewhere.org
 ${UID_SPEC2}   {a-zA-Z}{a-zA-Z0-9}*@{a-zA-Z}{a-zA-Z0-9}*.{a-zA-Z}{a-zA-Z0-9}*
 
-*** Test Cases ***       UID_NO        UID_SPEC     SUPERUSER  PDC   ADM   QM
+*** Test Cases ***              UID_NO        UID_SPEC     SUPERUSER  PDC   ADM   QM
 Valid One User  1               ${UID_NO1}    ${UID_SPEC1} false      false false false
 Valid One User  2               ${UID_NO1}    ${UID_SPEC1} false      false false true
 Valid One User  3               ${UID_NO1}    ${UID_SPEC1} false      false true  false
@@ -36,4 +36,24 @@ Valid Multiple Users 100        ${UID_NO3}    ${UID_SPEC2} false      false fals
 
 
 *** Keywords ***
+Creation of Invalid User Specifications Should Fail
+    [Arguments] ${uid_no} ${uid_spec} ${is_superuser} ${is_pdc} ${is_adm} ${is_qm}
+    Use No of   ${uid_no}
+    Use Spec    ${uid_spec}
+    Use SU      ${is_superuser}
+    Use PDC     ${is_pdc}
+    Use ADM     ${is_adm}
+    Use QM      ${is_qm}
+    Call uid_insert_writeSelf
+    Exceptions should be signalled
 
+Creation of Valid User Specifications Should Succeed
+    [Arguments] ${uid_no} ${uid_spec} ${is_superuser} ${is_pdc} ${is_adm} ${is_qm}
+    Use No of   ${uid_no}
+    Use Spec    ${uid_spec}
+    Use SU      ${is_superuser}
+    Use PDC     ${is_pdc}
+    Use ADM     ${is_adm}
+    Use QM      ${is_qm}
+    Call uid_insert_writeSelf
+    No exceptions should be signalled
