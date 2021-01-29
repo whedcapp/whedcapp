@@ -117,32 +117,40 @@ namespace PartSqlCrudGen {
       << "CREATE " << (op != DatabaseOperation::Type::dbInsert? "PROCEDURE ": "FUNCTION ")
       << tableMetaData->getIdentity().getBackquoted(suffix.str())
       << "(";
-    
-    // get the context for the domain
-    const auto& ts = options.getConfiguration().getTableSpec(tableMetaData->getIdentity().getSecondary());
-    const auto& tc = ts.getTabCfgTemplate(op);
-    const auto& tmplName = tc.getName();
-    const auto& cp = options.getConfiguration().getContextParameter(OutputLanguage::Type::Sql, accessType, tmplName);
-    str << cp.getString();
 
-    // get the parameters for the table and use them as parameters
-    VecOfShPtr2Table& vecOfShPtr2Table = *shPtr2Driver->shPtr2VecOfShPtr2Table;
-    VecOfShPtr2Table::iterator votit = std::find_if(vecOfShPtr2Table.begin(),
-                                                    vecOfShPtr2Table.end(),
-                                                    [tableMetaData](ShPtr2Table shPtr2Table){ return shPtr2Table->getIdentity() == tableMetaData->getIdentity(); });
-    if (votit == vecOfShPtr2Table.end()) {
-      throw std::logic_error("There must be an table definition missing");
+    try {
+      // get the context for the domain
+      const auto& ts = options.getConfiguration().getTableSpec(tableMetaData->getIdentity().getSecondary());
+      const auto& tc = ts.getTabCfgTemplate(op);
+      const auto& tmplName = tc.getName();
+      const auto& cp = options.getConfiguration().getContextParameter(OutputLanguage::Type::Sql, accessType, tmplName);
+      str << cp.getString();
+
+      // get the parameters for the table and use them as parameters
+      VecOfShPtr2Table& vecOfShPtr2Table = *shPtr2Driver->shPtr2VecOfShPtr2Table;
+      VecOfShPtr2Table::iterator votit = std::find_if(vecOfShPtr2Table.begin(),
+                                                      vecOfShPtr2Table.end(),
+                                                      [tableMetaData](ShPtr2Table shPtr2Table){ return shPtr2Table->getIdentity() == tableMetaData->getIdentity(); });
+      if (votit == vecOfShPtr2Table.end()) {
+        throw std::logic_error("There must be an table definition missing");
+      }
+      if (op != DatabaseOperation::Type::dbDelete && op != DatabaseOperation::Type::dbSelect) {
+        generateColumnList(str,tableMetaData->getShPtr2Columns(),GenerateKind::columnParametersWithTypeInformation,"_par");
+      } else if (op == DatabaseOperation::Type::dbDelete) {
+        generateColumnList(str,tableMetaData->getShPtr2Columns(),GenerateKind::onlyPrimaryKey,"_par");
+      } else { // dbSelect
+        generateColumnList(str,tableMetaData->getShPtr2Columns(),GenerateKind::columnParametersForSelect,"_par");
+      }
+      str << ")"  << (op == DatabaseOperation::Type::dbInsert? " RETURNS INTEGER DETERMINISTIC":"") << std::endl << "BEGIN" << std::endl;
+    } catch (const std::out_of_range& oore) {
+      std::ostringstream msg;
+      msg << "Something missing in the configuration, candidates are: no table specification item for \""
+          << tableMetaData->getIdentity().getSecondary() << "\", no table configuration template for \""
+          << op << "\", not context parameter for \"SQL\" for \"" << accessType<< "\"" << std::endl;
+      throw ConfigurationException(msg.str());
     }
-    if (op != DatabaseOperation::Type::dbDelete && op != DatabaseOperation::Type::dbSelect) {
-      generateColumnList(str,tableMetaData->getShPtr2Columns(),GenerateKind::columnParametersWithTypeInformation,"_par");
-    } else if (op == DatabaseOperation::Type::dbDelete) {
-      generateColumnList(str,tableMetaData->getShPtr2Columns(),GenerateKind::onlyPrimaryKey,"_par");
-    } else { // dbSelect
-      generateColumnList(str,tableMetaData->getShPtr2Columns(),GenerateKind::columnParametersForSelect,"_par");
-    }
-    str << ")"  << (op == DatabaseOperation::Type::dbInsert? " RETURNS INTEGER DETERMINISTIC":"") << std::endl << "BEGIN" << std::endl;
     return str;
-  
+      
   }
 
   std::ostream& GeneratorSql::generateContextCheckParameters(std::ostream& str,

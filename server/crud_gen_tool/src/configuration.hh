@@ -24,6 +24,7 @@
 #include <memory>
 #include <regex>
 #include <set>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -33,6 +34,15 @@
 namespace PartSqlCrudGen {
 
   class IConfiguration;
+
+  class ConfigurationException: public std::exception {
+    std::string whatText;
+  public:
+    ConfigurationException(const std::string& whatText) noexcept;
+    ConfigurationException(const ConfigurationException& e) noexcept;
+    ~ConfigurationException();
+    const char* what() const noexcept;
+  };
 
 
   class ConfigurationItem {

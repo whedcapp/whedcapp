@@ -11,24 +11,28 @@
         "SQL": {
             "writeSelf": {
                 "$ADMIN$": "calling_uid_key_par VARCHAR(64),",
+                "$SELECT_ONLY$": "calling_uid_key_par VARCHAR(64),",
                 "$PROJECT$": "calling_uid_key_par VARCHAR(64), proj_key_par VARCHAR(32),",
                 "$ANSWER$": "calling_uid_key_par VARCHAR(64), proj_key_par VARCHAR(32), proj_round_key_par VARCHAR(32),",
                 "$QUESTIONNAIRE$": "calling_uid_key_par VARCHAR(64), questionnaire_key_par VARCHAR(32),"
             },
             "writeOther": {
                 "$ADMIN$": "calling_uid_key_par VARCHAR(64), other_uid_key_par VARCHAR(64),",
+                "$SELECT_ONLY$": "calling_uid_key_par VARCHAR(64), other_uid_key_par VARCHAR(64),",
                 "$PROJECT$": "calling_uid_key_par VARCHAR(64), proj_key_par VARCHAR(32), other_uid_key_par VARCHAR(64),",
                 "$ANSWER$": "calling_uid_key_par VARCHAR(64), proj_key_par VARCHAR(32), proj_round_key_par VARCHAR(32), other_uid_key_par VARCHAR(64),",
                 "$QUESTIONNAIRE$": "calling_uid_key_par VARCHAR(64), questionnaire_key_par VARCHAR(32),uid_respondee_key_par VARCHAR(64),"
             },
             "readSelf": {
                 "$ADMIN$": "calling_uid_key_par VARCHAR(64),",
+                "$SELECT_ONLY$": "calling_uid_key_par VARCHAR(64),",
                 "$PROJECT$": "calling_uid_key_par VARCHAR(64), proj_key_par VARCHAR(32),",
                 "$ANSWER$": "calling_uid_key_par VARCHAR(64), proj_key_par VARCHAR(32), proj_round_key_par VARCHAR(32),",
                 "$QUESTIONNAIRE$": "calling_uid_key_par VARCHAR(64), questionnaire_key_par VARCHAR(32),"
             },
             "readOther": {
                 "$ADMIN$": "calling_uid_key_par VARCHAR(64), other_uid_key_par VARCHAR(64),",
+                "$SELECT_ONLY$": "calling_uid_key_par VARCHAR(64), other_uid_key_par VARCHAR(64),",
                 "$PROJECT$": "calling_uid_key_par VARCHAR(64), proj_key_par VARCHAR(32), other_uid_key_par VARCHAR(64),",
                 "$ANSWER$": "calling_uid_key_par VARCHAR(64), proj_key_par VARCHAR(32), proj_round_key_par VARCHAR(32), other_uid_key_par VARCHAR(64),",
                 "$QUESTIONNAIRE$": "calling_uid_key_par VARCHAR(64), questionnaire_key_par VARCHAR(32),uid_respondee_key_par VARCHAR(64),"
@@ -44,6 +48,10 @@
         
         "$PROJECT$":
         "\tIF NOT `whedcapp`.`check_project_owner_rights`(calling_uid_key_par,proj_key_par) THEN\n\t\tSIGNAL SQLSTATE '4<ERR>'\n\t\t\tSET MESSAGE_TEXT = 'You are not allowed to <OPERATION> <A_TABLE> for <DOMAIN>. You must be either a superuser, a whedcapp administrator or a project owner.';\n\tEND IF;\n",
+
+        "$SELECT_ONLY$":
+        "\tIF NOT `whedcapp`.`check_select_only_rights`(calling_uid_key_par) THEN\n\t\tSIGNAL SQLSTATE '4<ERR>'\n\t\t\tSET MESSAGE_TEXT = 'You are not allowed to <OPERATION> <A_TABLE> for <DOMAIN>. ';\n\tEND IF;\n",
+
         
         "$ANSWER$":
         "\tIF NOT `whedcapp`.`check_participant_rights`(calling_uid_key_par,proj_key_par,proj_round_key_par) THEN\n\t\tSIGNAL SQLSTATE '4<ERR>'\n\t\t\tSET MESSAGE_TEXT = 'You are not allowed to <OPERATION> <A_TABLE> for <DOMAIN>. You must either be a supporter or a participant.';\n\tEND IF;\n",
@@ -180,7 +188,8 @@
                     "whedcapp_administrator"
                 ]
                 
-            },
+            }
+            ,
             "$QUESTIONNAIRE$":
             {
                 "writeSelf": [
@@ -203,7 +212,8 @@
                     "whedcapp_administrator"
                 ]
                 
-            },
+            }
+            ,
             "$ANSWER$":
             {
                 "writeSelf": [
@@ -230,6 +240,31 @@
                     "supporter"
                 ]
             }
+            ,
+            "$SELECT_ONLY$":
+            {
+                "writeSelf": [
+                ]
+                ,
+                "writeOther": [
+                ],
+                "readSelf": [
+                    "whedcapp_administrator",
+                    "project_owner",
+                    "researcher",
+                    "questionnaire_maintainer",
+                    "supporter",
+                    "participant"
+                ],
+                "readOther": [
+                    "whedcapp_administrator",
+                    "project_owner",
+                    "researcher",
+                    "questionnaire_maintainer",
+                    "supporter",
+                    "participant"
+                ]
+            }
         },
         "tableSpec": {
             "ACL":
@@ -244,7 +279,36 @@
                 {"link":"$ADMIN$"},
                 "eidBase": 5000,
                 "hasKeyAttribute": false
-            },
+            }
+            ,
+            "ACL_LEVEL":
+            {
+                "insert":
+                {"link": "$SELECT_ONLY$"},
+                "update":
+                {"link": "$SELECT_ONLY$"},
+                "delete":
+                {"link": "$SELECT_ONLY$"},
+                "select":
+                {"link": "$SELECT_ONLY$"},
+                "eidBase": 8000,
+                "hasKeyAttribute": false
+            }
+            ,
+            "ACL_LEVEL_LOCALE":
+            {
+                "insert":
+                {"link": "$SELECT_ONLY$"},
+                "update":
+                {"link": "$SELECT_ONLY$"},
+                "delete":
+                {"link": "$SELECT_ONLY$"},
+                "select":
+                {"link": "$SELECT_ONLY$"},
+                "eidBase": 8000,
+                "hasKeyAttribute": false
+            }
+            ,
             "AIM_OR_RESEARCH_QUESTION":
             {
                 "insert":
@@ -338,7 +402,22 @@
                 {"link": "$ADMIN_LIMITED_SELECT$"},
                 "eidBase": 5700,
                 "hasKeyAttribute": false
-            },
+            }
+            ,
+            "LOCALE":
+            {
+                "insert":
+                {"link": "$SELECT_ONLY$"},
+                "update":
+                {"link": "$SELECT_ONLY$"},
+                "delete":
+                {"link": "$SELECT_ONLY$"},
+                "select":
+                {"link": "$SELECT_ONLY$"},
+                "eidBase": 7900,
+                "hasKeyAttribute": false
+            }
+            ,
             "PARTICIPANT":
             {
                 "insert":

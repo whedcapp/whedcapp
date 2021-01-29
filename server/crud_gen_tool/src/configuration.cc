@@ -25,6 +25,14 @@
 
 namespace PartSqlCrudGen {
 
+  ConfigurationException::ConfigurationException(const std::string& whatText) noexcept: whatText(whatText),std::exception() {}
+  ConfigurationException::ConfigurationException(const ConfigurationException& e) noexcept: whatText(e.what()),std::exception(e) {}
+  ConfigurationException::~ConfigurationException() {}
+
+  const char* ConfigurationException::what() const noexcept {
+    return whatText.c_str();
+  }
+
   Access::Access(IConfiguration& iConfiguration,const std::vector<Access::Type>& vecOfType): ConfigurationItem(iConfiguration),rights(0) {
     for (auto& t: vecOfType) {
       rights.set(t);

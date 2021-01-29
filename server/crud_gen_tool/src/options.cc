@@ -67,7 +67,10 @@ void PartSqlCrudGen::Options::readConfigurationFiles()  {
       srcFile >> tmp;
       src2Cfg.insert(std::make_pair(p,tmp));
       const_cast<IConfiguration*>(&getConfiguration())->add(tmp);
-    } catch (std::exception& error) {
+    } catch (const nlohmann::json::parse_error& pe) {
+      std::cerr << "Error while parsing \"" << p << "\"" << std::endl;
+      std::cerr << pe.what() << " id = " << pe.id << " at position = " << pe.byte << std::endl;
+    } catch (const std::exception& error) {
       std::cerr << "Error while parsing \"" << p << "\"" << std::endl;
       std::cerr << error.what() << std::endl;
       errorFlag = true;
