@@ -69,6 +69,22 @@ task CrudGeneration(type:Exec) {
              mkdir "${rootProject.buildDir}/${project.name}"
      }
 }
+task UploadToDatabase(type:Exec) {
+     dependsOn 'CrudGeneration'
+     workingDir  "${parent.buildDir}/${project.name}"
+     inputs.files()
+     outputs.files()
+     group = 'Database'
+     description = "Creates user, uploads database from database schema and stored procedures."
+     commandLine 'mysql','-u',${ext.mysqlRoot},'-p'
+     standardOutput = new ByteArrayOutputStream()
+     ext.output = {
+         return standardOutput.toString();
+     }
+     doFirst {
+         inputStream = new FileInputStream()
+     }
+}
 task clean() {
      doFirst {
              delete "${rootProject.buildDir}/${project.name}"
