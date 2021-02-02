@@ -64,11 +64,16 @@ task CrudGenerationCfgPrep() {
          logger.info("m="+m)
      }
 }
-task CrudGenerationPrep(type:Copy) {
-     //inputs = crudGenerationPrepInputFiles
-     //outputs = crudGenerationPrepOutputFiles
-     dbSrcFiles.each { p -> from(p) }
-     into "${rootProject.buildDir}/${project.name}"
+task CrudGenerationPrep() {
+     dependsOn 'CrudGenerationCfgPrep'
+     inputs.files(dbSrcFiles)
+     outputs.files(crudGenerationPrepOutputFiles)
+     doLast {
+         copy {
+             dbSrcFiles.each { p -> from(p) }
+             into "${rootProject.buildDir}/${project.name}"
+         }
+     }
 }
 
 task CrudGeneration(type:Exec) {
