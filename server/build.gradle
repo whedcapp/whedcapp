@@ -52,6 +52,7 @@ allprojects {
      ext.dbCrudDartSrcName = 'dbCrud.dart'
   }
   assert ext.dbCrudDartSrcName != ''
+  ext.whedcappAdministratorUid = ''
 
   // import common functionality to all projects
   

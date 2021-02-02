@@ -16,26 +16,54 @@
   along with Whedcapp.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+import groovy.swing.SwingBuilder
+import org.apache.tools.ant.filters.*
+//import org.apache.commons.io.FileNameUtils
 
+ext.wcau = ''
 
+def getWcau = {
+    return ext.wcau
+}
+
+def dbCfgSrcFiles = [ "**/*.cs.in", "**/*.sql.in"].inject([]) { acc,val ->acc+project.fileTree(dir: "${projectDir}/src", include: val)}
+logger.debug("dbCfgSrcFiles = "+dbCfgSrcFiles.join(", "))
 def dbSrcFiles = ["**/*.cs", "**/*.sql"].inject([]) {acc,val -> acc+project.fileTree(dir: "${projectDir}/src", include: val)}
 logger.debug("dbSrcFiles = "+dbSrcFiles.join(", "))
 
+def crudGenerationCfgPrepInputFiles = dbCfgSrcFiles
 def crudGenerationPrepInputFiles = dbSrcFiles
 def crudOutputFiles = [
-    "${parent.buildDir}/database/crud.sql"
+    dbCrudSqlSrcPath()
 ]
 logger.debug("crudOutputFiles = "+crudOutputFiles.join(", "))
 
+def crudGenerationCfgPrepOutputFiles = [
+    dbDefPath()
+]
+
 def crudGenerationPrepOutputFiles = [
-    dbDefPath(),
-    , dbCrudCfgPath()
+    dbCrudCfgPath()
 ]
 logger.debug("crudGenerationPrepOutputFiles = "+crudGenerationPrepOutputFiles.join(", "))
 def crudGenerationInputFiles = crudGenerationPrepOutputFiles + [ crudGenToolPath() ]
 
 def crudGenerationOutputFiles = [ dbCrudSqlSrcPath()]
-
+task CrudGenerationCfgPrep() {
+     inputs.files(dbCfgSrcFiles)
+     outputs.files(crudGenerationCfgPrepOutputFiles)
+     doLast {
+         def m = [whedcappAdministrator: getWcau() ]
+         copy {
+             dbCfgSrcFiles.each { p -> from(p) }
+             into "${rootProject.buildDir}/${project.name}"
+             filter(ReplaceTokens, tokens:m)
+             rename '(.*).in', '$1'
+         }
+         logger.info("outputs = "+crudGenerationCfgPrepOutputFiles.join(", "))
+         logger.info("m="+m)
+     }
+}
 task CrudGenerationPrep(type:Copy) {
      //inputs = crudGenerationPrepInputFiles
      //outputs = crudGenerationPrepOutputFiles
@@ -45,6 +73,7 @@ task CrudGenerationPrep(type:Copy) {
 
 task CrudGeneration(type:Exec) {
      dependsOn 'CrudGenerationPrep'
+     dependsOn 'CrudGenerationCfgPrep'
      if (project.ext.buildType == 'Debug') {
           dependsOn ':crud_gen_tool:CmakeDebugBuild'
      } else {
@@ -69,6 +98,45 @@ task CrudGeneration(type:Exec) {
              mkdir "${rootProject.buildDir}/${project.name}"
      }
 }
+task MergeDatabaseDefinitionFiles(type:Exec) {
+     dependsOn 'CrudGenerationPrep'
+     dependsOn 'CrudGenerationCfgPrep'
+     dependsOn 'CrudGeneration'
+     workingDir "${parent.buildDir}/${project.name}"
+     inputs.files(crudGenerationInputFiles)
+     outputs.files(crudGenerationOutputFiles)
+     group = 'Database'
+     description = "Creates CRUD stored procedures based on ${parent}/build/ddl.sql"
+     def cmd = crudGenToolPath()
+     if (project.ext.traceParser == 'Yes') {
+          commandLine cmd,'-p',dbDefPath(),'-c',dbCrudCfgPath(),'-s',dbCrudSqlSrcPath(),'-t'
+     } else {
+          commandLine cmd,'-p',dbDefPath(),'-c',dbCrudCfgPath(),'-s',dbCrudSqlSrcPath()
+     }
+     standardOutput = new ByteArrayOutputStream()
+     ext.output = {
+          return standardOutput.toString();
+     }
+     doFirst {
+             mkdir "${rootProject.buildDir}/${project.name}"
+     }
+}
+task CreateWhedcappMySqlDatabaseUser(type:Exec) {
+     dependsOn 'CrudGeneration'
+     workingDir  "${parent.buildDir}/${project.name}"
+     inputs.files()
+     outputs.files()
+     group = 'Database'
+     description = "Creates Whedcapp MySql database user."
+     commandLine 'mysql','-u',{ -> ext.mysqlRoot},'-p'
+     standardOutput = new ByteArrayOutputStream()
+     ext.output = {
+         return standardOutput.toString();
+     }
+     doFirst {
+         inputStream = new FileInputStream()
+     }
+}     
 task UploadToDatabase(type:Exec) {
      dependsOn 'CrudGeneration'
      workingDir  "${parent.buildDir}/${project.name}"
@@ -76,7 +144,7 @@ task UploadToDatabase(type:Exec) {
      outputs.files()
      group = 'Database'
      description = "Creates user, uploads database from database schema and stored procedures."
-     commandLine 'mysql','-u',${ext.mysqlRoot},'-p'
+     commandLine 'mysql','-u',{->ext.mysqlRoot},'-p'
      standardOutput = new ByteArrayOutputStream()
      ext.output = {
          return standardOutput.toString();
@@ -90,3 +158,132 @@ task clean() {
              delete "${rootProject.buildDir}/${project.name}"
      }
 }
+
+// Solution based on https://www.timroes.de/using-password-prompts-with-gradle-build-files
+
+gradle.taskGraph.whenReady { taskGraph ->
+  if(taskGraph.hasTask(':database:UploadToDatabase') || taskGraph.hasTask(':database:CreateWhedcappMySqlDatabaseUser')) {
+
+    def pass = ''
+    if(System.console() == null) {
+      new SwingBuilder().edt {
+        dialog(modal: true, // Otherwise the build will continue running before you closed the dialog
+            title: 'Enter MySQL Root password', // Dialog title
+            alwaysOnTop: true, // pretty much what the name says
+            resizable: false, // Don't allow the user to resize the dialog
+            locationRelativeTo: null, // Place dialog in center of the screen
+            pack: true, // We need to pack the dialog (so it will take the size of it's children)
+            show: true // Let's show it
+        ) {
+          vbox { // Put everything below each other
+            label(text: "Please enter key passphrase for MySQL root:")
+            input = passwordField()
+            button(defaultButton: true, text: 'OK', actionPerformed: {
+              pass = input.password; // Set pass variable to value of input field
+              dispose(); // Close dialog
+            })
+          } // vbox end
+        } // dialog end
+      } // edt end
+    } else {
+      pass = System.console().readPassword("\nPlease enter key passphrase for MySQL root: ")
+      pass = new String(pass)
+    }
+
+    if(pass.size() <= 0) {
+      throw new InvalidUserDataException("You must enter a password to proceed.")
+    }
+
+    doLast {
+        project.ext.mySqlRootPassword = pass;
+    }
+
+  } // end if has task
+} // end whenReady
+
+gradle.taskGraph.whenReady { taskGraph ->
+  if(taskGraph.hasTask(':database:UploadToDatabase') || taskGraph.hasTask(':database:CreateWhedcappMySqlDatabaseUser')) {
+
+    def pass = ''
+    def user = ''
+    if(System.console() == null) {
+      new SwingBuilder().edt {
+        dialog(modal: true, // Otherwise the build will continue running before you closed the dialog
+            title: 'Enter MySQL Whedcapp password', // Dialog title
+            alwaysOnTop: true, // pretty much what the name says
+            resizable: false, // Don't allow the user to resize the dialog
+            locationRelativeTo: null, // Place dialog in center of the screen
+            pack: true, // We need to pack the dialog (so it will take the size of it's children)
+            show: true // Let's show it
+        ) {
+          vbox { // Put everything below each other
+            label(text: "Please enter Whedcapp administrator Id:")
+            input1 = textField()
+            label(text: "Please enter key passphrase for Whedcapp:")
+            input2 = passwordField()
+            button(defaultButton: true, text: 'OK', actionPerformed: {
+              user = input1.text;
+              pass = input2.password; // Set pass variable to value of input field
+              dispose(); // Close dialog
+            })
+          } // vbox end
+        } // dialog end
+      } // edt end
+    } else {
+      userRaw = System.console().read("\nPlease enter Whedcapp database user name:");
+      user = new String(userRaw)
+      passRaw = System.console().readPassword("\nPlease enter key passphrase for Whedcapp: ")
+      pass = new String(passRaw)
+    }
+
+    if(user.size() <=0 || pass.size() <= 0) {
+      throw new InvalidUserDataException("You must enter a user identity or password to proceed.")
+    }
+
+    doLast {
+        project.ext.mySqlWhedcappUser = user;
+        project.ext.mySqlWhedcappUserPassword = pass;
+    }
+
+  } // end if has task
+} // end whenReady
+
+// Whedcapp administrator email:
+
+gradle.taskGraph.whenReady { taskGraph ->
+  if(taskGraph.hasTask(':database:CrudGenerationCfgPrep') ) {
+
+    def user = ''
+    if(System.console() == null) {
+      new SwingBuilder().edt {
+        dialog(modal: true, // Otherwise the build will continue running before you closed the dialog
+            title: 'Enter Whedcapp administrator user identity', // Dialog title
+            alwaysOnTop: true, // pretty much what the name says
+            resizable: false, // Don't allow the user to resize the dialog
+            locationRelativeTo: null, // Place dialog in center of the screen
+            pack: true, // We need to pack the dialog (so it will take the size of it's children)
+            show: true // Let's show it
+        ) {
+          vbox { // Put everything below each other
+            label(text: "Please enter Whedcapp administrator user identity (email):")
+            input = textField()
+            button(defaultButton: true, text: 'OK', actionPerformed: {
+              user = input.text; // Set pass variable to value of input field
+              dispose(); // Close dialog
+            })
+          } // vbox end
+        } // dialog end
+      } // edt end
+    } else {
+      userRaw = System.console().readPassword("\nPlease enter Whedcapp administrator user identity (email): ")
+      user = new String(userRaw)
+    }
+
+    if(user.size() <= 0) {
+      throw new InvalidUserDataException("You must enter a Whedcapp administrator user identity (email) to proceed.")
+    }
+
+    project.ext.wcau = user;
+
+  } // end if has task
+} // end whenReady

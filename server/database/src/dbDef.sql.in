@@ -173,6 +173,9 @@ CREATE TABLE `whedcapp`.`uid` (
   UNIQUE INDEX `id_uid_idx`(`uid_text`),
   CONSTRAINT `uid_text_is_not_empty` CHECK (`uid_text` <> "")
   );
+
+INSERT INTO UID(uid_text,uid_id_superuser)
+    VALUES ('@whedcappAdministrator@',true);  
   
 /* PROJECT
  ######  ######  #######       # #######  #####  ####### 
