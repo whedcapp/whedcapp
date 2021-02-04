@@ -17,6 +17,16 @@
 */
 
 
+buildscript{
+    repositories{
+        jcenter()
+    }
+
+    dependencies{
+        classpath 'mysql:mysql-connector-java:8.0.23'
+    }
+}
+
 allprojects {
   version = '0.1.0'
 
@@ -53,6 +63,7 @@ allprojects {
   }
   assert ext.dbCrudDartSrcName != ''
   ext.whedcappAdministratorUid = ''
+
 
   // import common functionality to all projects
   

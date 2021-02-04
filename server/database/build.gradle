@@ -16,15 +16,63 @@
   along with Whedcapp.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+buildscript{
+    repositories{
+        jcenter()
+    }
+
+    dependencies{
+        classpath 'mysql:mysql-connector-java:8.0.23'
+    }
+}
+
+
 import groovy.swing.SwingBuilder
 import org.apache.tools.ant.filters.*
+import java.sql.SQLException
 //import org.apache.commons.io.FileNameUtils
 
+// Whedcapp admin user identity
 ext.wcau = ''
-
 def getWcau = {
     return ext.wcau
 }
+
+// The embedded connection to MySQL, opened in task OpenDatabaseAsRoot
+ext.mysqlRootConnection = ''
+def getMysqlRootConnection = {
+    return ext.mysqlRootConnection
+}
+ext.mysqlWhedcappConnection = ''
+def getMysqlWhedcappConnection = {
+    return ext.mysqlWhedcappConnection
+}
+
+// Identities and passwords, all which are set by querying the person
+// building the server part
+
+ext.mysqlRootUserId = ''
+def getMysqlRootUserId = {
+    return ext.mysqlRootUserId
+}
+ext.mysqlRootPassword = ''
+def getMysqlRootPassword = {
+    return ext.mysqlRootPassword
+}
+ext.mysqlWhedcappUserId = ''
+def getMysqlWhedcappUserId = {
+    return ext.mysqlWhedcappUserId
+}
+ext.mysqlWhedcappPassword = ''
+def getMysqlWhedcappPassword = {
+    return ext.mysqlWhedcappPassword
+}
+
+def getMysqlWhedcappUserIsCreatedPath = {
+    return "${rootProject.buildDir}/"+project(':database').name+"mysqlWhedcappUserIsCreated.txt";
+}
+
+
 
 def dbCfgSrcFiles = [ "**/*.cs.in", "**/*.sql.in"].inject([]) { acc,val ->acc+project.fileTree(dir: "${projectDir}/src", include: val)}
 logger.debug("dbCfgSrcFiles = "+dbCfgSrcFiles.join(", "))
@@ -88,7 +136,7 @@ task CrudGeneration(type:Exec) {
      inputs.files(crudGenerationInputFiles)
      outputs.files(crudGenerationOutputFiles)
      group = 'Database'
-     description = "Creates CRUD stored procedures based on ${parent}/build/ddl.sql"
+     description = "Creates CRUD stored procedures based on "+dbDefPath()
      def cmd = crudGenToolPath()
      if (project.ext.traceParser == 'Yes') {
           commandLine cmd,'-p',dbDefPath(),'-c',dbCrudCfgPath(),'-s',dbCrudSqlSrcPath(),'-t'
@@ -103,7 +151,45 @@ task CrudGeneration(type:Exec) {
              mkdir "${rootProject.buildDir}/${project.name}"
      }
 }
-task MergeDatabaseDefinitionFiles(type:Exec) {
+tasks.register('OpenDatabaseAsRoot') {
+   dependsOn 'CrudGeneration'
+   doFirst {
+       try {
+           def mysql = buildscript.configurations.classpath.find { it.toString().contains("mysql-connector-java") }
+           URLClassLoader loader = GroovyObject.class.classLoader
+           loader.addURL(file(mysql).toURL())
+
+           def db = [url: "jdbc:mysql://127.0.0.1/",
+                  user: getMysqlRootUserId(), password: getMysqlRootPassword(), driver: 'com.mysql.jdbc.Driver']
+           logger.info("Password inside open database as root: "+getMysqlRootPassword()+", inside db.password = "+db.password)
+           //project.ext.mysqlRootConnection = groovy.sql.Sql.newInstance(db.url, db.user, db.password, db.driver)
+           project.ext.mysqlRootConnection = groovy.sql.Sql.newInstance(db.url, db.user, getMysqlRootPassword(), db.driver)
+           logger.info("Conn = "+project.ext.mysqlRootConnection)
+           logger.info("Conn2 = "+getMysqlRootConnection())
+       } catch (SQLException sqex) {
+           throw new StopExecutionException("Could not login as mysql administrator "+sqex.toString())
+       }
+   }
+}
+tasks.register('CreateWhedcappDatabaseUser') {
+    dependsOn 'OpenDatabaseAsRoot'
+    def quotify = { p -> "'"+p.collectReplacements({ it == '@' ? '\'@\'' : null })+"'" }
+    def stmt = ''
+    doFirst {
+        try {
+            logger.info("Conn3 = "+getMysqlRootConnection())
+            logger.info("Q(a) = "+quotify("a"))
+            logger.info("Q(a@b) = "+quotify("a@b"))
+            stmt = getMysqlRootConnection()
+            stmt.execute("CREATE USER "+quotify(getMysqlWhedcappUserId())+" IDENTIFIED BY '"+getMysqlWhedcappPassword()+"'");
+            stmt.execute("GRANT ALL PRIVILEGES ON `whedcapp`.* TO "+quotify(getMysqlWhedcappUserId()));
+        } catch (SQLException sqex) {
+            throw new StopExecutionException("Could not create default whedcapp user \""+getMysqlWhedcappUserId()+"\"",sqex);
+        } finally {
+        }
+    }
+}
+tasks.register('MergeDatabaseDefinitionFiles',Exec) {
      dependsOn 'CrudGenerationPrep'
      dependsOn 'CrudGenerationCfgPrep'
      dependsOn 'CrudGeneration'
@@ -167,9 +253,11 @@ task clean() {
 // Solution based on https://www.timroes.de/using-password-prompts-with-gradle-build-files
 
 gradle.taskGraph.whenReady { taskGraph ->
-  if(taskGraph.hasTask(':database:UploadToDatabase') || taskGraph.hasTask(':database:CreateWhedcappMySqlDatabaseUser')) {
+//  if(taskGraph.hasTask(':database:OpenDatabaseAsRoot')  && !file(getMysqlWhedcappUserIsCreatedPath()).exists()) {
+  if(taskGraph.hasTask(':database:OpenDatabaseAsRoot')  && !file(getMysqlWhedcappUserIsCreatedPath()).exists()) {
 
     def pass = ''
+    def user = ''
     if(System.console() == null) {
       new SwingBuilder().edt {
         dialog(modal: true, // Otherwise the build will continue running before you closed the dialog
@@ -181,33 +269,39 @@ gradle.taskGraph.whenReady { taskGraph ->
             show: true // Let's show it
         ) {
           vbox { // Put everything below each other
+            label(text: "Please enter Root administrator Id:")
+            input1 = textField('root')
             label(text: "Please enter key passphrase for MySQL root:")
-            input = passwordField()
+            input2 = passwordField()
             button(defaultButton: true, text: 'OK', actionPerformed: {
-              pass = input.password; // Set pass variable to value of input field
+              user = input1.text
+              pass = input2.text
               dispose(); // Close dialog
             })
           } // vbox end
         } // dialog end
       } // edt end
     } else {
-      pass = System.console().readPassword("\nPlease enter key passphrase for MySQL root: ")
-      pass = new String(pass)
+      userRaw = System.console().read("\nPlease enter database root user name:");
+      user = new String(userRaw)
+      passRaw = System.console().readPassword("\nPlease enter key passphrase for MySQL root: ")
+      pass = new String(passRaw)
+    }
+    logger.info("User = "+user)
+    logger.info("Pass = "+pass)
+
+    if(user.size() <=0 || pass.size() <= 0) {
+      throw new InvalidUserDataException("You must enter a root user identity and a password to proceed.")
     }
 
-    if(pass.size() <= 0) {
-      throw new InvalidUserDataException("You must enter a password to proceed.")
-    }
-
-    doLast {
-        project.ext.mySqlRootPassword = pass;
-    }
+    project.ext.mysqlRootUserId = user
+    project.ext.mysqlRootPassword = pass;
 
   } // end if has task
 } // end whenReady
 
 gradle.taskGraph.whenReady { taskGraph ->
-  if(taskGraph.hasTask(':database:UploadToDatabase') || taskGraph.hasTask(':database:CreateWhedcappMySqlDatabaseUser')) {
+  if(taskGraph.hasTask(':database:CreateWhedcappDatabaseUser')) {
 
     def pass = ''
     def user = ''
@@ -228,7 +322,7 @@ gradle.taskGraph.whenReady { taskGraph ->
             input2 = passwordField()
             button(defaultButton: true, text: 'OK', actionPerformed: {
               user = input1.text;
-              pass = input2.password; // Set pass variable to value of input field
+              pass = input2.text; // Set pass variable to value of input field
               dispose(); // Close dialog
             })
           } // vbox end
@@ -240,15 +334,15 @@ gradle.taskGraph.whenReady { taskGraph ->
       passRaw = System.console().readPassword("\nPlease enter key passphrase for Whedcapp: ")
       pass = new String(passRaw)
     }
+    logger.info("User 2 = "+user)
+    logger.info("Pass 2 = "+pass)
 
     if(user.size() <=0 || pass.size() <= 0) {
       throw new InvalidUserDataException("You must enter a user identity or password to proceed.")
     }
 
-    doLast {
-        project.ext.mySqlWhedcappUser = user;
-        project.ext.mySqlWhedcappUserPassword = pass;
-    }
+    project.ext.mysqlWhedcappUserId = user;
+    project.ext.mysqlWhedcappPassword = pass;
 
   } // end if has task
 } // end whenReady
