@@ -105,14 +105,11 @@ class SqlScriptIterator implements Iterator<ExtractedSqlStatement> {
             return endsWithDelimiter;
         }
     };
+    private Logger log;
     private String str;
     private int index = 0;
     private int endIndexLastMatch;
     private ExtractedSqlStatement extractedSqlStatement = new ExtractedSqlStatement();
-    private Optional<String> lastResult = Optional.empty();
-    private Optional<String> lastType = Optional.empty();
-
-    private Optional<String> lastId = Optional.empty();
     private String delimiter = ";";
     private static idPattern = /^(?i)\s*((`[a-z_][a-z0-9_]*`(.?`[a-z_][a-z0-9_]*`|))|([a-z_][a-z0-9_]*(.?[a-z_][a-z0-9_]*|)))/;
     private static Map<String,Map<String,SqlPattern>> expr2type = [
@@ -155,7 +152,7 @@ class SqlScriptIterator implements Iterator<ExtractedSqlStatement> {
                 break;
             }
         }
-        println "skipSequenceOfDelimiters baseStart = "+baseStart;
+        log.debug("skipSequenceOfDelimiters baseStart = "+baseStart);
         return baseStart;
     }
     private boolean matchAnyPrequel(final String str,ExtractedSqlStatement extractedSqlStatement) {
@@ -167,9 +164,9 @@ class SqlScriptIterator implements Iterator<ExtractedSqlStatement> {
         // insert nextStart here and skip sequences of delimiters
         for (def e2t: expr2type) {
             tmpEndIndexLastMatch = 0;
-            println "Trying pattern "+e2t.getValue().getPattern()+" on \""+str.substring(baseStart,Math.min(baseStart+32,str.length()))+"\"";
+            log.debug("Trying pattern "+e2t.getValue().getPattern()+" on \""+str.substring(baseStart,Math.min(baseStart+32,str.length()))+"\"");
             int nextStart = matchPrequel(e2t.getValue().getPattern(),str.substring(baseStart));
-            println "Result = "+nextStart;
+            log.debug("Result = "+nextStart);
             if (nextStart < 0) {
                 continue;
             }
@@ -177,40 +174,40 @@ class SqlScriptIterator implements Iterator<ExtractedSqlStatement> {
             // handle switching delimiters, MySQL solution
             if (e2t.getKey() == "DELIMITER") {
                 def m = str.substring(nextStart) =~ "^\\s*([^\\s]+)\\s*(\\n|\\r\\n)";
-                println "M = "+m;
+                log.debug("M = "+m);
                 if (!m.find()) {
                     throw new StopExecutionException("Incorrect delimiter specification");
                 }
-                println "M' = "+m;
+                log.debug("M' = "+m);
                 delimiter = m.group(1);
-                println "Delimiter set to \""+delimiter+"\""
+                log.debug("Delimiter set to \""+delimiter+"\"");
                 def m2 = str.substring(nextStart) =~ "^\\s*([^\\s]+)\\s*";
-                println "M2 = "+m2;
+                log.debug("M2 = "+m2);
                 m2.find();
-                println "M2' = "+m2;
-                println "l(m) = "+m.group().length()+", l(m2) = "+m2.group().length();
-                println "l(m.g(1) = "+m.group(1).length();
-                println "l(m.g(2) = "+m.group(2).length();
+                log.debug("M2' = "+m2);
+                log.debug("l(m) = "+m.group().length()+", l(m2) = "+m2.group().length());
+                log.debug("l(m.g(1) = "+m.group(1).length());
+                log.debug("l(m.g(2) = "+m.group(2).length());
                 nextStart += m.group().length()-m.group(2).length();
-                println "nextStart (DELIMITER) = "+nextStart;
+                log.debug("nextStart (DELIMITER) = "+nextStart);
             }
             if (e2t.getValue().getHasId()) {
                 def tmp = str.substring(nextStart);
-                println "Looking for id in \""+tmp.substring(0,Math.min(32,tmp.length()))+"...\"";
+                log.debug("Looking for id in \""+tmp.substring(0,Math.min(32,tmp.length()))+"...\"");
                 def m = tmp =~ idPattern;
                 if (!m.find()) {
                     return false;
                 }
-                println "Pattern for id found";
+                log.debug("Pattern for id found");
                 tmpId = Optional.of(m.group(1).replaceAll("`",""));
-                println "Id =" + tmpId;
+                log.debug("Id =" + tmpId);
                 nextStart += m.group().length();
-                println "m.group() = \""+m.group()+"\""
-                println "m.group(1) = \""+m.group(1)+"\""
-                
+                log.debug("m.group() = \""+m.group()+"\"");
+                log.debug("m.group(1) = \""+m.group(1)+"\"");
+                                    
             }
-            println "nextStart = "+nextStart;
-            println "Rest = \""+str.substring(nextStart,Math.min(nextStart+32,str.length()))+"\"";
+            log.debug("nextStart = "+nextStart);
+            log.debug("Rest = \""+str.substring(nextStart,Math.min(nextStart+32,str.length()))+"\"");
             if (e2t.getValue().getEndsWithDelimiter()) {
                 tmpEndIndexLastMatch = str.indexOf(delimiter,nextStart);
             } else { // look for newline
@@ -219,49 +216,49 @@ class SqlScriptIterator implements Iterator<ExtractedSqlStatement> {
                     tmpEndIndexLastMatch = str.indexOf('\n',nextStart);
                 }
             }
-            println "tmpEndIndexLastMath = "+tmpEndIndexLastMatch;
+            log.debug("tmpEndIndexLastMath = "+tmpEndIndexLastMatch);
             if (tmpEndIndexLastMatch > -1) {
                 typeString = e2t.getKey();
                 extractedSqlStatement.setType(typeString);
                 endIndexLastMatch = index+tmpEndIndexLastMatch+(e2t.getValue().getEndsWithDelimiter()?delimiter.length():1);
                 int realStart = 0;
-                println "str[0] =\""+str[0]+"\"";
-                println "Match = " +str[0] =~ "\\s";
-                println "Match = " +(str[0] =~ "\\s").find();
+                log.debug("str[0] =\""+str[0]+"\"");
+                log.debug("Match = " +(str[0] =~ "\\s").toString());
+                log.debug("Match = " +(str[0] =~ "\\s").find());
                 while (realStart<nextStart+tmpEndIndexLastMatch && (str[realStart] =~ "\\s").find()) {
                     ++realStart;
                 }
-                println "Real start = "+realStart;
+                log.debug("Real start = "+realStart);
                 extractedSqlStatement.setStatement(str.substring(baseStart,tmpEndIndexLastMatch));
-                println "Result = "+extractedSqlStatement;
+                log.debug("Result = "+extractedSqlStatement);
                 if (tmpId.isPresent()) {
                     extractedSqlStatement.setId(tmpId.get());
                 }
                 return true;
             }
         }
-        println "matchAnyPrequel result = "+extractedSqlStatement;
+        log.debug("matchAnyPrequel result = "+extractedSqlStatement);
         return false;
     }
     private boolean findNextElement(ExtractedSqlStatement extractedSqlStatement) {
         String tmp = str.substring(index);
         if (matchAnyPrequel(tmp,extractedSqlStatement)) {
-            println "findNextElement result = "+extractedSqlStatement.getStatement();
+            log.debug("findNextElement result = "+extractedSqlStatement.getStatement());
             return true;
         } else {
-            println "findNextElement result = none";
+            log.debug("findNextElement result = none");
             return false;
         }
     }
-    public SqlScriptIterator(String str) { this.str = str; }
+    public SqlScriptIterator(Logger log,String str) { this.str = str; this.log = log; }
     public boolean hasNext() {
-        println "hasNext: extractedSqlStatement.isPresent() = "+extractedSqlStatement.isPresent();
+        log.debug("hasNext: extractedSqlStatement.isPresent() = "+extractedSqlStatement.isPresent());
         boolean tmp = index <str.length();
-        println "hasNext: index = "+index+ " < str.length() = "+str.length()+ " == " + tmp;
+        log.debug("hasNext: index = "+index+ " < str.length() = "+str.length()+ " == " + tmp);
         if (!extractedSqlStatement.isPresent() && (index < str.length())) {
             findNextElement(extractedSqlStatement);
         }
-        println "hasNext: extractedSqlStatement.isPresent() = "+extractedSqlStatement.isPresent();
+        log.debug("hasNext: extractedSqlStatement.isPresent() = "+extractedSqlStatement.isPresent());
         return extractedSqlStatement.isPresent();
     }
     public ExtractedSqlStatement next() {
@@ -270,21 +267,12 @@ class SqlScriptIterator implements Iterator<ExtractedSqlStatement> {
         }
         ExtractedSqlStatement tmp = extractedSqlStatement.clone();
         index = endIndexLastMatch;
-        println "next: extractedSqlStatement.isPresent() = "+extractedSqlStatement.isPresent();
+        log.debug("next: extractedSqlStatement.isPresent() = "+extractedSqlStatement.isPresent());
         extractedSqlStatement.reset();
-        println "next: extractedSqlStatement.isPresent() = "+extractedSqlStatement.isPresent();
+        log.debug("next: extractedSqlStatement.isPresent() = "+extractedSqlStatement.isPresent());
         return tmp;
     }
     public void remove() {
-    }
-    Optional<String> getLastType() {
-        return lastType;
-    }
-    Optional<String> getLastId() {
-        return lastId;
-    }
-    Optional<String> getLastResult() {
-        return lastResult;
     }
 };
 
@@ -405,7 +393,7 @@ task CrudGeneration(type:Exec) {
              mkdir "${rootProject.buildDir}/${project.name}"
      }
 }
-tasks.register('OpenDatabaseAsRoot') {
+task OpenDatabaseAsRoot() {
    dependsOn 'CrudGeneration'
    doFirst {
        try {
@@ -425,24 +413,51 @@ tasks.register('OpenDatabaseAsRoot') {
        }
    }
 }
-tasks.register('CreateWhedcappDatabaseAccessUser') {
+task DropAndRecreateDatabaseIfNecessary() {
     dependsOn 'OpenDatabaseAsRoot'
-    def quotify = { p -> "'"+p.collectReplacements({ it == '@' ? '\'@\'' : null })+"'" }
-    def backquotify = { p -> "`"+p.collectReplacements({ it == '.' ? '`.`' : null })+"`" }
-    def stmt = ''
     doFirst {
         try {
-            stmt = getMysqlRootConnection()
-            stmt.execute("DROP DATABASE IF EXISTS `whedcapp`");
-            stmt.execute("CREATE DATABASE `whedcapp`");
+            def stmt = getMysqlRootConnection()
+            if (dbSetupStrategy == 'initialize') {
+                stmt.execute("DROP DATABASE IF EXISTS `whedcapp`");
+                stmt.execute("CREATE DATABASE `whedcapp`");
+            }
             stmt.execute("USE `whedcapp`");
+        } catch (SQLException sqe) {
+            throw new StopExecutionException("Could not setup database: "+sqex);
+        }
+    }
+    
+}
+task CreateWhedcappDatabaseAccessUser() {
+    dependsOn 'OpenDatabaseAsRoot'
+    dependsOn 'DropAndRecreateDatabaseIfNecessary'
+    doFirst {
+        def stmt = getMysqlRootConnection()
+        try {
 
-            stmt.execute("CREATE USER IF NOT EXISTS "+quotify(getMysqlWhedcappUserId())+" IDENTIFIED BY '"+getMysqlWhedcappPassword()+"'");
-
+            stmt.execute("CREATE USER IF NOT EXISTS "+quotifySqlUserId(getMysqlWhedcappUserId())+" IDENTIFIED BY '"+getMysqlWhedcappPassword()+"'");
+        } catch (SQLException sqex) {
+            throw new StopExecutionException("Could not create default whedcapp user \""+getMysqlWhedcappUserId()+"\""+sqex);
+        }
+        try {
             // set appropriate privileges for whedcapp access user, essentially only "EXECUTE" stored procedures
-            stmt.execute("REVOKE ALL PRIVILEGES ON "+backquotify("whedcapp.*")+" FROM "+quotify(getMysqlWhedcappUserId()));
-            stmt.execute("GRANT EXECUTE PRIVILEGES ON "+backquotify("whedcapp.*")+" TO "+quotify(getMysqlWhedcappUserId()));
-
+            stmt.execute("REVOKE ALL PRIVILEGES ON "+backquotifySqlId("whedcapp.*")+" FROM "+quotifySqlUserId(getMysqlWhedcappUserId()));
+        } catch (SQLException sqex) {
+            // ignor that no grants are there to be revoked
+            logger.info("sqex.getSQLState() == '42000' =="+(sqex.getSQLState() == '42000'));
+            logger.info("sqex.getErrorCode() == 1141 =="+(sqex.getErrorCode() == 1141));
+            if (!((sqex.getSQLState() == '42000') && (sqex.getErrorCode() == 1141))) {
+                throw new StopExecutionException("Could not create default whedcapp user \""+getMysqlWhedcappUserId()+"\""+sqex+", state = "+sqex.getSQLState()+", "+sqex.getErrorCode());
+            }
+            
+        }
+        try {
+            stmt.execute("GRANT EXECUTE ON "+backquotifySqlId("whedcapp.*")+" TO "+quotifySqlUserId(getMysqlWhedcappUserId()));
+        } catch (SQLException sqex) {
+            throw new StopExecutionException("Could not create default whedcapp user \""+getMysqlWhedcappUserId()+"\""+sqex);
+        }
+        try {
             // create table for keeping track of if tables need to be reloaded or not
             stmt.execute """
                 CREATE TABLE IF NOT EXISTS `whedcapp`.`whedcapp_installation_item_digest`(
@@ -472,14 +487,22 @@ task UploadToDatabase() {
          //def result = dbUploadFiles.length.times { -> new ByteArrayOutputStream() }
          File file = new File(dbDefPath());
          def txt = removeComments(file.text)
-         def ssi = new SqlScriptIterator(txt);
+         def ssi = new SqlScriptIterator(logger,txt);
          def stmt = getMysqlRootConnection();
-         while (ssi.hasNext()) {
-             ExtractedSqlStatement sqlCmd = ssi.next();
-             logger.info("SQL Start\n"+sqlCmd+"\nSQL End\n");
-             if (sqlCmd.getStatement() != "DELIMITER") {
-                 stmt.execute sqlCmd.getStatement();
+         try {
+             while (ssi.hasNext()) {
+                 ExtractedSqlStatement sqlCmd = ssi.next();
+                 logger.info("SQL Start\n"+sqlCmd+"\nSQL End\n");
+                 if (sqlCmd.getType() != "DELIMITER") {
+                     stmt.execute sqlCmd.getStatement();
+                     //                     if (sqlCmd.getType() == "CREATE") {
+                     //                         stmt.execute "INSERT INTO `whedcapp`.`whedcapp_installation_item_digest` (wiid_item_identifier, wiid_item_type, wiid_item_digest) SELECT ${sqlCmd.getId()}, ${sqlCmd.getType()},
+                 }
              }
+         } catch (SQLException sqex) {
+            throw new StopExecutionException("Something is wrong with SQL Statement: "+sqex);             
+         } catch (Exception ex) {
+            throw new StopExecutionException("Something is wrong, but not with the SQL Statement: "+sqex);             
          }
      }
 }
@@ -510,7 +533,7 @@ gradle.taskGraph.whenReady { taskGraph ->
         ) {
           vbox { // Put everything below each other
             label(text: "Please enter Root administrator Id:")
-            input1 = textField('root')
+            input1 = textField('admin')
             label(text: "Please enter key passphrase for MySQL root:")
             input2 = passwordField()
             button(defaultButton: true, text: 'OK', actionPerformed: {

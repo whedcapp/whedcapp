@@ -1765,7 +1765,7 @@ CREATE TRIGGER `whedcapp`.`question_type_specification_update_check`
     ON `whedcapp`.`question_type_specification` FOR EACH ROW
 BEGIN
     DECLARE no_of_questions_associated_with_question_type_spec INTEGER;
-    IF OLD.quest_type <> NEW.quest_type THEN
+    IF OLD.id_quest_type <> NEW.id_quest_type THEN
         SELECT COUNT(DISTINCT `id_quest`) INTO no_of_questions_associated_with_question_type_spec
             FROM `whedcapp`.`question`
             WHERE `id_quest_type_spec` = NEW.id_quest_type_spec;
@@ -1783,7 +1783,7 @@ BEGIN
     DECLARE no_of_questions_associated_with_question_type_spec INTEGER;
     SELECT COUNT(DISTINCT `id_quest`) INTO no_of_questions_associated_with_question_type_spec
         FROM `whedcapp`.`question`
-        WHERE `id_quest_type_spec` = NEW.id_quest_type_spec;
+        WHERE `id_quest_type_spec` = OLD.id_quest_type_spec;
     IF no_of_questions_associated_with_question_type_spec > 0 THEN
         SIGNAL SQLSTATE '45039'
             SET MESSAGE_TEXT = 'Cannot update or delete question type of the question type specification since there are questions associated with the question type specification';

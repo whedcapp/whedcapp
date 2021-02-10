@@ -66,6 +66,10 @@ allprojects {
   if (!ext.has('dbBaseStoredProceduresName')) {
      ext.dbBaseStoredProceduresName = 'dbBaseStoredProcedures.sql'
   }
+  if (!ext.has('dbSetupStrategy')) {
+      ext.dbSetupStrategy = 'initialize';
+  }
+  assert ext.dbSetupStrategy == 'initialize' || ext.dbSetupStrategy == 'migrate';
 
 
   // import common functionality to all projects

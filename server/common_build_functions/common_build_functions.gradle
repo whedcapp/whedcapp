@@ -74,13 +74,69 @@ def removeComments(String fileContent) {
     }
     return result
 }
+
+def quotifySqlUserId(String sqlUid) {
+    return "'"+sqlUid.collectReplacements({ it == '@' ? '\'@\'' : null })+"'"
+}
+def backquotifySqlId(String sqlId) {
+    def state = 'outside';
+    def result = ''
+    for (int i = 0; i < sqlId.length(); ++i) {
+        def c = sqlId.getAt(i);
+        switch (state) {
+        case 'outside':
+            if (c == '*') {
+                state = 'star';
+            } else if (c == '.') {
+                state = 'dot';
+            } else {
+                result += '`'+c;
+                state = 'inside';
+            }
+            break;
+        case 'inside':
+            if (c == '.') {
+                result += '`.';
+                state = 'dot';
+            } else if (c == '*') {
+                throw new IllegalStateException("SQL Identifier \""+sqlUid+"\" follows incorrect syntax");
+            } else {
+                result += c;
+            }
+            break;
+        case 'star':
+            if (c == '.') {
+                result += '.';
+                state == 'dot';
+            } else {
+                throw new IllegalStateException("SQL Identifier \""+sqlUid+"\" follows incorrect syntax");
+            } 
+            
+            break;
+        case 'dot':
+            if (c == '*') {
+                result += c;
+                state = 'star';
+            } else if (c != '.') {
+                result += '`'+c;
+                state = 'inside';
+            } else {
+                throw new IllegalStateException("Sql Identifier \""+sqlId+"\" follows the wrong syntax");
+            }
+            break;
+        }
+    }
+    return result;
+}
 ext {
-    crudGenToolPath = this.&crudGenToolPath
-    dbDefPath = this.&dbDefPath
-    dbBaseStoredProceduresPath = this.&dbBaseStoredProceduresPath
-    dbCrudCfgPath = this.&dbCrudCfgPath
-    dbCrudSqlSrcPath = this.&dbCrudSqlSrcPath
-    dbCrudDartSrcPath = this.&dbCrudDartSrcPath
-    checksum = this.&checksum
-    removeComments = this.&removeComments
+    crudGenToolPath = this.&crudGenToolPath;
+    dbDefPath = this.&dbDefPath;
+    dbBaseStoredProceduresPath = this.&dbBaseStoredProceduresPath;
+    dbCrudCfgPath = this.&dbCrudCfgPath;
+    dbCrudSqlSrcPath = this.&dbCrudSqlSrcPath;
+    dbCrudDartSrcPath = this.&dbCrudDartSrcPath;
+    checksum = this.&checksum;
+    removeComments = this.&removeComments;
+    quotifySqlUserId = this.&quotifySqlUserId;
+    backquotifySqlId = this.&backquotifySqlId;
 }
