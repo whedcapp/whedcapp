@@ -63,6 +63,9 @@ allprojects {
   }
   assert ext.dbCrudDartSrcName != ''
   ext.whedcappAdministratorUid = ''
+  if (!ext.has('dbBaseStoredProceduresName')) {
+     ext.dbBaseStoredProceduresName = 'dbBaseStoredProcedures.sql'
+  }
 
 
   // import common functionality to all projects

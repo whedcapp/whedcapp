@@ -27,16 +27,266 @@ buildscript{
 }
 
 
+import groovy.transform.AutoClone;
 import groovy.swing.SwingBuilder
 import org.apache.tools.ant.filters.*
 import java.sql.SQLException
+import java.util.Optional
+import java.util.regex.*
 //import org.apache.commons.io.FileNameUtils
 
 // Whedcapp admin user identity
 ext.wcau = ''
 def getWcau = {
     return ext.wcau
-}
+};
+
+@AutoClone
+public  class ExtractedSqlStatement {
+    private String statement;
+    private String type;
+    private String id;
+    ExtractedSqlStatement() { statement = type = id = null; }
+    public String getStatement() {
+        if (!isPresent()) {
+            throw new IllegalStateException("ExtractedSqlStatement contains nothing");
+        }
+        return statement;
+    }
+    public String getType() {
+        if (!isPresent()) {
+            throw new IllegalStateException("ExtractedSqlStatement contains nothing");
+        }
+        return type;
+    }
+    public String getId() {
+        if (!isPresent()) {
+            throw new IllegalStateException("ExtractedSqlStatement contains nothing");
+        }
+        return id;
+    }
+    public void setStatement(String statement) {
+        this.statement = statement;
+    }
+    public void setType(String type) {
+        this.type = type;
+    }
+    public void setId(String id) {
+        this.id = id;
+    }
+    public boolean isPresent() {
+        return statement != null;
+    }
+    public void reset() {
+        statement = type = id = null;
+    }
+    public String toString() {
+        return id + "-> <"+statement+">, ["+type+"]";
+    }
+};
+
+class SqlScriptIterator implements Iterator<ExtractedSqlStatement> {
+    public static class SqlPattern {
+        private List<String> pattern;
+        private boolean hasId;
+        private boolean endsWithDelimiter;
+        public SqlPattern(List<String> pattern, boolean hasId, boolean endsWithDelimiter) {
+            this.pattern = pattern;
+            this.hasId = hasId;
+            this.endsWithDelimiter = endsWithDelimiter;
+        }
+        public List<String> getPattern() {
+            return pattern;
+        }
+        public boolean getHasId() {
+            return hasId;
+        }
+        public boolean getEndsWithDelimiter() {
+            return endsWithDelimiter;
+        }
+    };
+    private String str;
+    private int index = 0;
+    private int endIndexLastMatch;
+    private ExtractedSqlStatement extractedSqlStatement = new ExtractedSqlStatement();
+    private Optional<String> lastResult = Optional.empty();
+    private Optional<String> lastType = Optional.empty();
+
+    private Optional<String> lastId = Optional.empty();
+    private String delimiter = ";";
+    private static idPattern = /^(?i)\s*((`[a-z_][a-z0-9_]*`(.?`[a-z_][a-z0-9_]*`|))|([a-z_][a-z0-9_]*(.?[a-z_][a-z0-9_]*|)))/;
+    private static Map<String,Map<String,SqlPattern>> expr2type = [
+                                                                   CREATE: new SqlPattern( ["^(?i)\\s*CREATE","^(?i)\\s*(TABLE|PROCEDURE|FUNCTION|VIEW|TRIGGER|INDEX|DATABASE)","^(?i)\\s*(IF\\s+NOT\\s+EXISTS|)"], true, true),
+                                                                   DROP: new SqlPattern( ["^(?i)\\s*DROP","^(?i)\\s*(TABLE|PROCEDURE|FUNCTION|VIEW|TRIGGER|INDEX|DATABASE)","^(?i)\\s*(IF\\s+EXISTS|)"], true, true),
+                                                                   USE: new SqlPattern( ["^(?i)\\s*USE"], true, true),
+                                                                   INSERT: new SqlPattern([/^(?i)\s*INSERT\s+INTO/], true, true),
+                                                                   DELIMITER: new SqlPattern( [/^(?i)\s*DELIMITER/], false, false)
+                         ];
+
+    private int matchPrequel(List<String> lop,final String str) {
+        int tmpStart = 0;
+        String tmp = str.substring(tmpStart);
+        for (String p: lop) {
+            def m = tmp =~ p;
+            
+            if (!m.find()) {
+                return -1;
+            }
+            tmpStart += m.group().length();
+            tmp = str.substring(tmpStart);
+                
+        }
+        return tmpStart;
+    }
+    private int skipSequenceOfDelimiters(final String str) {
+        int baseStart = 0;
+        while (true) {
+            def tmp = str.substring(baseStart);
+            def m = tmp =~ "^\\s*";
+            m.find();
+            if (m.group().length()>-1) {
+                int nextDelimiterIndex = str.indexOf(delimiter,baseStart);
+                if (nextDelimiterIndex == baseStart+m.group().length()) {
+                    baseStart = nextDelimiterIndex+delimiter.length();
+                } else {
+                    break;
+                }
+            } else {
+                break;
+            }
+        }
+        println "skipSequenceOfDelimiters baseStart = "+baseStart;
+        return baseStart;
+    }
+    private boolean matchAnyPrequel(final String str,ExtractedSqlStatement extractedSqlStatement) {
+        Optional<String> tmpId = Optional.empty();
+        int tmpEndIndexLastMatch;
+        boolean completed=false;
+        def typeString = "";
+        int baseStart = skipSequenceOfDelimiters(str);
+        // insert nextStart here and skip sequences of delimiters
+        for (def e2t: expr2type) {
+            tmpEndIndexLastMatch = 0;
+            println "Trying pattern "+e2t.getValue().getPattern()+" on \""+str.substring(baseStart,Math.min(baseStart+32,str.length()))+"\"";
+            int nextStart = matchPrequel(e2t.getValue().getPattern(),str.substring(baseStart));
+            println "Result = "+nextStart;
+            if (nextStart < 0) {
+                continue;
+            }
+            nextStart += baseStart;
+            // handle switching delimiters, MySQL solution
+            if (e2t.getKey() == "DELIMITER") {
+                def m = str.substring(nextStart) =~ "^\\s*([^\\s]+)\\s*(\\n|\\r\\n)";
+                println "M = "+m;
+                if (!m.find()) {
+                    throw new StopExecutionException("Incorrect delimiter specification");
+                }
+                println "M' = "+m;
+                delimiter = m.group(1);
+                println "Delimiter set to \""+delimiter+"\""
+                def m2 = str.substring(nextStart) =~ "^\\s*([^\\s]+)\\s*";
+                println "M2 = "+m2;
+                m2.find();
+                println "M2' = "+m2;
+                println "l(m) = "+m.group().length()+", l(m2) = "+m2.group().length();
+                println "l(m.g(1) = "+m.group(1).length();
+                println "l(m.g(2) = "+m.group(2).length();
+                nextStart += m.group().length()-m.group(2).length();
+                println "nextStart (DELIMITER) = "+nextStart;
+            }
+            if (e2t.getValue().getHasId()) {
+                def tmp = str.substring(nextStart);
+                println "Looking for id in \""+tmp.substring(0,Math.min(32,tmp.length()))+"...\"";
+                def m = tmp =~ idPattern;
+                if (!m.find()) {
+                    return false;
+                }
+                println "Pattern for id found";
+                tmpId = Optional.of(m.group(1).replaceAll("`",""));
+                println "Id =" + tmpId;
+                nextStart += m.group().length();
+                println "m.group() = \""+m.group()+"\""
+                println "m.group(1) = \""+m.group(1)+"\""
+                
+            }
+            println "nextStart = "+nextStart;
+            println "Rest = \""+str.substring(nextStart,Math.min(nextStart+32,str.length()))+"\"";
+            if (e2t.getValue().getEndsWithDelimiter()) {
+                tmpEndIndexLastMatch = str.indexOf(delimiter,nextStart);
+            } else { // look for newline
+                tmpEndIndexLastMatch = str.indexOf("\r\n",nextStart);
+                if (tmpEndIndexLastMatch == -1) {
+                    tmpEndIndexLastMatch = str.indexOf('\n',nextStart);
+                }
+            }
+            println "tmpEndIndexLastMath = "+tmpEndIndexLastMatch;
+            if (tmpEndIndexLastMatch > -1) {
+                typeString = e2t.getKey();
+                extractedSqlStatement.setType(typeString);
+                endIndexLastMatch = index+tmpEndIndexLastMatch+(e2t.getValue().getEndsWithDelimiter()?delimiter.length():1);
+                int realStart = 0;
+                println "str[0] =\""+str[0]+"\"";
+                println "Match = " +str[0] =~ "\\s";
+                println "Match = " +(str[0] =~ "\\s").find();
+                while (realStart<nextStart+tmpEndIndexLastMatch && (str[realStart] =~ "\\s").find()) {
+                    ++realStart;
+                }
+                println "Real start = "+realStart;
+                extractedSqlStatement.setStatement(str.substring(baseStart,tmpEndIndexLastMatch));
+                println "Result = "+extractedSqlStatement;
+                if (tmpId.isPresent()) {
+                    extractedSqlStatement.setId(tmpId.get());
+                }
+                return true;
+            }
+        }
+        println "matchAnyPrequel result = "+extractedSqlStatement;
+        return false;
+    }
+    private boolean findNextElement(ExtractedSqlStatement extractedSqlStatement) {
+        String tmp = str.substring(index);
+        if (matchAnyPrequel(tmp,extractedSqlStatement)) {
+            println "findNextElement result = "+extractedSqlStatement.getStatement();
+            return true;
+        } else {
+            println "findNextElement result = none";
+            return false;
+        }
+    }
+    public SqlScriptIterator(String str) { this.str = str; }
+    public boolean hasNext() {
+        println "hasNext: extractedSqlStatement.isPresent() = "+extractedSqlStatement.isPresent();
+        boolean tmp = index <str.length();
+        println "hasNext: index = "+index+ " < str.length() = "+str.length()+ " == " + tmp;
+        if (!extractedSqlStatement.isPresent() && (index < str.length())) {
+            findNextElement(extractedSqlStatement);
+        }
+        println "hasNext: extractedSqlStatement.isPresent() = "+extractedSqlStatement.isPresent();
+        return extractedSqlStatement.isPresent();
+    }
+    public ExtractedSqlStatement next() {
+        if (!hasNext()) {
+            throw new NoSuchElementException();
+        }
+        ExtractedSqlStatement tmp = extractedSqlStatement.clone();
+        index = endIndexLastMatch;
+        println "next: extractedSqlStatement.isPresent() = "+extractedSqlStatement.isPresent();
+        extractedSqlStatement.reset();
+        println "next: extractedSqlStatement.isPresent() = "+extractedSqlStatement.isPresent();
+        return tmp;
+    }
+    public void remove() {
+    }
+    Optional<String> getLastType() {
+        return lastType;
+    }
+    Optional<String> getLastId() {
+        return lastId;
+    }
+    Optional<String> getLastResult() {
+        return lastResult;
+    }
+};
 
 // The embedded connection to MySQL, opened in task OpenDatabaseAsRoot
 ext.mysqlRootConnection = ''
@@ -78,6 +328,9 @@ def dbCfgSrcFiles = [ "**/*.cs.in", "**/*.sql.in"].inject([]) { acc,val ->acc+pr
 logger.debug("dbCfgSrcFiles = "+dbCfgSrcFiles.join(", "))
 def dbSrcFiles = ["**/*.cs", "**/*.sql"].inject([]) {acc,val -> acc+project.fileTree(dir: "${projectDir}/src", include: val)}
 logger.debug("dbSrcFiles = "+dbSrcFiles.join(", "))
+def dbUploadFiles = [ dbDefPath(), dbBaseStoredProceduresPath(), dbCrudSqlSrcPath() ]
+def dbUploadProgressPath = "${rootProject}/"+project(":database").name+"/dbUploadProgress.json"
+def dbUploadOutputFiles = [ dbUploadProgressPath ]
 
 def crudGenerationCfgPrepInputFiles = dbCfgSrcFiles
 def crudGenerationPrepInputFiles = dbSrcFiles
@@ -97,6 +350,7 @@ logger.debug("crudGenerationPrepOutputFiles = "+crudGenerationPrepOutputFiles.jo
 def crudGenerationInputFiles = crudGenerationPrepOutputFiles + [ crudGenToolPath() ]
 
 def crudGenerationOutputFiles = [ dbCrudSqlSrcPath()]
+
 task CrudGenerationCfgPrep() {
      inputs.files(dbCfgSrcFiles)
      outputs.files(crudGenerationCfgPrepOutputFiles)
@@ -132,7 +386,7 @@ task CrudGeneration(type:Exec) {
      } else {
           dependsOn ':crud_gen_tool:CmakeReleaseBuild'
      }
-     workingDir "${parent.buildDir}/${project.name}"
+     workingDir "${rootProject.buildDir}/${project.name}"
      inputs.files(crudGenerationInputFiles)
      outputs.files(crudGenerationOutputFiles)
      group = 'Database'
@@ -171,82 +425,68 @@ tasks.register('OpenDatabaseAsRoot') {
        }
    }
 }
-tasks.register('CreateWhedcappDatabaseUser') {
+tasks.register('CreateWhedcappDatabaseAccessUser') {
     dependsOn 'OpenDatabaseAsRoot'
     def quotify = { p -> "'"+p.collectReplacements({ it == '@' ? '\'@\'' : null })+"'" }
+    def backquotify = { p -> "`"+p.collectReplacements({ it == '.' ? '`.`' : null })+"`" }
     def stmt = ''
     doFirst {
         try {
-            logger.info("Conn3 = "+getMysqlRootConnection())
-            logger.info("Q(a) = "+quotify("a"))
-            logger.info("Q(a@b) = "+quotify("a@b"))
             stmt = getMysqlRootConnection()
-            stmt.execute("CREATE USER "+quotify(getMysqlWhedcappUserId())+" IDENTIFIED BY '"+getMysqlWhedcappPassword()+"'");
-            stmt.execute("GRANT ALL PRIVILEGES ON `whedcapp`.* TO "+quotify(getMysqlWhedcappUserId()));
+            stmt.execute("DROP DATABASE IF EXISTS `whedcapp`");
+            stmt.execute("CREATE DATABASE `whedcapp`");
+            stmt.execute("USE `whedcapp`");
+
+            stmt.execute("CREATE USER IF NOT EXISTS "+quotify(getMysqlWhedcappUserId())+" IDENTIFIED BY '"+getMysqlWhedcappPassword()+"'");
+
+            // set appropriate privileges for whedcapp access user, essentially only "EXECUTE" stored procedures
+            stmt.execute("REVOKE ALL PRIVILEGES ON "+backquotify("whedcapp.*")+" FROM "+quotify(getMysqlWhedcappUserId()));
+            stmt.execute("GRANT EXECUTE PRIVILEGES ON "+backquotify("whedcapp.*")+" TO "+quotify(getMysqlWhedcappUserId()));
+
+            // create table for keeping track of if tables need to be reloaded or not
+            stmt.execute """
+                CREATE TABLE IF NOT EXISTS `whedcapp`.`whedcapp_installation_item_digest`(
+                    id_whedcapp_installation_item_digest INTEGER NOT NULL AUTO_INCREMENT,
+                    wiid_item_identifier VARCHAR(256) NOT NULL,
+                    wiid_item_type VARCHAR(16) NOT NULL,
+                    wiid_item_digest VARCHAR(64) NOT NULL,
+                    PRIMARY KEY(`id_whedcapp_installation_item_digest`),
+                    UNIQUE INDEX `wiid_unique_idx`(`wiid_item_identifier`,`wiid_item_type`)
+                )
+            """
         } catch (SQLException sqex) {
-            throw new StopExecutionException("Could not create default whedcapp user \""+getMysqlWhedcappUserId()+"\"",sqex);
+            throw new StopExecutionException("Could not create default whedcapp user \""+getMysqlWhedcappUserId()+"\""+sqex);
         } finally {
         }
     }
 }
-tasks.register('MergeDatabaseDefinitionFiles',Exec) {
-     dependsOn 'CrudGenerationPrep'
-     dependsOn 'CrudGenerationCfgPrep'
+
+task UploadToDatabase() {
      dependsOn 'CrudGeneration'
-     workingDir "${parent.buildDir}/${project.name}"
-     inputs.files(crudGenerationInputFiles)
-     outputs.files(crudGenerationOutputFiles)
+     dependsOn 'CreateWhedcappDatabaseAccessUser'
+     inputs.files(dbUploadFiles)
+     outputs.files(dbUploadOutputFiles)
      group = 'Database'
-     description = "Creates CRUD stored procedures based on ${parent}/build/ddl.sql"
-     def cmd = crudGenToolPath()
-     if (project.ext.traceParser == 'Yes') {
-          commandLine cmd,'-p',dbDefPath(),'-c',dbCrudCfgPath(),'-s',dbCrudSqlSrcPath(),'-t'
-     } else {
-          commandLine cmd,'-p',dbDefPath(),'-c',dbCrudCfgPath(),'-s',dbCrudSqlSrcPath()
-     }
-     standardOutput = new ByteArrayOutputStream()
-     ext.output = {
-          return standardOutput.toString();
-     }
+     description = "Uploads database scheme."
      doFirst {
-             mkdir "${rootProject.buildDir}/${project.name}"
-     }
-}
-task CreateWhedcappMySqlDatabaseUser(type:Exec) {
-     dependsOn 'CrudGeneration'
-     workingDir  "${parent.buildDir}/${project.name}"
-     inputs.files()
-     outputs.files()
-     group = 'Database'
-     description = "Creates Whedcapp MySql database user."
-     commandLine 'mysql','-u',{ -> ext.mysqlRoot},'-p'
-     standardOutput = new ByteArrayOutputStream()
-     ext.output = {
-         return standardOutput.toString();
-     }
-     doFirst {
-         inputStream = new FileInputStream()
-     }
-}     
-task UploadToDatabase(type:Exec) {
-     dependsOn 'CrudGeneration'
-     workingDir  "${parent.buildDir}/${project.name}"
-     inputs.files()
-     outputs.files()
-     group = 'Database'
-     description = "Creates user, uploads database from database schema and stored procedures."
-     commandLine 'mysql','-u',{->ext.mysqlRoot},'-p'
-     standardOutput = new ByteArrayOutputStream()
-     ext.output = {
-         return standardOutput.toString();
-     }
-     doFirst {
-         inputStream = new FileInputStream()
+         //def result = dbUploadFiles.length.times { -> new ByteArrayOutputStream() }
+         File file = new File(dbDefPath());
+         def txt = removeComments(file.text)
+         def ssi = new SqlScriptIterator(txt);
+         def stmt = getMysqlRootConnection();
+         while (ssi.hasNext()) {
+             ExtractedSqlStatement sqlCmd = ssi.next();
+             logger.info("SQL Start\n"+sqlCmd+"\nSQL End\n");
+             if (sqlCmd.getStatement() != "DELIMITER") {
+                 stmt.execute sqlCmd.getStatement();
+             }
+         }
      }
 }
 task clean() {
      doFirst {
              delete "${rootProject.buildDir}/${project.name}"
+             logger.info(removeComments("/* Hello */ old friend"))
      }
 }
 
@@ -301,7 +541,7 @@ gradle.taskGraph.whenReady { taskGraph ->
 } // end whenReady
 
 gradle.taskGraph.whenReady { taskGraph ->
-  if(taskGraph.hasTask(':database:CreateWhedcappDatabaseUser')) {
+  if(taskGraph.hasTask(':database:CreateWhedcappDatabaseAccessUser')) {
 
     def pass = ''
     def user = ''
