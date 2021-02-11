@@ -115,12 +115,12 @@ class SqlScriptIterator implements Iterator<ExtractedSqlStatement> {
     private String delimiter = ";";
     private static idPattern = /^(?i)\s*((`[a-z_][a-z0-9_]*`(.?`[a-z_][a-z0-9_]*`|))|([a-z_][a-z0-9_]*(.?[a-z_][a-z0-9_]*|)))/;
     private static Map<String,Map<String,SqlPattern>> expr2type = [
-                                                                   CREATE: new SqlPattern( ["^(?i)\\s*CREATE","^(?i)\\s*(TABLE|PROCEDURE|FUNCTION|VIEW|TRIGGER|INDEX|DATABASE)","^(?i)\\s*(IF\\s+NOT\\s+EXISTS|)"], true, true),
-                                                                   DROP: new SqlPattern( ["^(?i)\\s*DROP","^(?i)\\s*(TABLE|PROCEDURE|FUNCTION|VIEW|TRIGGER|INDEX|DATABASE)","^(?i)\\s*(IF\\s+EXISTS|)"], true, true),
-                                                                   USE: new SqlPattern( ["^(?i)\\s*USE"], true, true),
-                                                                   INSERT: new SqlPattern([/^(?i)\s*INSERT\s+INTO/], true, true),
-                                                                   DELIMITER: new SqlPattern( [/^(?i)\s*DELIMITER/], false, false)
-                         ];
+        CREATE: new SqlPattern( ["^(?i)\\s*CREATE","^(?i)\\s*(TABLE|PROCEDURE|FUNCTION|VIEW|TRIGGER|INDEX|DATABASE)","^(?i)\\s*(IF\\s+NOT\\s+EXISTS|)"], true, true),
+        DROP: new SqlPattern( ["^(?i)\\s*DROP","^(?i)\\s*(TABLE|PROCEDURE|FUNCTION|VIEW|TRIGGER|INDEX|DATABASE)","^(?i)\\s*(IF\\s+EXISTS|)"], true, true),
+        USE: new SqlPattern( ["^(?i)\\s*USE"], true, true),
+        INSERT: new SqlPattern([/^(?i)\s*INSERT\s+INTO/], true, true),
+        DELIMITER: new SqlPattern( [/^(?i)\s*DELIMITER/], false, false)
+    ];
 
     private int matchPrequel(List<String> lop,final String str) {
         int tmpStart = 0;
@@ -133,7 +133,7 @@ class SqlScriptIterator implements Iterator<ExtractedSqlStatement> {
             }
             tmpStart += m.group().length();
             tmp = str.substring(tmpStart);
-                
+            
         }
         return tmpStart;
     }
@@ -206,7 +206,7 @@ class SqlScriptIterator implements Iterator<ExtractedSqlStatement> {
                 nextStart += m.group().length();
                 log.debug("m.group() = \""+m.group()+"\"");
                 log.debug("m.group(1) = \""+m.group(1)+"\"");
-                                    
+                
             }
             log.debug("nextStart = "+nextStart);
             log.debug("Rest = \""+str.substring(nextStart,Math.min(nextStart+32,str.length()))+"\"");
@@ -357,43 +357,43 @@ task CrudGenerationCfgPrep() {
      }
 }
 task CrudGenerationPrep() {
-     dependsOn 'CrudGenerationCfgPrep'
-     inputs.files(dbSrcFiles)
-     outputs.files(crudGenerationPrepOutputFiles)
-     doLast {
-         copy {
-             dbSrcFiles.each { p -> from(p) }
-             into "${rootProject.buildDir}/${project.name}"
-         }
-     }
+    dependsOn 'CrudGenerationCfgPrep'
+    inputs.files(dbSrcFiles)
+    outputs.files(crudGenerationPrepOutputFiles)
+    doLast {
+        copy {
+            dbSrcFiles.each { p -> from(p) }
+            into "${rootProject.buildDir}/${project.name}"
+        }
+    }
 }
 
 task CrudGeneration(type:Exec) {
-     dependsOn 'CrudGenerationPrep'
-     dependsOn 'CrudGenerationCfgPrep'
-     if (project.ext.buildType == 'Debug') {
-          dependsOn ':crud_gen_tool:CmakeDebugBuild'
-     } else {
-          dependsOn ':crud_gen_tool:CmakeReleaseBuild'
-     }
-     workingDir "${rootProject.buildDir}/${project.name}"
-     inputs.files(crudGenerationInputFiles)
-     outputs.files(crudGenerationOutputFiles)
-     group = 'Database'
-     description = "Creates CRUD stored procedures based on "+dbDefPath()
-     def cmd = crudGenToolPath()
-     if (project.ext.traceParser == 'Yes') {
-          commandLine cmd,'-p',dbDefPath(),'-c',dbCrudCfgPath(),'-s',dbCrudSqlSrcPath(),'-t'
-     } else {
-          commandLine cmd,'-p',dbDefPath(),'-c',dbCrudCfgPath(),'-s',dbCrudSqlSrcPath()
-     }
-     standardOutput = new ByteArrayOutputStream()
-     ext.output = {
-          return standardOutput.toString();
-     }
-     doFirst {
-             mkdir "${rootProject.buildDir}/${project.name}"
-     }
+    dependsOn 'CrudGenerationPrep'
+    dependsOn 'CrudGenerationCfgPrep'
+    if (project.ext.buildType == 'Debug') {
+        dependsOn ':crud_gen_tool:CmakeDebugBuild'
+    } else {
+        dependsOn ':crud_gen_tool:CmakeReleaseBuild'
+    }
+    workingDir "${rootProject.buildDir}/${project.name}"
+    inputs.files(crudGenerationInputFiles)
+    outputs.files(crudGenerationOutputFiles)
+    group = 'Database'
+    description = "Creates CRUD stored procedures based on "+dbDefPath()
+    def cmd = crudGenToolPath()
+    if (project.ext.traceParser == 'Yes') {
+        commandLine cmd,'-p',dbDefPath(),'-c',dbCrudCfgPath(),'-s',dbCrudSqlSrcPath(),'-t'
+    } else {
+        commandLine cmd,'-p',dbDefPath(),'-c',dbCrudCfgPath(),'-s',dbCrudSqlSrcPath()
+    }
+    standardOutput = new ByteArrayOutputStream()
+    ext.output = {
+        return standardOutput.toString();
+    }
+    doFirst {
+        mkdir "${rootProject.buildDir}/${project.name}"
+    }
 }
 task OpenDatabaseAsRoot() {
    dependsOn 'CrudGeneration'
@@ -535,41 +535,44 @@ task CreateWhedcappDatabaseAccessUser() {
 }
 
 task UploadToDatabase() {
-     dependsOn 'CrudGeneration'
-     dependsOn 'CreateWhedcappDatabaseAccessUser'
-     inputs.files(dbUploadFiles)
-     outputs.files(dbUploadOutputFiles)
-     group = 'Database'
-     description = "Uploads database scheme."
-     doFirst {
-         //def result = dbUploadFiles.length.times { -> new ByteArrayOutputStream() }
-         File file = new File(dbDefPath());
-         def txt = removeComments(file.text)
-         def ssi = new SqlScriptIterator(logger,txt);
-         def stmt = getMysqlRootConnection();
-         try {
-             while (ssi.hasNext()) {
-                 ExtractedSqlStatement sqlCmd = ssi.next();
-                 logger.info("SQL Start\n"+sqlCmd+"\nSQL End\n");
-                 if (sqlCmd.getType() != "DELIMITER") {
-                     stmt.execute sqlCmd.getStatement();
-                     stmt.execute "SELECT `whedcapp`.`insert_whedcapp_installation_item_digest`(${sqlCmd.getId()},${sqlCmd.getType()},${checksum(sqlCmd.getStatement())})";
-                 }
-             }
-             def uploadDatabaseResultOutputStream = File(dbUploadProgressPath).newOutputStream();
-             def writer = uploadDatabaseResultOutputStream.newPrintWriter();
-             stmt.eachRow("SELECT JSON_ARRAYAGG(JSON_OBJECT('identifier',`wiid_item_identifier`,'type',`wiid_item_type`,'type_instance',`wiid_item_type_instance`,'digest',`wiid_item_digest`)) FROM `whedcapp`.`whedcapp_installation_item_digest`") { obj ->
-                 logger.debug(obj[0]);
-                 writer.writeLine(obj[0]);
-             }
-             uploadDatabaseResultOutputStream.close();
-             
-         } catch (SQLException sqex) {
+    dependsOn 'CrudGeneration'
+    dependsOn 'CreateWhedcappDatabaseAccessUser'
+    inputs.files(dbUploadFiles)
+    outputs.files(dbUploadOutputFiles)
+    group = 'Database'
+    description = "Uploads database scheme."
+    doFirst {
+        //def result = dbUploadFiles.length.times { -> new ByteArrayOutputStream() }
+        File file = new File(dbDefPath());
+        def txt = removeComments(file.text)
+        def ssi = new SqlScriptIterator(logger,txt);
+        def stmt = getMysqlRootConnection();
+        try {
+            while (ssi.hasNext()) {
+                ExtractedSqlStatement sqlCmd = ssi.next();
+                logger.info("SQL Start\n"+sqlCmd+"\nSQL End\n");
+                if (sqlCmd.getType() != "DELIMITER") {
+                    stmt.execute sqlCmd.getStatement();
+                    stmt.execute "SELECT `whedcapp`.`insert_whedcapp_installation_item_digest`(${sqlCmd.getId()},${sqlCmd.getType()},${checksum(sqlCmd.getStatement())})";
+                }
+            }
+            def uploadDatabaseResultFile = new File(dbUploadProgressPath);
+            def uploadDatabaseResultOutputStream = uploadDatabaseResultFile.newOutputStream();
+            def writer = uploadDatabaseResultOutputStream.newPrintWriter();
+            stmt.eachRow("SELECT JSON_ARRAYAGG(JSON_OBJECT('identifier',`wiid_item_identifier`,'type',`wiid_item_type`,'type_instance',`wiid_item_type_instance`,'digest',`wiid_item_digest`)) FROM `whedcapp`.`whedcapp_installation_item_digest`") { obj ->
+                logger.debug(obj[0]);
+                logger.info(obj[0].getClass().getName());
+                //writer.writeLine(obj[0].toString());
+                uploadDatabaseResultFile << obj[0];
+            }
+            uploadDatabaseResultOutputStream.close();
+            
+        } catch (SQLException sqex) {
             throw new StopExecutionException("Something is wrong with SQL Statement: "+sqex);             
-         } catch (Exception ex) {
+        } catch (Exception ex) {
             throw new StopExecutionException("Something is wrong, but not with the SQL Statement: "+ex);             
-         }
-     }
+        }
+    }
 }
 task clean() {
      doFirst {

@@ -1,20 +1,20 @@
 /*
-  This file is part of Whedcapp - Well-being Health Environment Data Collection App - to collect self-evaluated data for research purpose
-  Copyright (C) 2020-2021  Jonas Mellin, Catharina Gillsjö
+ This file is part of Whedcapp - Well-being Health Environment Data Collection App - to collect self-evaluated data for research purpose
+ Copyright (C) 2020-2021  Jonas Mellin, Catharina Gillsjö
 
-  Whedcapp is free software: you can redistribute it and/or modify
-  it under the terms of the GNU General Public License as published by
-  the Free Software Foundation, either version 3 of the License, or
-  (at your option) any later version.
+ Whedcapp is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
 
-  Whedcapp is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU General Public License for more details.
+ Whedcapp is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
 
-  You should have received a copy of the GNU General Public License
-  along with Whedcapp.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ You should have received a copy of the GNU General Public License
+ along with Whedcapp.  If not, see <https://www.gnu.org/licenses/>.
+ */
 
 
 buildscript{
@@ -28,57 +28,57 @@ buildscript{
 }
 
 allprojects {
-  version = '0.1.0'
+    version = '0.1.0'
 
-  // check properties and set them to default values unless they are set
-  
-  if (!ext.has('buildType')) {
-     ext.buildType = 'Debug'
-  }
-  assert ext.buildType == 'Debug' || ext.buildType == 'Release'
+    // check properties and set them to default values unless they are set
+    
+    if (!ext.has('buildType')) {
+        ext.buildType = 'Debug'
+    }
+    assert ext.buildType == 'Debug' || ext.buildType == 'Release'
 
-  if (!ext.has('traceParser')) {
-     ext.traceParser = 'No'
-  }
-  assert ext.traceParser == 'Yes' || ext.traceParser == 'No'
-  
-  if (!ext.has('crudGenToolName')) {
-     ext.crudGenToolName = 'crud_gen_tool'
-  }
-  assert ext.crudGenToolName != ''
-  if (!ext.has('dbDefName')) {
-     ext.dbDefName = 'dbDef.sql'
-  }
-  assert ext.dbDefName != ''
-  if (!ext.has('dbCrudCfgName')) {
-     ext.dbCrudCfgName = 'dbCrudCfg.cs'
-  }
-  assert ext.dbCrudCfgName != ''
-  if (!ext.has('dbCrudSqlSrcName')) {
-     ext.dbCrudSqlSrcName = 'dbCrud.sql'
-  }
-  assert ext.dbCrudSqlSrcName != ''
-  if (!ext.has('dbCrudDartSrcName')) {
-     ext.dbCrudDartSrcName = 'dbCrud.dart'
-  }
-  assert ext.dbCrudDartSrcName != ''
-  ext.whedcappAdministratorUid = ''
-  if (!ext.has('dbBaseStoredProceduresName')) {
-     ext.dbBaseStoredProceduresName = 'dbBaseStoredProcedures.sql'
-  }
-  if (!ext.has('dbSetupStrategy')) {
-      ext.dbSetupStrategy = 'initialize';
-  }
-  assert ext.dbSetupStrategy == 'initialize' || ext.dbSetupStrategy == 'migrate';
+    if (!ext.has('traceParser')) {
+        ext.traceParser = 'No'
+    }
+    assert ext.traceParser == 'Yes' || ext.traceParser == 'No'
+    
+    if (!ext.has('crudGenToolName')) {
+        ext.crudGenToolName = 'crud_gen_tool'
+    }
+    assert ext.crudGenToolName != ''
+    if (!ext.has('dbDefName')) {
+        ext.dbDefName = 'dbDef.sql'
+    }
+    assert ext.dbDefName != ''
+    if (!ext.has('dbCrudCfgName')) {
+        ext.dbCrudCfgName = 'dbCrudCfg.cs'
+    }
+    assert ext.dbCrudCfgName != ''
+    if (!ext.has('dbCrudSqlSrcName')) {
+        ext.dbCrudSqlSrcName = 'dbCrud.sql'
+    }
+    assert ext.dbCrudSqlSrcName != ''
+    if (!ext.has('dbCrudDartSrcName')) {
+        ext.dbCrudDartSrcName = 'dbCrud.dart'
+    }
+    assert ext.dbCrudDartSrcName != ''
+    ext.whedcappAdministratorUid = ''
+    if (!ext.has('dbBaseStoredProceduresName')) {
+        ext.dbBaseStoredProceduresName = 'dbBaseStoredProcedures.sql'
+    }
+    if (!ext.has('dbSetupStrategy')) {
+        ext.dbSetupStrategy = 'initialize';
+    }
+    assert ext.dbSetupStrategy == 'initialize' || ext.dbSetupStrategy == 'migrate';
 
 
-  // import common functionality to all projects
-  
-  apply from: "${rootDir}/common_build_functions/common_build_functions.gradle"
+    // import common functionality to all projects
+    
+    apply from: "${rootDir}/common_build_functions/common_build_functions.gradle"
 }
 
 if (ext.buildType == 'Debug') {
-  defaultTasks 'CrudGeneration','CMakeDebugBuild'
+    defaultTasks 'CrudGeneration','CMakeDebugBuild'
 } else {
-  defaultTasks 'CrudGeneration','CMakeReleaseBuild'
+    defaultTasks 'CrudGeneration','CMakeReleaseBuild'
 }
