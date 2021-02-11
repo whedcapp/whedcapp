@@ -27,9 +27,11 @@ buildscript{
 }
 
 
+import groovy.json.JsonOutput;
 import groovy.transform.AutoClone;
-import groovy.swing.SwingBuilder
-import org.apache.tools.ant.filters.*
+import groovy.swing.SwingBuilder;
+import org.apache.tools.ant.filters.*;
+import java.io.File;
 import java.sql.SQLException
 import java.util.Optional
 import java.util.regex.*
@@ -317,7 +319,7 @@ logger.debug("dbCfgSrcFiles = "+dbCfgSrcFiles.join(", "))
 def dbSrcFiles = ["**/*.cs", "**/*.sql"].inject([]) {acc,val -> acc+project.fileTree(dir: "${projectDir}/src", include: val)}
 logger.debug("dbSrcFiles = "+dbSrcFiles.join(", "))
 def dbUploadFiles = [ dbDefPath(), dbBaseStoredProceduresPath(), dbCrudSqlSrcPath() ]
-def dbUploadProgressPath = "${rootProject}/"+project(":database").name+"/dbUploadProgress.json"
+def dbUploadProgressPath = "${rootProject.buildDir}/"+project(":database").name+"/dbUploadProgress.json"
 def dbUploadOutputFiles = [ dbUploadProgressPath ]
 
 def crudGenerationCfgPrepInputFiles = dbCfgSrcFiles
@@ -554,10 +556,18 @@ task UploadToDatabase() {
                      stmt.execute "SELECT `whedcapp`.`insert_whedcapp_installation_item_digest`(${sqlCmd.getId()},${sqlCmd.getType()},${checksum(sqlCmd.getStatement())})";
                  }
              }
+             def uploadDatabaseResultOutputStream = File(dbUploadProgressPath).newOutputStream();
+             def writer = uploadDatabaseResultOutputStream.newPrintWriter();
+             stmt.eachRow("SELECT JSON_ARRAYAGG(JSON_OBJECT('identifier',`wiid_item_identifier`,'type',`wiid_item_type`,'type_instance',`wiid_item_type_instance`,'digest',`wiid_item_digest`)) FROM `whedcapp`.`whedcapp_installation_item_digest`") { obj ->
+                 logger.debug(obj[0]);
+                 writer.writeLine(obj[0]);
+             }
+             uploadDatabaseResultOutputStream.close();
+             
          } catch (SQLException sqex) {
             throw new StopExecutionException("Something is wrong with SQL Statement: "+sqex);             
          } catch (Exception ex) {
-            throw new StopExecutionException("Something is wrong, but not with the SQL Statement: "+sqex);             
+            throw new StopExecutionException("Something is wrong, but not with the SQL Statement: "+ex);             
          }
      }
 }
