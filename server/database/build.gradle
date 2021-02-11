@@ -464,11 +464,67 @@ task CreateWhedcappDatabaseAccessUser() {
                     id_whedcapp_installation_item_digest INTEGER NOT NULL AUTO_INCREMENT,
                     wiid_item_identifier VARCHAR(256) NOT NULL,
                     wiid_item_type VARCHAR(16) NOT NULL,
+                    wiid_item_type_instance INTEGER NOT NULL,
                     wiid_item_digest VARCHAR(64) NOT NULL,
                     PRIMARY KEY(`id_whedcapp_installation_item_digest`),
-                    UNIQUE INDEX `wiid_unique_idx`(`wiid_item_identifier`,`wiid_item_type`)
+                    UNIQUE INDEX `wiid_unique_idx`(`wiid_item_identifier`,`wiid_item_type`,`wiid_item_type_instance`)
                 )
             """
+            stmt.execute """
+                    CREATE TRIGGER `whedcapp`.`whedcapp_installation_item_digest_insert_check`
+                        BEFORE INSERT
+                        ON `whedcapp`.`whedcapp_installation_item_digest` FOR EACH ROW
+                    BEGIN
+                        DECLARE no_of_types INTEGER;
+                        SELECT COUNT(*) INTO no_of_types 
+                            FROM `whedcapp`.`whedcapp_installation_item_digest`
+                            WHERE 
+                                    `wiid_item_identifier` = NEW.wiid_item_identifier 
+                                AND
+                                    `wiid_item_type` = NEW.wiid_item_type
+                                AND
+                                    (
+                                            (    
+                                                    `wiid_item_type` = "INSERT"
+                                                AND
+                                                    `wiid_item_type_instance` = NEW.wiid_item_type_instance
+                                            )
+                                        OR
+                                            (
+                                                `wiid_item_type` <> "INSERT"
+                                            )
+                                    );
+                                        
+                        IF no_of_types > 0 THEN
+                            IF NEW.wiid_item_type = "CREATE" THEN
+                                SIGNAL SQLSTATE  '65535'
+                                    SET MESSAGE_TEXT = 'Cannot insert more than one creation of the same identifier';
+                            ELSEIF NEW.wiid_item_type = "INSERT" THEN
+                                SIGNAL SQLSTATE  '65535'
+                                    SET MESSAGE_TEXT = 'Cannot insert more than one insertion with the same type instance of the same identifier';
+                            END IF;
+                        END IF;
+                    END
+                    """
+            stmt.execute """
+                    CREATE FUNCTION `whedcapp`.`insert_whedcapp_installation_item_digest` (identifier VARCHAR(256), type VARCHAR(16), digest VARCHAR(64)) 
+                    RETURNS INTEGER DETERMINISTIC
+                    BEGIN
+                        DECLARE last_id INTEGER;
+                        INSERT INTO `whedcapp`.`whedcapp_installation_item_digest`(wiid_item_identifier, wiid_item_type,wiid_item_type_instance, wiid_item_digest)
+                            SELECT identifier, type, COUNT(wiid_item_type_instance), digest
+                                FROM `whedcapp`.`whedcapp_installation_item_digest`
+                                WHERE 
+                                        `wiid_item_identifier` = identifier 
+                                    AND
+                                        `wiid_item_type` = type;
+                        IF ROW_COUNT() < 1 THEN
+                            SIGNAL SQLSTATE '65534'
+                                SET MESSAGE_TEXT = 'Weird, could not insert row into `whedcapp_installation_item_digest`';
+                        END IF;
+                        RETURN last_insert_id();
+                    END;
+                    """
         } catch (SQLException sqex) {
             throw new StopExecutionException("Could not create default whedcapp user \""+getMysqlWhedcappUserId()+"\""+sqex);
         } finally {
@@ -495,8 +551,7 @@ task UploadToDatabase() {
                  logger.info("SQL Start\n"+sqlCmd+"\nSQL End\n");
                  if (sqlCmd.getType() != "DELIMITER") {
                      stmt.execute sqlCmd.getStatement();
-                     //                     if (sqlCmd.getType() == "CREATE") {
-                     //                         stmt.execute "INSERT INTO `whedcapp`.`whedcapp_installation_item_digest` (wiid_item_identifier, wiid_item_type, wiid_item_digest) SELECT ${sqlCmd.getId()}, ${sqlCmd.getType()},
+                     stmt.execute "SELECT `whedcapp`.`insert_whedcapp_installation_item_digest`(${sqlCmd.getId()},${sqlCmd.getType()},${checksum(sqlCmd.getStatement())})";
                  }
              }
          } catch (SQLException sqex) {
