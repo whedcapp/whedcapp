@@ -13,7 +13,7 @@
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    along with Foobar.  If not, see <https://www.gnu.org/licenses/>.
+    along with Whedcapp.  If not, see <https://www.gnu.org/licenses/>.
 */
 #include <fstream>
 #include <iomanip>
@@ -337,6 +337,7 @@ namespace PartSqlCrudGen {
     if (!outputFile.is_open()) {
       throw std::logic_error("Output file is not opened");
     }
+    outputFile << "DELIMITER $$" << std::endl;
     for (auto tableMetaData : *shPtr2Driver->shPtr2VecOfShPtr2Table) {
       for (auto op: DatabaseOperation::allType) {
         for (auto at: Access::allType) {
@@ -350,10 +351,12 @@ namespace PartSqlCrudGen {
             outputFile << "END;" << std::endl;
             // check context parameters
           }
-          outputFile << std::endl;
+          outputFile << std::endl << "$$" << std::endl;
         }
       }
     }
+    outputFile << "DELIMITER ;" << std::endl;
+
 
     outputFile.close();
   }

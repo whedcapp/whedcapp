@@ -396,27 +396,35 @@ task CrudGeneration(type:Exec) {
     }
 }
 task OpenDatabaseAsRoot() {
-   dependsOn 'CrudGeneration'
-   doFirst {
-       try {
-           def mysql = buildscript.configurations.classpath.find { it.toString().contains("mysql-connector-java") }
-           URLClassLoader loader = GroovyObject.class.classLoader
-           loader.addURL(file(mysql).toURL())
-
-           def db = [url: "jdbc:mysql://127.0.0.1/",
-                  user: getMysqlRootUserId(), password: getMysqlRootPassword(), driver: 'com.mysql.jdbc.Driver']
-           logger.info("Password inside open database as root: "+getMysqlRootPassword()+", inside db.password = "+db.password)
-           //project.ext.mysqlRootConnection = groovy.sql.Sql.newInstance(db.url, db.user, db.password, db.driver)
-           project.ext.mysqlRootConnection = groovy.sql.Sql.newInstance(db.url, db.user, getMysqlRootPassword(), db.driver)
-           logger.info("Conn = "+project.ext.mysqlRootConnection)
-           logger.info("Conn2 = "+getMysqlRootConnection())
-       } catch (SQLException sqex) {
-           throw new StopExecutionException("Could not login as mysql administrator "+sqex.toString())
-       }
-   }
+    dependsOn 'CrudGeneration'
+    inputs.files(dbUploadFiles)
+    outputs.files(dbUploadOutputFiles)
+    group = 'Database'
+    description 'Opens MySQL Database as an administrator with grant options'
+    doFirst {
+        try {
+            def mysql = buildscript.configurations.classpath.find { it.toString().contains("mysql-connector-java") }
+            URLClassLoader loader = GroovyObject.class.classLoader
+            loader.addURL(file(mysql).toURL())
+            
+            def db = [url: "jdbc:mysql://127.0.0.1/",
+                      user: getMysqlRootUserId(), password: getMysqlRootPassword(), driver: 'com.mysql.jdbc.Driver']
+            logger.info("Password inside open database as root: "+getMysqlRootPassword()+", inside db.password = "+db.password)
+            //project.ext.mysqlRootConnection = groovy.sql.Sql.newInstance(db.url, db.user, db.password, db.driver)
+            project.ext.mysqlRootConnection = groovy.sql.Sql.newInstance(db.url, db.user, getMysqlRootPassword(), db.driver)
+            logger.info("Conn = "+project.ext.mysqlRootConnection)
+            logger.info("Conn2 = "+getMysqlRootConnection())
+        } catch (SQLException sqex) {
+            throw new StopExecutionException("Could not login as mysql administrator "+sqex.toString())
+        }
+    }
 }
 task DropAndRecreateDatabaseIfNecessary() {
     dependsOn 'OpenDatabaseAsRoot'
+    inputs.files(dbUploadFiles)
+    outputs.files(dbUploadOutputFiles)
+    group = 'Database'
+    description 'If database setup strategy is initialize, then drop and recreate whedcapp database. Use whedcapp database'
     doFirst {
         try {
             def stmt = getMysqlRootConnection()
@@ -434,6 +442,10 @@ task DropAndRecreateDatabaseIfNecessary() {
 task CreateWhedcappDatabaseAccessUser() {
     dependsOn 'OpenDatabaseAsRoot'
     dependsOn 'DropAndRecreateDatabaseIfNecessary'
+    inputs.files(dbUploadFiles)
+    outputs.files(dbUploadOutputFiles)
+    group = 'Database'
+    description 'Create whedcapp database access user as well as tables/triggers/procedures for keeping track of what has been uploaded'
     doFirst {
         def stmt = getMysqlRootConnection()
         try {
@@ -543,19 +555,29 @@ task UploadToDatabase() {
     description = "Uploads database scheme."
     doFirst {
         //def result = dbUploadFiles.length.times { -> new ByteArrayOutputStream() }
-        File file = new File(dbDefPath());
-        def txt = removeComments(file.text)
-        def ssi = new SqlScriptIterator(logger,txt);
         def stmt = getMysqlRootConnection();
-        try {
-            while (ssi.hasNext()) {
-                ExtractedSqlStatement sqlCmd = ssi.next();
-                logger.info("SQL Start\n"+sqlCmd+"\nSQL End\n");
-                if (sqlCmd.getType() != "DELIMITER") {
-                    stmt.execute sqlCmd.getStatement();
-                    stmt.execute "SELECT `whedcapp`.`insert_whedcapp_installation_item_digest`(${sqlCmd.getId()},${sqlCmd.getType()},${checksum(sqlCmd.getStatement())})";
+        dbUploadFiles.each { path ->
+            logger.info("Processing \""+path+"\"");
+            File file = new File(path);
+            def txt = removeComments(file.text)
+            def ssi = new SqlScriptIterator(logger,txt);
+            try {
+                while (ssi.hasNext()) {
+                    ExtractedSqlStatement sqlCmd = ssi.next();
+                    logger.info("SQL Start\n"+sqlCmd+"\nSQL End\n");
+                    if (sqlCmd.getType() != "DELIMITER") {
+                        stmt.execute sqlCmd.getStatement();
+                        stmt.execute "SELECT `whedcapp`.`insert_whedcapp_installation_item_digest`(${sqlCmd.getId()},${sqlCmd.getType()},${checksum(sqlCmd.getStatement())})";
+                    }
                 }
+            
+            } catch (SQLException sqex) {
+                throw new StopExecutionException("Something is wrong with SQL Statement: "+sqex);             
+            } catch (Exception ex) {
+                throw new StopExecutionException("Something is wrong, but not with the SQL Statement: "+ex);             
             }
+        }
+        try {
             def uploadDatabaseResultFile = new File(dbUploadProgressPath);
             def uploadDatabaseResultOutputStream = uploadDatabaseResultFile.newOutputStream();
             def writer = uploadDatabaseResultOutputStream.newPrintWriter();
@@ -566,12 +588,13 @@ task UploadToDatabase() {
                 uploadDatabaseResultFile << obj[0];
             }
             uploadDatabaseResultOutputStream.close();
-            
         } catch (SQLException sqex) {
             throw new StopExecutionException("Something is wrong with SQL Statement: "+sqex);             
         } catch (Exception ex) {
             throw new StopExecutionException("Something is wrong, but not with the SQL Statement: "+ex);             
         }
+
+            
     }
 }
 task clean() {
