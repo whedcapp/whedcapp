@@ -128,10 +128,36 @@ namespace PartSqlCrudGen {
       const auto& tc = ts.getTabCfgTemplate(op);
       const auto& tmplName = tc.getName();
       const auto& cp = options.getConfiguration().getContextParameter(OutputLanguage::Type::Sql, accessType, tmplName);
-      str << cp.getString();
+      VecOfShPtr2Table& vecOfShPtr2Table = *shPtr2Driver->shPtr2VecOfShPtr2Table;
+
+      bool notFirstContextParameter = false;
+      for (const auto& par2ref: cp.getVecOfPar2Ref()) {
+        if (notFirstContextParameter) {
+          str << ", ";
+        }
+        str << par2ref.first << "_par" << " "; // the name of the parameter
+        VecOfShPtr2Table::iterator votit = std::find_if(vecOfShPtr2Table.begin(),
+                                                        vecOfShPtr2Table.end(),
+                                                        [par2ref](ShPtr2Table shPtr2Table){ return shPtr2Table->getIdentity() == par2ref.second.getTableIdentity(); });
+        if (votit == vecOfShPtr2Table.end()) {
+          std::ostringstream msg;
+          msg << "Table definition \"" << par2ref.second.getTableIdentity() << "\" is missing, either the context parameter reference is incorrect or the table definition is missing";
+          throw std::logic_error(msg.str());
+        }
+        try {
+          auto col = (*votit)->getShPtr2Columns()->getShPtr2Column(par2ref.second.getColumnIdentity());
+          auto& type = col->getType();
+          str << type;
+        } catch (const std::out_of_range& oor) {
+          std::ostringstream msg;
+          msg << "No such column \"" << par2ref.second.getColumnIdentity() <<"\"";
+          throw std::logic_error(msg.str());
+        }
+        
+        notFirstContextParameter = true;
+      }
 
       // get the parameters for the table and use them as parameters
-      VecOfShPtr2Table& vecOfShPtr2Table = *shPtr2Driver->shPtr2VecOfShPtr2Table;
       VecOfShPtr2Table::iterator votit = std::find_if(vecOfShPtr2Table.begin(),
                                                       vecOfShPtr2Table.end(),
                                                       [tableMetaData](ShPtr2Table shPtr2Table){ return shPtr2Table->getIdentity() == tableMetaData->getIdentity(); });

@@ -1,3 +1,4 @@
+
 def crudGenToolPath() {
     return "${rootProject.buildDir}/"+project(':crud_gen_tool').name+"/${ext.crudGenToolName}"
 }
@@ -31,48 +32,50 @@ static String checksum( String input ) {
 
 def removeComments(String fileContent) {
     def state = 'outside'
-    def result = ''
+    def result = new StringWriter(fileContent.size())
     for (int i = 0; i < fileContent.size(); ++i) {
         def c = fileContent.getAt(i)
         switch(state) {
-        case 'outside':
-            if (c == '/') {
-                state = 'slash'
-            } else {
-                result += c
-            }
-            break;
-        case 'slash':
-            if (c == '/') {
-                state = 'skip'
-            } else if (c == '*') {
-                state = 'inside'
-            } else {
-                state = 'outside'
-                result += '/'+c
-            }
-            break;
-        case 'skip':
-            if (c == '\n') {
-                state = 'outside'
-                result += c
-            }
-        break;
-        case 'inside':
-            if (c == '*') {
-                state = 'star'
-            }                              
-            break;
-        case 'star':
-            if (c == '/') {
-                state = 'outside'
-            } else {
-                state = 'inside'
-            }
-            break;
+            case 'outside':
+                if (c == '/') {
+                    state = 'slash'
+                } else {
+                    result.write(c)
+                }
+                break;
+            case 'slash':
+                if (c == '/') {
+                    state = 'skip'
+                } else if (c == '*') {
+                    state = 'inside'
+                } else {
+                    state = 'outside'
+                    result.write('/'+c)
+                }
+                break;
+            case 'skip':
+                if (c == '\n') {
+                    state = 'outside'
+                    result.write(c)
+                } 
+                break;
+            case 'inside':
+                if (c == '*') {
+                    state = 'star'
+                } else if (c == '\n' || c == '\r') {
+                    result.write(c)
+                } 
+                break;
+            case 'star':
+                if (c == '/') {
+                    state = 'outside'
+                } else {
+                    state = 'inside'
+                }
+                break;
         }
     }
-    return result
+    return result.toString()
 }
 
 def quotifySqlUserId(String sqlUid) {

@@ -319,8 +319,10 @@ logger.debug("dbCfgSrcFiles = "+dbCfgSrcFiles.join(", "))
 def dbSrcFiles = ["**/*.cs", "**/*.sql"].inject([]) {acc,val -> acc+project.fileTree(dir: "${projectDir}/src", include: val)}
 logger.debug("dbSrcFiles = "+dbSrcFiles.join(", "))
 def dbUploadFiles = [ dbDefPath(), dbBaseStoredProceduresPath(), dbCrudSqlSrcPath() ]
+logger.info("dbUploadFiles = "+dbUploadFiles)
 def dbUploadProgressPath = "${rootProject.buildDir}/"+project(":database").name+"/dbUploadProgress.json"
 def dbUploadOutputFiles = [ dbUploadProgressPath ]
+logger.info("dbUploadOutputFiles = "+dbUploadOutputFiles)
 
 def crudGenerationCfgPrepInputFiles = dbCfgSrcFiles
 def crudGenerationPrepInputFiles = dbSrcFiles

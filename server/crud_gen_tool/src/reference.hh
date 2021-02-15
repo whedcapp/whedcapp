@@ -13,11 +13,14 @@
   GNU General Public License for more details.
 
   You should have received a copy of the GNU General Public License
-  along with Foobar.  If not, see <https://www.gnu.org/licenses/>.
+  along with Whedcapp.  If not, see <https://www.gnu.org/licenses/>.
 */
 #ifndef REFERENCE_HH
 #define REFERENCE_HH
+
 #include <memory>
+#include "identity.hh"
+
 namespace PartSqlCrudGen {
   class Reference {
   private:

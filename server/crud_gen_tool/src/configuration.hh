@@ -13,7 +13,7 @@
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    along with Foobar.  If not, see <https://www.gnu.org/licenses/>.
+    along with Whedcapp.  If not, see <https://www.gnu.org/licenses/>.
 */
 #ifndef CONFIGURATION_HH
 #define CONFIGURATION_HH
@@ -26,9 +26,11 @@
 #include <set>
 #include <stdexcept>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "common.hh"
+#include "reference.hh"
 #include "json.hpp"
 
 namespace PartSqlCrudGen {
@@ -169,20 +171,48 @@ namespace PartSqlCrudGen {
 
   
   class ContextParameter: public ConfigurationItem {
-    std::string contextParameter;
+    std::vector<std::pair<std::string,Reference>> vecOfPar2Ref;
+    nlohmann::json contextParameter;
   public:
-    ContextParameter(IConfiguration& iConfiguration,const std::string contextParameter): ConfigurationItem(iConfiguration),contextParameter(contextParameter) {
-      std::regex expectedSyntax("^([[:space:]]*[a-zA-Z_][a-zA-Z0-9_]+[[:space:]]+VARCHAR[[:space:]]*\\([0-9]+\\)[[:space:]]*,)+$");
-      if (!std::regex_match(contextParameter,expectedSyntax)) {
-        throw std::logic_error("\""+contextParameter+"\" does not follow proper syntax");
+    ContextParameter(IConfiguration& iConfiguration,nlohmann::json& contextParameter): ConfigurationItem(iConfiguration),contextParameter(contextParameter) {
+      if (!contextParameter.is_array()) {
+        throw std::logic_error("Context parameters does not contain a sequence (array) of specifications");
+      }
+      for (const auto& par: contextParameter) {
+        if (!par.is_object()) {
+          throw std::logic_error("Context parameter does not contain a specification of  parameter");
+        }
+        int count = 0;
+        for (auto& [key,value]: par.items()) {
+          if (!value.is_object()) {
+            throw std::logic_error("Context parameter specification does not contain a proper reference");
+          }
+          if (!value.contains("table") || !value.contains("column")) {
+            throw std::logic_error("Context parameter specification, reference lacks either table or column in reference");
+          }
+          const Identity tid(value["table"]);
+          const Identity cid(value["column"]);
+          if (cid.isSplitIdentifier()) {
+            throw std::logic_error("Context parameter, column is a split identifier, disallowed for columns ");
+          }
+          const Reference reference(tid,cid);
+          vecOfPar2Ref.push_back(std::make_pair(key,reference));
+          ++count;
+        }
+        if (count>1) {
+          throw std::logic_error("Context parameter specification contains more than one identifier");
+        }
       }
     }
-    ContextParameter(IConfiguration& iConfiguration,const ContextParameter& contextParameter): ConfigurationItem(iConfiguration),contextParameter(contextParameter.contextParameter) {};
-    ContextParameter(IConfiguration& iConfiguration,const ContextParameter&& contextParameter): ConfigurationItem(iConfiguration),contextParameter(std::move(contextParameter.contextParameter)) {};
+    ContextParameter(IConfiguration& iConfiguration,const ContextParameter& contextParameter): ConfigurationItem(iConfiguration),contextParameter(contextParameter.contextParameter),vecOfPar2Ref(contextParameter.vecOfPar2Ref) {};
+    ContextParameter(IConfiguration& iConfiguration,const ContextParameter&& contextParameter): ConfigurationItem(iConfiguration),contextParameter(std::move(contextParameter.contextParameter)),vecOfPar2Ref(std::move(contextParameter.vecOfPar2Ref)) {};
 
-    const std::string& getString() const {
+    const nlohmann::json& getContextParameterAsJson() const {
       return contextParameter;
     };
+    const decltype(vecOfPar2Ref)& getVecOfPar2Ref() const {
+      return  vecOfPar2Ref;
+    }
   };
 
 
