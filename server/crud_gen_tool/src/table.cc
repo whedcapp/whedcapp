@@ -13,7 +13,7 @@
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    along with Foobar.  If not, see <https://www.gnu.org/licenses/>.
+    along with Whedcapp.  If not, see <https://www.gnu.org/licenses/>.
 */
 #include <typeinfo>
 #include "table.hh"
@@ -35,7 +35,6 @@ namespace PartSqlCrudGen {
       if (sp2tsi->isAdaptor()) {
         auto shPtr2Column = shPtr2Columns->getShPtr2Column(sp2tsi->getColumnIdentity());
         sp2tsi->adaptColumn(*shPtr2Column);
-        shPtr2Columns->getShPtr2Column(sp2tsi->getColumnIdentity())->setPrimaryKey(true);
       } 
     }
   }

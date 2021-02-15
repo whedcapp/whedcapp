@@ -19,6 +19,7 @@
 
 
 
+
 /* Create table locale that contains implemented ICU locale codes of the form cc_LL, where 'cc' stands for
    country and 'll' stands for locale. See https://www.localeplanet.com/icu/ for more information */
 
@@ -29,6 +30,7 @@ CREATE TABLE `whedcapp`.`locale` (
     UNIQUE INDEX `locale_idx_unique` (`icu_code`) VISIBLE,
     CONSTRAINT `locale_icu_code_is_not_empty` CHECK (`icu_code` <> "" AND CHAR_LENGTH(`icu_code`) = 5)
 );
+
 
 /* Insert supported locales */
 

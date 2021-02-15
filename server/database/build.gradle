@@ -327,7 +327,7 @@ def crudGenerationPrepInputFiles = dbSrcFiles
 def crudOutputFiles = [
     dbCrudSqlSrcPath()
 ]
-logger.debug("crudOutputFiles = "+crudOutputFiles.join(", "))
+logger.info("crudOutputFiles = "+crudOutputFiles.join(", "))
 
 def crudGenerationCfgPrepOutputFiles = [
     dbDefPath()
@@ -336,7 +336,7 @@ def crudGenerationCfgPrepOutputFiles = [
 def crudGenerationPrepOutputFiles = [
     dbCrudCfgPath()
 ]
-logger.debug("crudGenerationPrepOutputFiles = "+crudGenerationPrepOutputFiles.join(", "))
+logger.info("crudGenerationPrepOutputFiles = "+crudGenerationPrepOutputFiles.join(", "))
 def crudGenerationInputFiles = crudGenerationPrepOutputFiles + [ crudGenToolPath() ]
 
 def crudGenerationOutputFiles = [ dbCrudSqlSrcPath()]
@@ -559,8 +559,11 @@ task UploadToDatabase() {
         dbUploadFiles.each { path ->
             logger.info("Processing \""+path+"\"");
             File file = new File(path);
+            logger.info("Opened file \""+path+"\"");
             def txt = removeComments(file.text)
+            logger.info("Removed comments from copy of \""+path+"\"");
             def ssi = new SqlScriptIterator(logger,txt);
+            logger.info("Created SqlScriptIterator for copy of \""+path+"\"");
             try {
                 while (ssi.hasNext()) {
                     ExtractedSqlStatement sqlCmd = ssi.next();
@@ -582,7 +585,7 @@ task UploadToDatabase() {
             def uploadDatabaseResultOutputStream = uploadDatabaseResultFile.newOutputStream();
             def writer = uploadDatabaseResultOutputStream.newPrintWriter();
             stmt.eachRow("SELECT JSON_ARRAYAGG(JSON_OBJECT('identifier',`wiid_item_identifier`,'type',`wiid_item_type`,'type_instance',`wiid_item_type_instance`,'digest',`wiid_item_digest`)) FROM `whedcapp`.`whedcapp_installation_item_digest`") { obj ->
-                logger.debug(obj[0]);
+                logger.info(obj[0]);
                 logger.info(obj[0].getClass().getName());
                 //writer.writeLine(obj[0].toString());
                 uploadDatabaseResultFile << obj[0];

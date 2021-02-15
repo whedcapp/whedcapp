@@ -117,6 +117,10 @@ namespace PartSqlCrudGen {
       << "CREATE " << (op != DatabaseOperation::Type::dbInsert? "PROCEDURE ": "FUNCTION ")
       << tableMetaData->getIdentity().getBackquoted(suffix.str())
       << "(";
+    bool debug = tableMetaData->getIdentity().isSplitIdentifier() && tableMetaData->getIdentity().getSecondary() == "acl_level_locale";
+    if (debug) {
+      std::cerr << "Generating ACL_LEVEL_LOCALE" << std::endl;
+    }
 
     try {
       // get the context for the domain
@@ -252,11 +256,13 @@ namespace PartSqlCrudGen {
             str << " AND " << std::endl;
           }
           str << std::setw(options.outputCodeTabWidth*4) << " "  << "( " << std::endl;
-          str << std::setw(options.outputCodeTabWidth*5) << " " << "( " << c->getIdentity() << "_par is not null AND " << c->getIdentity() << "_par_cmp is not null" << std::endl;
+          str << std::setw(options.outputCodeTabWidth*5) << " " << "( " << c->getIdentity() << "_par is not null AND " << c->getIdentity() << "_par_cmp is not null";
           bool notFirst2 = false;
           for (const auto& ro: RelationalOperator::allRealOperatorType) {
             if (notFirst2) {
               str << " OR " << std::endl;
+            } else {
+              str << " AND " << std::endl;
             }
             str
               << std::setw(options.outputCodeTabWidth*6)
