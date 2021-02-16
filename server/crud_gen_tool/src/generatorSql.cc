@@ -79,32 +79,35 @@ namespace PartSqlCrudGen {
     }
     bool notFirst = false;
     for (const auto& c: *shPtr2Columns) {
-        if (notFirst) {
-          str << ", ";
+      if (false /*condition*/) {
+        continue;
+      }
+      if (notFirst) {
+        str << ", ";
+      }
+      if ((!c->isPrimaryKey() && generateKind != GenerateKind::onlyPrimaryKey) ||
+          (c->isPrimaryKey() && (generateKind == GenerateKind::onlyPrimaryKey || generateKind == GenerateKind::onlyColumnParametersIncludingId || generateKind == GenerateKind::columnParametersForSelect))) {
+        if (generateKind == GenerateKind::columnParametersForSelect) {
+          str << c->getIdentity().getBackquoted(suffix+"_cmp") << " VARCHAR(3), " << std::endl;
         }
-        if ((!c->isPrimaryKey() && generateKind != GenerateKind::onlyPrimaryKey) ||
-            (c->isPrimaryKey() && (generateKind == GenerateKind::onlyPrimaryKey || generateKind == GenerateKind::onlyColumnParametersIncludingId || generateKind == GenerateKind::columnParametersForSelect))) {
-          if (generateKind == GenerateKind::columnParametersForSelect) {
-            str << c->getIdentity().getBackquoted(suffix+"_cmp") << " VARCHAR(3), " << std::endl;
-          }
-          str << c->getIdentity().getBackquoted(suffix);
-          notFirst = true;
-          if (generateKind == GenerateKind::columnParametersWithTypeInformation ||
-              generateKind == GenerateKind::columnParametersForSelect || 
-              generateKind == GenerateKind::onlyPrimaryKey) {
-            str << " " << c -> getType();
-          } else if (generateKind == GenerateKind::columnParametersForUpdate) {
-            str << " = " << c->getIdentity().getBackquoted("_par");
-          }
-          if (c->isPrimaryKey() && generateKind == GenerateKind::onlyPrimaryKey) {
-            break;
-          }
-        } 
-        
+        str << c->getIdentity().getBackquoted(suffix);
+        notFirst = true;
+        if (generateKind == GenerateKind::columnParametersWithTypeInformation ||
+            generateKind == GenerateKind::columnParametersForSelect || 
+            generateKind == GenerateKind::onlyPrimaryKey) {
+          str << " " << c -> getType();
+        } else if (generateKind == GenerateKind::columnParametersForUpdate) {
+          str << " = " << c->getIdentity().getBackquoted("_par");
+        }
+        if (c->isPrimaryKey() && generateKind == GenerateKind::onlyPrimaryKey) {
+          break;
+        }
+      } 
+      
     }
     return str;
   }
-
+  
   std::ostream& GeneratorSql::generateCreateProcedureOrFunction(std::ostream& str,
                                                                 const Options& options,
                                                                 const std::shared_ptr<Driver>& shPtr2Driver,
@@ -130,6 +133,7 @@ namespace PartSqlCrudGen {
       const auto& cp = options.getConfiguration().getContextParameter(OutputLanguage::Type::Sql, accessType, tmplName);
       VecOfShPtr2Table& vecOfShPtr2Table = *shPtr2Driver->shPtr2VecOfShPtr2Table;
 
+      /* Iterate over context parameters. TODO: Move to separate private method */
       bool notFirstContextParameter = false;
       for (const auto& par2ref: cp.getVecOfPar2Ref()) {
         if (notFirstContextParameter) {
@@ -155,6 +159,11 @@ namespace PartSqlCrudGen {
         }
         
         notFirstContextParameter = true;
+      }
+      // If there are context parameters, then notFirstContextParameter is true and a comma should
+      // be added prior to the rest of the parameters. Note, there must be other parameters.
+      if (notFirstContextParameter) {
+        str << ", ";
       }
 
       // get the parameters for the table and use them as parameters
@@ -298,7 +307,7 @@ namespace PartSqlCrudGen {
               << "_par_cmp = \""
               << RelationalOperator::getStringFromType(OutputLanguage::Type::Sql,ro)
               << "\" AND "
-              << c->getIdentity()
+              << c->getIdentity().getBackquoted()
               << RelationalOperator::getStringFromType(OutputLanguage::Type::Sql,ro)
               << c->getIdentity() << "_par)";
             notFirst2 = true;

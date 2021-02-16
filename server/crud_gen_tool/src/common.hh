@@ -17,7 +17,9 @@
 */
 #ifndef COMMON_H
 #define COMMON_H
+#include <sstream>
 #include <string>
+#include <vector>
 namespace PartSqlCrudGen {
   std::string toupper(const std::string& value);
   struct CaselessLessThan {
@@ -25,6 +27,7 @@ namespace PartSqlCrudGen {
       return toupper(lhs)<toupper(rhs);
     }
   };
+  const std::vector<std::string> tokenize(const std::string& value, char delimiter);
 
 }
 #endif

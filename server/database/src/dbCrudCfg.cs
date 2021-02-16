@@ -99,7 +99,7 @@
                         
                     }
                 ], 
-                "$ADMIN$_LIMITED_SELECT$": [
+                "$ADMIN_LIMITED_SELECT$": [
                     {
                         "calling_uid_key_par": {
                             "table": "whedcapp.uid",
@@ -289,7 +289,7 @@
                         
                     }
                 ], 
-                "$ADMIN$_LIMITED_SELECT$": [
+                "$ADMIN_LIMITED_SELECT$": [
                     {
                         "calling_uid_key_par": {
                             "table": "whedcapp.uid",
@@ -786,7 +786,7 @@
                 "hasKeyAttribute": false
             }
             ,
-            "LOCALE":
+            "LOCALE": 
             {
                 "insert":
                 {"link": "$SELECT_ONLY$"},

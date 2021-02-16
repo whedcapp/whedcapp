@@ -26,4 +26,13 @@ namespace PartSqlCrudGen {
     }
     return tmp;
   }
+  const std::vector<std::string> tokenize(const std::string& value, char delimiter) {
+    std::istringstream iss(value);
+    std::vector<std::string> result;
+    std::string token;
+    while (std::getline(iss,token,delimiter)) {
+      result.push_back(token);
+    }
+    return result;
+  }
 }

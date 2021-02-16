@@ -28,17 +28,45 @@ namespace PartSqlCrudGen {
   class Identity {
   private:
     std::vector<std::string> identity;
+    void checkIdentity() {
+      if (getLength()>2) {
+        std::ostringstream msg;
+        msg << "Identity cannot be more than two levels, \"";
+        bool notFirst = false;
+        for (const auto& str: identity) {
+          if (notFirst) {
+            msg << ".";
+          }
+          msg << str;
+        }
+        msg << "\" has " << getLength() << " levels.";
+        throw std::logic_error(msg.str());
+      }
+      for (const auto& str: identity) {
+        if (str.find('.') != std::string::npos) {
+          std::ostringstream msg;
+          msg << "Identity (part) \"" << str << "\" contains a period.";
+          throw std::logic_error(msg.str());
+        }
+      }
+    }
+     
   public:
     Identity() {}
     Identity(const std::string &id) {
       identity.push_back(id);
+      checkIdentity();
     }
     Identity(const std::string &primId, const std::string &secId) {
       identity.push_back(primId);
       identity.push_back(secId);
+      checkIdentity();
     }
     Identity(const Identity& primId, const Identity& secId);
     Identity(const Identity& id): identity(id.identity) {}
+    Identity(const std::vector<std::string>& idVec): identity(idVec) {
+      checkIdentity();
+    }
     //Identity(const Identity&& id): identity(id.identity) {}
     inline const int getLength() const {
       return identity.size();

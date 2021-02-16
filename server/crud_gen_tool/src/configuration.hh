@@ -190,8 +190,8 @@ namespace PartSqlCrudGen {
           if (!value.contains("table") || !value.contains("column")) {
             throw std::logic_error("Context parameter specification, reference lacks either table or column in reference");
           }
-          const Identity tid(value["table"]);
-          const Identity cid(value["column"]);
+          const Identity tid(tokenize(value["table"],'.'));
+          const Identity cid(tokenize(value["column"],'.'));
           if (cid.isSplitIdentifier()) {
             throw std::logic_error("Context parameter, column is a split identifier, disallowed for columns ");
           }
