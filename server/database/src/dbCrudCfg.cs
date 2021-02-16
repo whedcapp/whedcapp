@@ -12,7 +12,7 @@
             "writeSelf": {
                 "$ADMIN$": [
                     {
-                        "calling_uid_key_par": {
+                        "calling_uid_key": {
                             "table": "whedcapp.uid",
                             "column": "uid_text"
                         }
@@ -20,7 +20,7 @@
                 ],
                 "$ADMIN_LIMITED_SELECT$": [
                     {
-                        "calling_uid_key_par": {
+                        "calling_uid_key": {
                             "table": "whedcapp.uid",
                             "column": "uid_text"
                         }
@@ -28,7 +28,7 @@
                 ],
                 "$SELECT_ONLY$": [
                     {
-                        "calling_uid_key_par": {
+                        "calling_uid_key": {
                             "table": "whedcapp.uid",
                             "column": "uid_text"
                         }
@@ -36,13 +36,13 @@
                 ],
                 "$PROJECT$": [
                     {
-                        "calling_uid_key_par": {
+                        "calling_uid_key": {
                             "table": "whedcapp.uid",
                             "column": "uid_text"
                         }
                     },
                     {
-                        "proj_key_par": {
+                        "proj_key": {
                             "table": "whedcapp.project",
                             "column": "proj_key"
                         }
@@ -50,19 +50,19 @@
                 ], 
                 "$ANSWER$":  [
                     {
-                        "calling_uid_key_par": {
+                        "calling_uid_key": {
                             "table": "whedcapp.uid",
                             "column": "uid_text"
                         }
                     },
                     {
-                        "proj_key_par": {
+                        "proj_key": {
                             "table": "whedcapp.project",
                             "column": "proj_key"
                         }
                     },
                     {
-                        "proj_round_key_par": {
+                        "proj_round_key": {
                             "table": "whedcapp.project_round",
                             "column": "proj_round_key"
                         }
@@ -70,13 +70,13 @@
                 ], 
                 "$QUESTIONNAIRE$":  [
                     {
-                        "calling_uid_key_par": {
+                        "calling_uid_key": {
                             "table": "whedcapp.uid",
                             "column": "uid_text"
                         }
                     },
                     {
-                        "questionnaire_key_par": {
+                        "questionnaire_key": {
                             "table": "whedcapp.questionnaire",
                             "column": "questionnaire_key"
                         }
@@ -86,13 +86,13 @@
             "writeOther": {
                 "$ADMIN$": [
                     {
-                        "calling_uid_key_par": {
+                        "calling_uid_key": {
                             "table": "whedcapp.uid",
                             "column": "uid_text"
                         }
                     },
                     {
-                        "other_uid_key_par": {
+                        "other_uid_key": {
                             "table": "whedcapp.uid",
                             "column": "uid_text"
                         }
@@ -101,13 +101,13 @@
                 ], 
                 "$ADMIN_LIMITED_SELECT$": [
                     {
-                        "calling_uid_key_par": {
+                        "calling_uid_key": {
                             "table": "whedcapp.uid",
                             "column": "uid_text"
                         }
                     },
                     {
-                        "other_uid_key_par": {
+                        "other_uid_key": {
                             "table": "whedcapp.uid",
                             "column": "uid_text"
                         }
@@ -116,13 +116,13 @@
                 ], 
                 "$SELECT_ONLY$":  [
                     {
-                        "calling_uid_key_par": {
+                        "calling_uid_key": {
                             "table": "whedcapp.uid",
                             "column": "uid_text"
                         }
                     },
                     {
-                        "other_uid_key_par": {
+                        "other_uid_key": {
                             "table": "whedcapp.uid",
                             "column": "uid_text"
                         }
@@ -131,19 +131,19 @@
                 ], 
                 "$PROJECT$":  [
                     {
-                        "calling_uid_key_par": {
+                        "calling_uid_key": {
                             "table": "whedcapp.uid",
                             "column": "uid_text"
                         }
                     },
                     {
-                        "proj_key_par": {
+                        "proj_key": {
                             "table": "whedcapp.project",
                             "column": "proj_key"
                         }
                     },
                     {
-                        "other_uid_key_par": {
+                        "other_uid_key": {
                             "table": "whedcapp.uid",
                             "column": "uid_text"
                         }
@@ -152,25 +152,25 @@
                 ], 
                 "$ANSWER$":  [
                     {
-                        "calling_uid_key_par": {
+                        "calling_uid_key": {
                             "table": "whedcapp.uid",
                             "column": "uid_text"
                         }
                     },
                     {
-                        "proj_key_par": {
+                        "proj_key": {
                             "table": "whedcapp.project",
                             "column": "proj_key"
                         }
                     },
                     {
-                        "proj_round_key_par": {
+                        "proj_round_key": {
                             "table": "whedcapp.project_round",
                             "column": "proj_round_key"
                         }
                     },
                     {
-                        "other_uid_key_par": {
+                        "other_uid_key": {
                             "table": "whedcapp.uid",
                             "column": "uid_text"
                         }
@@ -178,20 +178,20 @@
                 ], 
                 "$QUESTIONNAIRE$":  [
                     {
-                        "calling_uid_key_par": {
+                        "calling_uid_key": {
                             "table": "whedcapp.uid",
                             "column": "uid_text"
                         }
                     },
                     {
                     
-                        "questionnaire_key_par": {
+                        "questionnaire_key": {
                             "table": "whedcapp.questionnaire",
                             "column": "questionnaire_key"
                         }
                     },
                     {
-                        "uid_respondee_key_par": {
+                        "uid_respondee_key": {
                             "table": "whedcapp.uid",
                             "column": "uid_text"
                         }
@@ -202,7 +202,7 @@
             "readSelf": {
                 "$ADMIN$": [
                     {
-                        "calling_uid_key_par": {
+                        "calling_uid_key": {
                             "table": "whedcapp.uid",
                             "column": "uid_text"
                         }
@@ -210,7 +210,7 @@
                 ],
                 "$ADMIN_LIMITED_SELECT$": [
                     {
-                        "calling_uid_key_par": {
+                        "calling_uid_key": {
                             "table": "whedcapp.uid",
                             "column": "uid_text"
                         }
@@ -218,7 +218,7 @@
                 ],
                 "$SELECT_ONLY$": [
                     {
-                        "calling_uid_key_par": {
+                        "calling_uid_key": {
                             "table": "whedcapp.uid",
                             "column": "uid_text"
                         }
@@ -226,13 +226,13 @@
                 ],
                 "$PROJECT$": [
                     {
-                        "calling_uid_key_par": {
+                        "calling_uid_key": {
                             "table": "whedcapp.uid",
                             "column": "uid_text"
                         }
                     },
                     {
-                        "proj_key_par": {
+                        "proj_key": {
                             "table": "whedcapp.project",
                             "column": "proj_key"
                         }
@@ -240,19 +240,19 @@
                 ], 
                 "$ANSWER$":  [
                     {
-                        "calling_uid_key_par": {
+                        "calling_uid_key": {
                             "table": "whedcapp.uid",
                             "column": "uid_text"
                         }
                     },
                     {
-                        "proj_key_par": {
+                        "proj_key": {
                             "table": "whedcapp.project",
                             "column": "proj_key"
                         }
                     },
                     {
-                        "proj_round_key_par": {
+                        "proj_round_key": {
                             "table": "whedcapp.project_round",
                             "column": "proj_round_key"
                         }
@@ -260,13 +260,13 @@
                 ], 
                 "$QUESTIONNAIRE$":  [
                     {
-                        "calling_uid_key_par": {
+                        "calling_uid_key": {
                             "table": "whedcapp.uid",
                             "column": "uid_text"
                         }
                     },
                     {
-                        "questionnaire_key_par": {
+                        "questionnaire_key": {
                             "table": "whedcapp.questionnaire",
                             "column": "questionnaire_key"
                         }
@@ -276,13 +276,13 @@
             "readOther": {
                 "$ADMIN$": [
                     {
-                        "calling_uid_key_par": {
+                        "calling_uid_key": {
                             "table": "whedcapp.uid",
                             "column": "uid_text"
                         }
                     },
                     {
-                        "other_uid_key_par": {
+                        "other_uid_key": {
                             "table": "whedcapp.uid",
                             "column": "uid_text"
                         }
@@ -291,13 +291,13 @@
                 ], 
                 "$ADMIN_LIMITED_SELECT$": [
                     {
-                        "calling_uid_key_par": {
+                        "calling_uid_key": {
                             "table": "whedcapp.uid",
                             "column": "uid_text"
                         }
                     },
                     {
-                        "other_uid_key_par": {
+                        "other_uid_key": {
                             "table": "whedcapp.uid",
                             "column": "uid_text"
                         }
@@ -306,13 +306,13 @@
                 ], 
                 "$SELECT_ONLY$":  [
                     {
-                        "calling_uid_key_par": {
+                        "calling_uid_key": {
                             "table": "whedcapp.uid",
                             "column": "uid_text"
                         }
                     },
                     {
-                        "other_uid_key_par": {
+                        "other_uid_key": {
                             "table": "whedcapp.uid",
                             "column": "uid_text"
                         }
@@ -321,19 +321,19 @@
                 ], 
                 "$PROJECT$":  [
                     {
-                        "calling_uid_key_par": {
+                        "calling_uid_key": {
                             "table": "whedcapp.uid",
                             "column": "uid_text"
                         }
                     },
                     {
-                        "proj_key_par": {
+                        "proj_key": {
                             "table": "whedcapp.project",
                             "column": "proj_key"
                         }
                     },
                     {
-                        "other_uid_key_par": {
+                        "other_uid_key": {
                             "table": "whedcapp.uid",
                             "column": "uid_text"
                         }
@@ -342,25 +342,25 @@
                 ], 
                 "$ANSWER$":  [
                     {
-                        "calling_uid_key_par": {
+                        "calling_uid_key": {
                             "table": "whedcapp.uid",
                             "column": "uid_text"
                         }
                     },
                     {
-                        "proj_key_par": {
+                        "proj_key": {
                             "table": "whedcapp.project",
                             "column": "proj_key"
                         }
                     },
                     {
-                        "proj_round_key_par": {
+                        "proj_round_key": {
                             "table": "whedcapp.project_round",
                             "column": "proj_round_key"
                         }
                     },
                     {
-                        "other_uid_key_par": {
+                        "other_uid_key": {
                             "table": "whedcapp.uid",
                             "column": "uid_text"
                         }
@@ -368,19 +368,19 @@
                 ], 
                 "$QUESTIONNAIRE$":  [
                     {
-                        "calling_uid_key_par": {
+                        "calling_uid_key": {
                             "table": "whedcapp.uid",
                             "column": "uid_text"
                         }
                     },
                     {
-                        "questionnaire_key_par": {
+                        "questionnaire_key": {
                             "table": "whedcapp.questionnaire",
                             "column": "questionnaire_key"
                         }
                     },
                     {
-                        "uid_respondee_key_par": {
+                        "uid_respondee_key": {
                             "table": "whedcapp.uid",
                             "column": "uid_text"
                         }

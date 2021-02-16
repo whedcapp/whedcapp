@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with Whedcapp.  If not, see <https://www.gnu.org/licenses/>.
 */
+#include <algorithm>
 #include <fstream>
 #include <iomanip>
 #include <regex>
@@ -73,14 +74,17 @@ namespace PartSqlCrudGen {
   }
 
   enum GenerateKind { onlyColumnParameters, columnParametersWithTypeInformation, columnParametersForUpdate, onlyPrimaryKey, columnParametersForSelect, onlyColumnParametersIncludingId};
-  static std::ostream& generateColumnList(std::ostream& str, const ShPtr2Columns& shPtr2Columns, GenerateKind generateKind,  const std::string& suffix = "") {
+  static std::ostream& generateColumnList(std::ostream& str, const ShPtr2Columns& shPtr2Columns, GenerateKind generateKind,  const std::optional<ContextParameter>& optContextParameter = std::nullopt, const std::string& suffix = "") {
     if (generateKind == GenerateKind::columnParametersForUpdate && suffix != "") {
       throw std::logic_error("Suffix must not be set if update information is true");
     }
     bool notFirst = false;
     for (const auto& c: *shPtr2Columns) {
-      if (false /*condition*/) {
-        continue;
+      if (optContextParameter) {
+        const auto& vecOfPar2Ref = optContextParameter->getVecOfPar2Ref();
+        if (std::any_of(vecOfPar2Ref.begin(),vecOfPar2Ref.end(),[c](const auto par2Ref) { return par2Ref.first == c->getIdentity(); })) {
+          continue;
+        }
       }
       if (notFirst) {
         str << ", ";
@@ -174,11 +178,11 @@ namespace PartSqlCrudGen {
         throw std::logic_error("There must be an table definition missing");
       }
       if (op != DatabaseOperation::Type::dbDelete && op != DatabaseOperation::Type::dbSelect) {
-        generateColumnList(str,tableMetaData->getShPtr2Columns(),GenerateKind::columnParametersWithTypeInformation,"_par");
+        generateColumnList(str,tableMetaData->getShPtr2Columns(),GenerateKind::columnParametersWithTypeInformation,cp,"_par");
       } else if (op == DatabaseOperation::Type::dbDelete) {
-        generateColumnList(str,tableMetaData->getShPtr2Columns(),GenerateKind::onlyPrimaryKey,"_par");
+        generateColumnList(str,tableMetaData->getShPtr2Columns(),GenerateKind::onlyPrimaryKey,cp,"_par");
       } else { // dbSelect
-        generateColumnList(str,tableMetaData->getShPtr2Columns(),GenerateKind::columnParametersForSelect,"_par");
+        generateColumnList(str,tableMetaData->getShPtr2Columns(),GenerateKind::columnParametersForSelect,cp,"_par");
       }
       str << ")"  << (op == DatabaseOperation::Type::dbInsert? " RETURNS INTEGER DETERMINISTIC":"") << std::endl << "BEGIN" << std::endl;
     } catch (const std::out_of_range& oore) {
@@ -237,7 +241,7 @@ namespace PartSqlCrudGen {
         generateColumnList(str,tableMetaData->getShPtr2Columns(),GenerateKind::onlyColumnParameters);
         str << ")" << std::endl;
         str << std::setw(options.outputCodeTabWidth*2) << " " << "VALUES (";
-        generateColumnList(str,tableMetaData->getShPtr2Columns(),GenerateKind::onlyColumnParameters,"_par");
+        generateColumnList(str,tableMetaData->getShPtr2Columns(),GenerateKind::onlyColumnParameters,std::nullopt,"_par");
         str << ");";
       }
       break;
