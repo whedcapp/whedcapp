@@ -3,17 +3,25 @@ def crudGenToolPath() {
     return "${rootProject.buildDir}/"+project(':crud_gen_tool').name+"/${ext.crudGenToolName}"
 }
 
-def dbDefPath() {
-    return "${rootProject.buildDir}/"+project(':database').name+"/${ext.dbDefName}"
+def dbs_dbDefPath() {
+    return "${rootProject.buildDir}/"+project(':database').name+"/${ext.dbs_dbDefFileName}"
 }
 
-def dbBaseStoredProceduresPath() {
-    return "${rootProject.buildDir}/"+project(':database').name+"/${ext.dbBaseStoredProceduresName}"
+def dbs_storedProceduresPath() {
+    return "${rootProject.buildDir}/"+project(':database').name+"/${ext.dbs_storedProceduresFileName}"
 }
 
 
 def dbCrudCfgPath() {
     return "${rootProject.buildDir}/"+project(':database').name+"/${ext.dbCrudCfgName}"
+}
+
+def dbUploadToDatabaseFiles() {
+    return [ dbs_dbDefPath(), dbs_storedProceduresPath(), dbCrudSqlSrcPath() ]
+}
+
+def dbUploadToDatabaseResultPath() {
+    return "${rootProject.buildDir}/"+project(':database').name+"/${ext.dbUploadToDatabaseResultName}" 
 }
 
 def dbCrudSqlSrcPath() {
@@ -133,10 +141,12 @@ def backquotifySqlId(String sqlId) {
 }
 ext {
     crudGenToolPath = this.&crudGenToolPath;
-    dbDefPath = this.&dbDefPath;
-    dbBaseStoredProceduresPath = this.&dbBaseStoredProceduresPath;
+    dbs_dbDefPath = this.&dbs_dbDefPath;
+    dbs_storedProceduresPath = this.&dbs_storedProceduresPath;
     dbCrudCfgPath = this.&dbCrudCfgPath;
     dbCrudSqlSrcPath = this.&dbCrudSqlSrcPath;
+    dbUploadToDatabaseFiles = this.&dbUploadToDatabaseFiles
+    dbUploadToDatabaseResultPath = this.&dbUploadToDatabaseResultPath
     dbCrudDartSrcPath = this.&dbCrudDartSrcPath;
     checksum = this.&checksum;
     removeComments = this.&removeComments;

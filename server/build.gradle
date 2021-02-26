@@ -46,10 +46,10 @@ allprojects {
         ext.crudGenToolName = 'crud_gen_tool'
     }
     assert ext.crudGenToolName != ''
-    if (!ext.has('dbDefName')) {
-        ext.dbDefName = 'dbDef.sql'
+    if (!ext.has('dbs_dbDefFileName')) {
+        ext.dbs_dbDefFileName = 'dbDef.sql'
     }
-    assert ext.dbDefName != ''
+    assert ext.dbs_dbDefFileName != ''
     if (!ext.has('dbCrudCfgName')) {
         ext.dbCrudCfgName = 'dbCrudCfg.cs'
     }
@@ -63,9 +63,15 @@ allprojects {
     }
     assert ext.dbCrudDartSrcName != ''
     ext.whedcappAdministratorUid = ''
-    if (!ext.has('dbBaseStoredProceduresName')) {
-        ext.dbBaseStoredProceduresName = 'dbBaseStoredProcedures.sql'
+    if (!ext.has('dbs_storedProceduresFileName')) {
+        ext.dbs_storedProceduresFileName = 'dbBaseStoredProcedures.sql'
     }
+
+    if (!ext.has('dbUploadToDatabaseResultName')) {
+        ext.dbUploadToDatabaseResultName = 'dbUploadToDatabaseResult.json'
+    }
+    assert ext.dbUploadToDatabaseResultName != ''
+    
     if (!ext.has('dbSetupStrategy')) {
         ext.dbSetupStrategy = 'initialize';
     }

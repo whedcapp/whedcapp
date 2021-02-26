@@ -318,10 +318,10 @@ def dbCfgSrcFiles = [ "**/*.cs.in", "**/*.sql.in"].inject([]) { acc,val ->acc+pr
 logger.debug("dbCfgSrcFiles = "+dbCfgSrcFiles.join(", "))
 def dbSrcFiles = ["**/*.cs", "**/*.sql"].inject([]) {acc,val -> acc+project.fileTree(dir: "${projectDir}/src", include: val)}
 logger.debug("dbSrcFiles = "+dbSrcFiles.join(", "))
-def dbUploadFiles = [ dbDefPath(), dbBaseStoredProceduresPath(), dbCrudSqlSrcPath() ]
-logger.info("dbUploadFiles = "+dbUploadFiles)
+//def dbUploadToDatabaseFiles = ext.dbUploadToDatabaseFiles //[ dbs_dbDefPath(), dbs_storedProceduresPath(), dbCrudSqlSrcPath() ]
+logger.info("dbUploadFilegggggs = "+dbUploadToDatabaseFiles())
 def dbUploadProgressPath = "${rootProject.buildDir}/"+project(":database").name+"/dbUploadProgress.json"
-def dbUploadOutputFiles = [ dbUploadProgressPath ]
+def dbUploadOutputFiles = [ dbUploadToDatabaseResultPath() ]
 logger.info("dbUploadOutputFiles = "+dbUploadOutputFiles)
 
 def crudGenerationCfgPrepInputFiles = dbCfgSrcFiles
@@ -332,7 +332,7 @@ def crudOutputFiles = [
 logger.info("crudOutputFiles = "+crudOutputFiles.join(", "))
 
 def crudGenerationCfgPrepOutputFiles = [
-    dbDefPath()
+    dbs_dbDefPath()
 ]
 
 def crudGenerationPrepOutputFiles = [
@@ -382,12 +382,12 @@ task CrudGeneration(type:Exec) {
     inputs.files(crudGenerationInputFiles)
     outputs.files(crudGenerationOutputFiles)
     group = 'Database'
-    description = "Creates CRUD stored procedures based on "+dbDefPath()
+    description = "Creates CRUD stored procedures based on "+dbs_dbDefPath()
     def cmd = crudGenToolPath()
     if (project.ext.traceParser == 'Yes') {
-        commandLine cmd,'-p',dbDefPath(),'-c',dbCrudCfgPath(),'-s',dbCrudSqlSrcPath(),'-t'
+        commandLine cmd,'-p',dbs_dbDefPath(),'-c',dbCrudCfgPath(),'-s',dbCrudSqlSrcPath(),'-t'
     } else {
-        commandLine cmd,'-p',dbDefPath(),'-c',dbCrudCfgPath(),'-s',dbCrudSqlSrcPath()
+        commandLine cmd,'-p',dbs_dbDefPath(),'-c',dbCrudCfgPath(),'-s',dbCrudSqlSrcPath()
     }
     standardOutput = new ByteArrayOutputStream()
     ext.output = {
@@ -399,7 +399,7 @@ task CrudGeneration(type:Exec) {
 }
 task OpenDatabaseAsRoot() {
     dependsOn 'CrudGeneration'
-    inputs.files(dbUploadFiles)
+    inputs.files(dbUploadToDatabaseFiles())
     outputs.files(dbUploadOutputFiles)
     group = 'Database'
     description 'Opens MySQL Database as an administrator with grant options'
@@ -423,7 +423,7 @@ task OpenDatabaseAsRoot() {
 }
 task DropAndRecreateDatabaseIfNecessary() {
     dependsOn 'OpenDatabaseAsRoot'
-    inputs.files(dbUploadFiles)
+    inputs.files(dbUploadToDatabaseFiles())
     outputs.files(dbUploadOutputFiles)
     group = 'Database'
     description 'If database setup strategy is initialize, then drop and recreate whedcapp database. Use whedcapp database'
@@ -444,7 +444,7 @@ task DropAndRecreateDatabaseIfNecessary() {
 task CreateWhedcappDatabaseAccessUser() {
     dependsOn 'OpenDatabaseAsRoot'
     dependsOn 'DropAndRecreateDatabaseIfNecessary'
-    inputs.files(dbUploadFiles)
+    inputs.files(dbUploadToDatabaseFiles())
     outputs.files(dbUploadOutputFiles)
     group = 'Database'
     description 'Create whedcapp database access user as well as tables/triggers/procedures for keeping track of what has been uploaded'
@@ -551,14 +551,14 @@ task CreateWhedcappDatabaseAccessUser() {
 task UploadToDatabase() {
     dependsOn 'CrudGeneration'
     dependsOn 'CreateWhedcappDatabaseAccessUser'
-    inputs.files(dbUploadFiles)
+    inputs.files(dbUploadToDatabaseFiles())
     outputs.files(dbUploadOutputFiles)
     group = 'Database'
     description = "Uploads database scheme."
     doFirst {
-        //def result = dbUploadFiles.length.times { -> new ByteArrayOutputStream() }
+        //def result = dbUploadToDatabaseFiles().length.times { -> new ByteArrayOutputStream() }
         def stmt = getMysqlRootConnection();
-        dbUploadFiles.each { path ->
+        dbUploadToDatabaseFiles().each { path ->
             logger.info("Processing \""+path+"\"");
             File file = new File(path);
             logger.info("Opened file \""+path+"\"");
