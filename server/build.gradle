@@ -50,14 +50,14 @@ allprojects {
         ext.dbs_dbDefFileName = 'dbDef.sql'
     }
     assert ext.dbs_dbDefFileName != ''
-    if (!ext.has('dbCrudCfgName')) {
-        ext.dbCrudCfgName = 'dbCrudCfg.cs'
+    if (!ext.has('dbs_crudCfgFileName')) {
+        ext.dbs_crudCfgFileName = 'dbCrudCfg.cs'
     }
-    assert ext.dbCrudCfgName != ''
-    if (!ext.has('dbCrudSqlSrcName')) {
-        ext.dbCrudSqlSrcName = 'dbCrud.sql'
+    assert ext.dbs_crudCfgFileName != ''
+    if (!ext.has('dbs_crudSqlSrcFileName')) {
+        ext.dbs_crudSqlSrcFileName = 'dbCrud.sql'
     }
-    assert ext.dbCrudSqlSrcName != ''
+    assert ext.dbs_crudSqlSrcFileName != ''
     if (!ext.has('dbCrudDartSrcName')) {
         ext.dbCrudDartSrcName = 'dbCrud.dart'
     }

@@ -318,7 +318,7 @@ def dbCfgSrcFiles = [ "**/*.cs.in", "**/*.sql.in"].inject([]) { acc,val ->acc+pr
 logger.debug("dbCfgSrcFiles = "+dbCfgSrcFiles.join(", "))
 def dbSrcFiles = ["**/*.cs", "**/*.sql"].inject([]) {acc,val -> acc+project.fileTree(dir: "${projectDir}/src", include: val)}
 logger.debug("dbSrcFiles = "+dbSrcFiles.join(", "))
-//def dbUploadToDatabaseFiles = ext.dbUploadToDatabaseFiles //[ dbs_dbDefPath(), dbs_storedProceduresPath(), dbCrudSqlSrcPath() ]
+//def dbUploadToDatabaseFiles = ext.dbUploadToDatabaseFiles //[ dbs_dbDefPath(), dbs_storedProceduresPath(), dbs_crudSqlSrcPath() ]
 logger.info("dbUploadFilegggggs = "+dbUploadToDatabaseFiles())
 def dbUploadProgressPath = "${rootProject.buildDir}/"+project(":database").name+"/dbUploadProgress.json"
 def dbUploadOutputFiles = [ dbUploadToDatabaseResultPath() ]
@@ -327,7 +327,7 @@ logger.info("dbUploadOutputFiles = "+dbUploadOutputFiles)
 def crudGenerationCfgPrepInputFiles = dbCfgSrcFiles
 def crudGenerationPrepInputFiles = dbSrcFiles
 def crudOutputFiles = [
-    dbCrudSqlSrcPath()
+    dbs_crudSqlSrcPath()
 ]
 logger.info("crudOutputFiles = "+crudOutputFiles.join(", "))
 
@@ -336,12 +336,12 @@ def crudGenerationCfgPrepOutputFiles = [
 ]
 
 def crudGenerationPrepOutputFiles = [
-    dbCrudCfgPath()
+    dbs_crudCfgPath()
 ]
 logger.info("crudGenerationPrepOutputFiles = "+crudGenerationPrepOutputFiles.join(", "))
 def crudGenerationInputFiles = crudGenerationPrepOutputFiles + [ crudGenToolPath() ]
 
-def crudGenerationOutputFiles = [ dbCrudSqlSrcPath()]
+def crudGenerationOutputFiles = [ dbs_crudSqlSrcPath()]
 
 task CrudGenerationCfgPrep() {
      inputs.files(dbCfgSrcFiles)
@@ -385,9 +385,9 @@ task CrudGeneration(type:Exec) {
     description = "Creates CRUD stored procedures based on "+dbs_dbDefPath()
     def cmd = crudGenToolPath()
     if (project.ext.traceParser == 'Yes') {
-        commandLine cmd,'-p',dbs_dbDefPath(),'-c',dbCrudCfgPath(),'-s',dbCrudSqlSrcPath(),'-t'
+        commandLine cmd,'-p',dbs_dbDefPath(),'-c',dbs_crudCfgPath(),'-s',dbs_crudSqlSrcPath(),'-t'
     } else {
-        commandLine cmd,'-p',dbs_dbDefPath(),'-c',dbCrudCfgPath(),'-s',dbCrudSqlSrcPath()
+        commandLine cmd,'-p',dbs_dbDefPath(),'-c',dbs_crudCfgPath(),'-s',dbs_crudSqlSrcPath()
     }
     standardOutput = new ByteArrayOutputStream()
     ext.output = {

@@ -12,20 +12,20 @@ def dbs_storedProceduresPath() {
 }
 
 
-def dbCrudCfgPath() {
-    return "${rootProject.buildDir}/"+project(':database').name+"/${ext.dbCrudCfgName}"
+def dbs_crudCfgPath() {
+    return "${rootProject.buildDir}/"+project(':database').name+"/${ext.dbs_crudCfgFileName}"
 }
 
 def dbUploadToDatabaseFiles() {
-    return [ dbs_dbDefPath(), dbs_storedProceduresPath(), dbCrudSqlSrcPath() ]
+    return [ dbs_dbDefPath(), dbs_storedProceduresPath(), dbs_crudSqlSrcPath() ]
 }
 
 def dbUploadToDatabaseResultPath() {
     return "${rootProject.buildDir}/"+project(':database').name+"/${ext.dbUploadToDatabaseResultName}" 
 }
 
-def dbCrudSqlSrcPath() {
-    return "${rootProject.buildDir}/"+project(':database').name+"/${ext.dbCrudSqlSrcName}"
+def dbs_crudSqlSrcPath() {
+    return "${rootProject.buildDir}/"+project(':database').name+"/${ext.dbs_crudSqlSrcFileName}"
 }
 
 def dbCrudDartSrcPath() {
@@ -143,8 +143,8 @@ ext {
     crudGenToolPath = this.&crudGenToolPath;
     dbs_dbDefPath = this.&dbs_dbDefPath;
     dbs_storedProceduresPath = this.&dbs_storedProceduresPath;
-    dbCrudCfgPath = this.&dbCrudCfgPath;
-    dbCrudSqlSrcPath = this.&dbCrudSqlSrcPath;
+    dbs_crudCfgPath = this.&dbs_crudCfgPath;
+    dbs_crudSqlSrcPath = this.&dbs_crudSqlSrcPath;
     dbUploadToDatabaseFiles = this.&dbUploadToDatabaseFiles
     dbUploadToDatabaseResultPath = this.&dbUploadToDatabaseResultPath
     dbCrudDartSrcPath = this.&dbCrudDartSrcPath;
