@@ -1,20 +1,20 @@
 /*
-  This file is part of Whedcapp - Well-being Health Environment Data Collection App - to collect self-evaluated data for research purpose
-  Copyright (C) 2020-2021  Jonas Mellin, Catharina Gillsjö
+ This file is part of Whedcapp - Well-being Health Environment Data Collection App - to collect self-evaluated data for research purpose
+ Copyright (C) 2020-2021  Jonas Mellin, Catharina Gillsjö
 
-  Whedcapp is free software: you can redistribute it and/or modify
-  it under the terms of the GNU General Public License as published by
-  the Free Software Foundation, either version 3 of the License, or
-  (at your option) any later version.
+ Whedcapp is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
 
-  Whedcapp is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU General Public License for more details.
+ Whedcapp is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
 
-  You should have received a copy of the GNU General Public License
-  along with Whedcapp.  If not, see <https://www.gnu.org/licenses/>.
-*/
+ You should have received a copy of the GNU General Public License
+ along with Whedcapp.  If not, see <https://www.gnu.org/licenses/>.
+ */
 
 buildscript{
     repositories{
@@ -314,76 +314,85 @@ def getMysqlWhedcappUserIsCreatedPath = {
 
 
 
-def dbCfgSrcFiles = [ "**/*.cs.in", "**/*.sql.in"].inject([]) { acc,val ->acc+project.fileTree(dir: "${projectDir}/src", include: val)}
-logger.debug("dbCfgSrcFiles = "+dbCfgSrcFiles.join(", "))
-def dbSrcFiles = ["**/*.cs", "**/*.sql"].inject([]) {acc,val -> acc+project.fileTree(dir: "${projectDir}/src", include: val)}
-logger.debug("dbSrcFiles = "+dbSrcFiles.join(", "))
+def dbs_dbCfgSrcFiles = [ "**/*.cs.in", "**/*.sql.in"].inject([]) { acc,val ->acc+project.fileTree(dir: "${projectDir}/src", include: val)}
+logger.info("dbs_dbCfgSrcFiles = "+dbs_dbCfgSrcFiles.join(", "))
+
+def dbs_dbCfgFiles = dbs_dbCfgSrcFiles.inject([]) {acc,val -> acc+ [new File(val.toString().replaceAll("^.*/database/src","${rootProject.buildDir}/"+project(':database').name).replaceAll(".in","")) ]}
+logger.info("dbs_dbCfgFiles = "+dbs_dbCfgFiles.join(", "))
+
+def dbs_dbSrcFiles = ["**/*.cs", "**/*.sql"].inject([]) {acc,val -> acc+project.fileTree(dir: "${projectDir}/src", include: val)}
+logger.info("dbs_dbSrcFiles = "+dbs_dbSrcFiles.join(", "))
+
+def dbs_dbFiles = dbs_dbSrcFiles.inject([]) {acc,val -> acc+ [new File(val.toString().replaceAll("^.*/database/src","${rootProject.buildDir}/"+project(':database').name).replaceAll(".in","")) ]}
+logger.info("dbs_dbFiles = "+dbs_dbFiles.join(", "))
+
+// find all Def.sql and Cfg.cs files sorted according to a number in the file
+// name if any, these are the configuration files used to generate the CRUD
+
+def dbs_dbCrudGenInputFiles = (dbs_dbCfgFiles+dbs_dbFiles).findAll { p -> (p.toString() =~ '^/((.+)/)+[0-9]*.*Def.sql$').find() || (p.toString() =~ '^/((.+)/)+[0-9]*.*Cfg.cs$').find() }.sort { a,b -> a.toString() < b.toString() ? -1 : 1 }
+logger.info("dbs_dbCrudGenInputFiles = "+dbs_dbCrudGenInputFiles)
+
 //def dbUploadToDatabaseFiles = ext.dbUploadToDatabaseFiles //[ dbs_dbDefPath(), dbs_storedProceduresPath(), dbs_crudSqlSrcPath() ]
 logger.info("dbUploadFilegggggs = "+dbUploadToDatabaseFiles())
+
 def dbUploadProgressPath = "${rootProject.buildDir}/"+project(":database").name+"/dbUploadProgress.json"
 def dbUploadOutputFiles = [ dbUploadToDatabaseResultPath() ]
 logger.info("dbUploadOutputFiles = "+dbUploadOutputFiles)
 
-def crudGenerationCfgPrepInputFiles = dbCfgSrcFiles
-def crudGenerationPrepInputFiles = dbSrcFiles
-def crudOutputFiles = [
-    dbs_crudSqlSrcPath()
-]
-logger.info("crudOutputFiles = "+crudOutputFiles.join(", "))
+def dbs_crudGenCfgPrepInputFiles = dbs_dbCfgSrcFiles
 
-def crudGenerationCfgPrepOutputFiles = [
-    dbs_dbDefPath()
-]
+def dbs_crudGenCfgPrepOutputFiles = dbs_dbCfgFiles
 
-def crudGenerationPrepOutputFiles = [
+task dbs_CrudGenCfgPrep() {
+    inputs.files(dbs_crudGenCfgPrepInputFiles)
+    outputs.files(dbs_crudGenCfgPrepOutputFiles)
+    doLast {
+        def m = [whedcappAdministrator: getWcau() ]
+        copy {
+            dbs_dbCfgSrcFiles.each { p -> from(p) }
+            into "${rootProject.buildDir}/${project.name}"
+            filter(ReplaceTokens, tokens:m)
+            rename '(.*).in', '$1'
+        }
+        logger.info("dbs_crudGenCfgPrepOutputFiles = "+dbs_crudGenCfgPrepOutputFiles.join(", "))
+        logger.info("m="+m)
+    }
+}
+def dbs_crudGenPrepInputFiles = dbs_dbSrcFiles
+def dbs_crudGenPrepOutputFiles = [
     dbs_crudCfgPath()
 ]
-logger.info("crudGenerationPrepOutputFiles = "+crudGenerationPrepOutputFiles.join(", "))
-def crudGenerationInputFiles = crudGenerationPrepOutputFiles + [ crudGenToolPath() ]
+logger.info("dbs_crudGenPrepOutputFiles = "+dbs_crudGenPrepOutputFiles.join(", "))
 
-def crudGenerationOutputFiles = [ dbs_crudSqlSrcPath()]
-
-task CrudGenerationCfgPrep() {
-     inputs.files(dbCfgSrcFiles)
-     outputs.files(crudGenerationCfgPrepOutputFiles)
-     doLast {
-         def m = [whedcappAdministrator: getWcau() ]
-         copy {
-             dbCfgSrcFiles.each { p -> from(p) }
-             into "${rootProject.buildDir}/${project.name}"
-             filter(ReplaceTokens, tokens:m)
-             rename '(.*).in', '$1'
-         }
-         logger.info("outputs = "+crudGenerationCfgPrepOutputFiles.join(", "))
-         logger.info("m="+m)
-     }
-}
-task CrudGenerationPrep() {
-    dependsOn 'CrudGenerationCfgPrep'
-    inputs.files(dbSrcFiles)
-    outputs.files(crudGenerationPrepOutputFiles)
+task dbs_CrudGenPrep() {
+    dependsOn 'dbs_CrudGenCfgPrep'
+    inputs.files(dbs_crudGenPrepInputFiles)
+    outputs.files(dbs_crudGenPrepOutputFiles)
     doLast {
         copy {
-            dbSrcFiles.each { p -> from(p) }
+            dbs_dbSrcFiles.each { p -> from(p) }
             into "${rootProject.buildDir}/${project.name}"
         }
     }
 }
 
-task CrudGeneration(type:Exec) {
-    dependsOn 'CrudGenerationPrep'
-    dependsOn 'CrudGenerationCfgPrep'
+def dbs_crudGenInputFiles = dbs_dbCrudGenInputFiles + [ cgt_crudGenToolPath() ]
+def dbs_crudGenOutputFiles = [ dbs_crudSqlSrcPath()]
+
+task dbs_CrudGen(type:Exec) {
+    dependsOn 'dbs_CrudGenPrep'
+    dependsOn 'dbs_CrudGenCfgPrep'
     if (project.ext.buildType == 'Debug') {
-        dependsOn ':crud_gen_tool:CmakeDebugBuild'
+        dependsOn ':crud_gen_tool:cgt_CmakeDebugBuild'
     } else {
-        dependsOn ':crud_gen_tool:CmakeReleaseBuild'
+        dependsOn ':crud_gen_tool:cgt_CmakeReleaseBuild'
     }
     workingDir "${rootProject.buildDir}/${project.name}"
-    inputs.files(crudGenerationInputFiles)
-    outputs.files(crudGenerationOutputFiles)
+    inputs.files(dbs_crudGenInputFiles)
+    outputs.files(dbs_crudGenOutputFiles)
     group = 'Database'
     description = "Creates CRUD stored procedures based on "+dbs_dbDefPath()
-    def cmd = crudGenToolPath()
+    def cmd = cgt_crudGenToolPath()
     if (project.ext.traceParser == 'Yes') {
         commandLine cmd,'-p',dbs_dbDefPath(),'-c',dbs_crudCfgPath(),'-s',dbs_crudSqlSrcPath(),'-t'
     } else {
@@ -397,10 +406,12 @@ task CrudGeneration(type:Exec) {
         mkdir "${rootProject.buildDir}/${project.name}"
     }
 }
-task OpenDatabaseAsRoot() {
-    dependsOn 'CrudGeneration'
-    inputs.files(dbUploadToDatabaseFiles())
-    outputs.files(dbUploadOutputFiles)
+def dbs_openDatabaseAsRootInputFiles = (dbs_dbCfgFiles+dbs_dbFiles).findAll { (it.toString() =~ '^.*.sql$').find() }.sort { a,b -> a.toString() > b.toString() ? 1 : -1 }
+def dbs_openDatabaseAsRootOutputFiles = dbUploadOutputFile
+task dbs_OpenDatabaseAsRoot() {
+    dependsOn 'dbs_CrudGen'
+    inputs.files(dbs_openDatabaseAsRootInputFiles)
+    outputs.files(dbs_openDatabaseAsRootOutputFiles)
     group = 'Database'
     description 'Opens MySQL Database as an administrator with grant options'
     doFirst {
@@ -411,8 +422,7 @@ task OpenDatabaseAsRoot() {
             
             def db = [url: "jdbc:mysql://127.0.0.1/",
                       user: getMysqlRootUserId(), password: getMysqlRootPassword(), driver: 'com.mysql.jdbc.Driver']
-            logger.info("Password inside open database as root: "+getMysqlRootPassword()+", inside db.password = "+db.password)
-            //project.ext.mysqlRootConnection = groovy.sql.Sql.newInstance(db.url, db.user, db.password, db.driver)
+            logger.debug("Password inside open database as root: "+getMysqlRootPassword()+", inside db.password = "+db.password)
             project.ext.mysqlRootConnection = groovy.sql.Sql.newInstance(db.url, db.user, getMysqlRootPassword(), db.driver)
             logger.info("Conn = "+project.ext.mysqlRootConnection)
             logger.info("Conn2 = "+getMysqlRootConnection())
@@ -422,7 +432,7 @@ task OpenDatabaseAsRoot() {
     }
 }
 task DropAndRecreateDatabaseIfNecessary() {
-    dependsOn 'OpenDatabaseAsRoot'
+    dependsOn 'dbs_OpenDatabaseAsRoot'
     inputs.files(dbUploadToDatabaseFiles())
     outputs.files(dbUploadOutputFiles)
     group = 'Database'
@@ -442,7 +452,7 @@ task DropAndRecreateDatabaseIfNecessary() {
     
 }
 task CreateWhedcappDatabaseAccessUser() {
-    dependsOn 'OpenDatabaseAsRoot'
+    dependsOn 'dbs_OpenDatabaseAsRoot'
     dependsOn 'DropAndRecreateDatabaseIfNecessary'
     inputs.files(dbUploadToDatabaseFiles())
     outputs.files(dbUploadOutputFiles)
@@ -460,7 +470,7 @@ task CreateWhedcappDatabaseAccessUser() {
             // set appropriate privileges for whedcapp access user, essentially only "EXECUTE" stored procedures
             stmt.execute("REVOKE ALL PRIVILEGES ON "+backquotifySqlId("whedcapp.*")+" FROM "+quotifySqlUserId(getMysqlWhedcappUserId()));
         } catch (SQLException sqex) {
-            // ignor that no grants are there to be revoked
+            // ignore that no grants are there to be revoked
             logger.info("sqex.getSQLState() == '42000' =="+(sqex.getSQLState() == '42000'));
             logger.info("sqex.getErrorCode() == 1141 =="+(sqex.getErrorCode() == 1141));
             if (!((sqex.getSQLState() == '42000') && (sqex.getErrorCode() == 1141))) {
@@ -549,7 +559,7 @@ task CreateWhedcappDatabaseAccessUser() {
 }
 
 task UploadToDatabase() {
-    dependsOn 'CrudGeneration'
+    dependsOn 'dbs_CrudGen'
     dependsOn 'CreateWhedcappDatabaseAccessUser'
     inputs.files(dbUploadToDatabaseFiles())
     outputs.files(dbUploadOutputFiles)
@@ -575,7 +585,7 @@ task UploadToDatabase() {
                         stmt.execute "SELECT `whedcapp`.`insert_whedcapp_installation_item_digest`(${sqlCmd.getId()},${sqlCmd.getType()},${checksum(sqlCmd.getStatement())})";
                     }
                 }
-            
+                
             } catch (SQLException sqex) {
                 throw new StopExecutionException("Something is wrong with SQL Statement: "+sqex);             
             } catch (Exception ex) {
@@ -599,149 +609,149 @@ task UploadToDatabase() {
             throw new StopExecutionException("Something is wrong, but not with the SQL Statement: "+ex);             
         }
 
-            
+        
     }
 }
 task clean() {
-     doFirst {
-             delete "${rootProject.buildDir}/${project.name}"
-             logger.info(removeComments("/* Hello */ old friend"))
-     }
+    doFirst {
+        delete "${rootProject.buildDir}/${project.name}"
+        logger.info(removeComments("/* Hello */ old friend"))
+    }
 }
 
 // Solution based on https://www.timroes.de/using-password-prompts-with-gradle-build-files
 
 gradle.taskGraph.whenReady { taskGraph ->
-//  if(taskGraph.hasTask(':database:OpenDatabaseAsRoot')  && !file(getMysqlWhedcappUserIsCreatedPath()).exists()) {
-  if(taskGraph.hasTask(':database:OpenDatabaseAsRoot')  && !file(getMysqlWhedcappUserIsCreatedPath()).exists()) {
+    //  if(taskGraph.hasTask(':database:dbs_OpenDatabaseAsRoot')  && !file(getMysqlWhedcappUserIsCreatedPath()).exists()) {
+    if(taskGraph.hasTask(':database:dbs_OpenDatabaseAsRoot')  && !file(getMysqlWhedcappUserIsCreatedPath()).exists()) {
 
-    def pass = ''
-    def user = ''
-    if(System.console() == null) {
-      new SwingBuilder().edt {
-        dialog(modal: true, // Otherwise the build will continue running before you closed the dialog
-            title: 'Enter MySQL Root password', // Dialog title
-            alwaysOnTop: true, // pretty much what the name says
-            resizable: false, // Don't allow the user to resize the dialog
-            locationRelativeTo: null, // Place dialog in center of the screen
-            pack: true, // We need to pack the dialog (so it will take the size of it's children)
-            show: true // Let's show it
-        ) {
-          vbox { // Put everything below each other
-            label(text: "Please enter Root administrator Id:")
-            input1 = textField('admin')
-            label(text: "Please enter key passphrase for MySQL root:")
-            input2 = passwordField()
-            button(defaultButton: true, text: 'OK', actionPerformed: {
-              user = input1.text
-              pass = input2.text
-              dispose(); // Close dialog
-            })
-          } // vbox end
-        } // dialog end
-      } // edt end
-    } else {
-      userRaw = System.console().read("\nPlease enter database root user name:");
-      user = new String(userRaw)
-      passRaw = System.console().readPassword("\nPlease enter key passphrase for MySQL root: ")
-      pass = new String(passRaw)
-    }
-    logger.info("User = "+user)
-    logger.info("Pass = "+pass)
+        def pass = ''
+        def user = ''
+        if(System.console() == null) {
+            new SwingBuilder().edt {
+                dialog(modal: true, // Otherwise the build will continue running before you closed the dialog
+                       title: 'Enter MySQL Root password', // Dialog title
+                       alwaysOnTop: true, // pretty much what the name says
+                       resizable: false, // Don't allow the user to resize the dialog
+                       locationRelativeTo: null, // Place dialog in center of the screen
+                       pack: true, // We need to pack the dialog (so it will take the size of it's children)
+                       show: true // Let's show it
+                ) {
+                    vbox { // Put everything below each other
+                        label(text: "Please enter Root administrator Id:")
+                        input1 = textField('admin')
+                        label(text: "Please enter key passphrase for MySQL root:")
+                        input2 = passwordField()
+                        button(defaultButton: true, text: 'OK', actionPerformed: {
+                            user = input1.text
+                            pass = input2.text
+                            dispose(); // Close dialog
+                        })
+                    } // vbox end
+                } // dialog end
+            } // edt end
+        } else {
+            userRaw = System.console().read("\nPlease enter database root user name:");
+            user = new String(userRaw)
+            passRaw = System.console().readPassword("\nPlease enter key passphrase for MySQL root: ")
+            pass = new String(passRaw)
+        }
+        logger.info("User = "+user)
+        logger.info("Pass = "+pass)
 
-    if(user.size() <=0 || pass.size() <= 0) {
-      throw new InvalidUserDataException("You must enter a root user identity and a password to proceed.")
-    }
+        if(user.size() <=0 || pass.size() <= 0) {
+            throw new InvalidUserDataException("You must enter a root user identity and a password to proceed.")
+        }
 
-    project.ext.mysqlRootUserId = user
-    project.ext.mysqlRootPassword = pass;
+        project.ext.mysqlRootUserId = user
+        project.ext.mysqlRootPassword = pass;
 
-  } // end if has task
+    } // end if has task
 } // end whenReady
 
 gradle.taskGraph.whenReady { taskGraph ->
-  if(taskGraph.hasTask(':database:CreateWhedcappDatabaseAccessUser')) {
+    if(taskGraph.hasTask(':database:CreateWhedcappDatabaseAccessUser')) {
 
-    def pass = ''
-    def user = ''
-    if(System.console() == null) {
-      new SwingBuilder().edt {
-        dialog(modal: true, // Otherwise the build will continue running before you closed the dialog
-            title: 'Enter MySQL Whedcapp password', // Dialog title
-            alwaysOnTop: true, // pretty much what the name says
-            resizable: false, // Don't allow the user to resize the dialog
-            locationRelativeTo: null, // Place dialog in center of the screen
-            pack: true, // We need to pack the dialog (so it will take the size of it's children)
-            show: true // Let's show it
-        ) {
-          vbox { // Put everything below each other
-            label(text: "Please enter Whedcapp administrator Id:")
-            input1 = textField()
-            label(text: "Please enter key passphrase for Whedcapp:")
-            input2 = passwordField()
-            button(defaultButton: true, text: 'OK', actionPerformed: {
-              user = input1.text;
-              pass = input2.text; // Set pass variable to value of input field
-              dispose(); // Close dialog
-            })
-          } // vbox end
-        } // dialog end
-      } // edt end
-    } else {
-      userRaw = System.console().read("\nPlease enter Whedcapp database user name:");
-      user = new String(userRaw)
-      passRaw = System.console().readPassword("\nPlease enter key passphrase for Whedcapp: ")
-      pass = new String(passRaw)
-    }
-    logger.info("User 2 = "+user)
-    logger.info("Pass 2 = "+pass)
+        def pass = ''
+        def user = ''
+        if(System.console() == null) {
+            new SwingBuilder().edt {
+                dialog(modal: true, // Otherwise the build will continue running before you closed the dialog
+                       title: 'Enter MySQL Whedcapp password', // Dialog title
+                       alwaysOnTop: true, // pretty much what the name says
+                       resizable: false, // Don't allow the user to resize the dialog
+                       locationRelativeTo: null, // Place dialog in center of the screen
+                       pack: true, // We need to pack the dialog (so it will take the size of it's children)
+                       show: true // Let's show it
+                ) {
+                    vbox { // Put everything below each other
+                        label(text: "Please enter Whedcapp administrator Id:")
+                        input1 = textField()
+                        label(text: "Please enter key passphrase for Whedcapp:")
+                        input2 = passwordField()
+                        button(defaultButton: true, text: 'OK', actionPerformed: {
+                            user = input1.text;
+                            pass = input2.text; // Set pass variable to value of input field
+                            dispose(); // Close dialog
+                        })
+                    } // vbox end
+                } // dialog end
+            } // edt end
+        } else {
+            userRaw = System.console().read("\nPlease enter Whedcapp database user name:");
+            user = new String(userRaw)
+            passRaw = System.console().readPassword("\nPlease enter key passphrase for Whedcapp: ")
+            pass = new String(passRaw)
+        }
+        logger.info("User 2 = "+user)
+        logger.info("Pass 2 = "+pass)
 
-    if(user.size() <=0 || pass.size() <= 0) {
-      throw new InvalidUserDataException("You must enter a user identity or password to proceed.")
-    }
+        if(user.size() <=0 || pass.size() <= 0) {
+            throw new InvalidUserDataException("You must enter a user identity or password to proceed.")
+        }
 
-    project.ext.mysqlWhedcappUserId = user;
-    project.ext.mysqlWhedcappPassword = pass;
+        project.ext.mysqlWhedcappUserId = user;
+        project.ext.mysqlWhedcappPassword = pass;
 
-  } // end if has task
+    } // end if has task
 } // end whenReady
 
 // Whedcapp administrator email:
 
 gradle.taskGraph.whenReady { taskGraph ->
-  if(taskGraph.hasTask(':database:CrudGenerationCfgPrep') ) {
+    if(taskGraph.hasTask(':database:dbs_CrudGenCfgPrep') ) {
 
-    def user = ''
-    if(System.console() == null) {
-      new SwingBuilder().edt {
-        dialog(modal: true, // Otherwise the build will continue running before you closed the dialog
-            title: 'Enter Whedcapp administrator user identity', // Dialog title
-            alwaysOnTop: true, // pretty much what the name says
-            resizable: false, // Don't allow the user to resize the dialog
-            locationRelativeTo: null, // Place dialog in center of the screen
-            pack: true, // We need to pack the dialog (so it will take the size of it's children)
-            show: true // Let's show it
-        ) {
-          vbox { // Put everything below each other
-            label(text: "Please enter Whedcapp administrator user identity (email):")
-            input = textField()
-            button(defaultButton: true, text: 'OK', actionPerformed: {
-              user = input.text; // Set pass variable to value of input field
-              dispose(); // Close dialog
-            })
-          } // vbox end
-        } // dialog end
-      } // edt end
-    } else {
-      userRaw = System.console().readPassword("\nPlease enter Whedcapp administrator user identity (email): ")
-      user = new String(userRaw)
-    }
+        def user = ''
+        if(System.console() == null) {
+            new SwingBuilder().edt {
+                dialog(modal: true, // Otherwise the build will continue running before you closed the dialog
+                       title: 'Enter Whedcapp administrator user identity', // Dialog title
+                       alwaysOnTop: true, // pretty much what the name says
+                       resizable: false, // Don't allow the user to resize the dialog
+                       locationRelativeTo: null, // Place dialog in center of the screen
+                       pack: true, // We need to pack the dialog (so it will take the size of it's children)
+                       show: true // Let's show it
+                ) {
+                    vbox { // Put everything below each other
+                        label(text: "Please enter Whedcapp administrator user identity (email):")
+                        input = textField()
+                        button(defaultButton: true, text: 'OK', actionPerformed: {
+                            user = input.text; // Set pass variable to value of input field
+                            dispose(); // Close dialog
+                        })
+                    } // vbox end
+                } // dialog end
+            } // edt end
+        } else {
+            userRaw = System.console().readPassword("\nPlease enter Whedcapp administrator user identity (email): ")
+            user = new String(userRaw)
+        }
 
-    if(user.size() <= 0) {
-      throw new InvalidUserDataException("You must enter a Whedcapp administrator user identity (email) to proceed.")
-    }
+        if(user.size() <= 0) {
+            throw new InvalidUserDataException("You must enter a Whedcapp administrator user identity (email) to proceed.")
+        }
 
-    project.ext.wcau = user;
+        project.ext.wcau = user;
 
-  } // end if has task
+    } // end if has task
 } // end whenReady

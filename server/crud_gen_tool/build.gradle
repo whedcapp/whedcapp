@@ -17,31 +17,26 @@
 */
 
 def groupName = 'crud_gen_tool'
-def cppSrcFiles = ["**/*.cc", "**/*.hh", "**/*.y", "**/*.l"].inject([]) {acc,val -> acc+project.fileTree(dir: "${projectDir}/src", include: val)}
-logger.debug("CppSrcFiles = "+cppSrcFiles.join(", "))
 
-def inputFiles1 = ["**/CMakeLists.txt","**/*.in"].inject([]) {acc,val -> acc+project.fileTree(dir: "${projectDir}/src", include: val)}
-logger.debug("InputFiles1 = "+inputFiles1.join(", "))
+// find all paths with files matching 'CMakeLists.txt' or
+// '*.in'
+def cgt_cmakeDebugPrepInputFiles = ["**/CMakeLists.txt","**/*.in"].inject([]) {acc,val -> acc+project.fileTree(dir: "${projectDir}/src", include: val)}
+logger.info("cgt_cmakeDebugPrepInputFiles = "+cgt_cmakeDebugPrepInputFiles.join(", "))
 
-def outputFiles1 =  [
+def cgt_cmakeDebugPrepOutputFiles =  [
     "${rootProject.buildDir}/${project.name}/Makefile"
     ,"${rootProject.buildDir}/${project.name}/partialCrudGenConfig.h"
     ,"${rootProject.buildDir}/${project.name}/CMakeCache.txt"
     ,"${rootProject.buildDir}/${project.name}/cmake_install.cmake"
 ]
-logger.debug("OutputFiles1 = "+outputFiles1.join(", "))
-
-def inputFiles2 = cppSrcFiles + inputFiles1 + outputFiles1
-def outputFiles2 = [
-    crudGenToolPath()
-]
-logger.debug("OutputFiles2 = "+outputFiles2.join(", "))
+logger.info("cgt_cmakeDebugPrepOutputFiles = "+cgt_cmakeDebugPrepOutputFiles.join(", "))
 
 
-task CmakeDebug(type:Exec) {
+
+task cgt_CmakeDebugPrep(type:Exec) {
      workingDir "${rootProject.buildDir}/${project.name}"
-     inputs.files(inputFiles1)
-     outputs.files(outputFiles1)
+     inputs.files(cgt_cmakeDebugPrepInputFiles)
+     outputs.files(cgt_cmakeDebugPrepOutputFiles)
      group = groupName
      description = "Creates a build directory with UNIX Makefiles in ${project.buildDir}/${project.name}"
      ignoreExitValue true
@@ -55,7 +50,7 @@ task CmakeDebug(type:Exec) {
          return errorOutput.toString()
      }
      doFirst {
-             environment "CRUD_GEN_TOOL_NAME",crudGenToolName
+             environment "CRUD_GEN_TOOL_NAME",cgt_crudGenToolName
              mkdir "${rootProject.buildDir}/${project.name}"
      }
      doLast {
@@ -70,11 +65,23 @@ task CmakeDebug(type:Exec) {
          }
      }
 }
-task CmakeDebugBuild(type:Exec) {
-     dependsOn CmakeDebug
+
+// find all paths with files matching '*.cc', *.hh', '*.y' or '*.l'
+// 
+def cgt_cppSrcFiles = ["**/*.cc", "**/*.hh", "**/*.y", "**/*.l"].inject([]) {acc,val -> acc+project.fileTree(dir: "${projectDir}/src", include: val)}
+logger.info("CppSrcFiles = "+cgt_cppSrcFiles.join(", "))
+
+def cgt_cmakeDebugBuildInputFiles = cgt_cppSrcFiles + cgt_cmakeDebugPrepInputFiles + cgt_cmakeDebugPrepOutputFiles
+def cgt_cmakeDebugBuildOutputFiles = [
+    cgt_crudGenToolPath()
+]
+logger.info("cgt_cmakeDebugBuildOutputFiles = "+cgt_cmakeDebugBuildOutputFiles.join(", "))
+
+task cgt_CmakeDebugBuild(type:Exec) {
+     dependsOn cgt_CmakeDebugPrep
      workingDir "${rootProject.buildDir}/${project.name}"
-     inputs.files(inputFiles2)
-     outputs.files(outputFiles2)
+     inputs.files(cgt_cmakeDebugBuildInputFiles)
+     outputs.files(cgt_cmakeDebugBuildOutputFiles)
      ignoreExitValue true
      group = groupName
      description = "Builds the ${project.name}"
@@ -99,10 +106,14 @@ task CmakeDebugBuild(type:Exec) {
          }
      }
 }
-task CmakeRelease(type:Exec) {
+
+def cgt_cmakeReleasePrepInputFiles = cgt_cmakeDebugPrepInputFiles
+def cgt_cmakeReleasePrepOutputFiles = cgt_cmakeDebugPrepOutputFiles
+
+task cgt_CmakeReleasePrep(type:Exec) {
      workingDir "${rootProject.buildDir}/${project.name}"
-     inputs.files(inputFiles1)
-     outputs.files(outputFiles1)
+     inputs.files(cgt_cmakeReleasePrepInputFiles)
+     outputs.files(cgt_cmakeReleasePrepOutputFiles)
      group = groupName
      description = "Creates a build directory with UNIX Makefiles in ${rootProject.buildDir}/${project.name}"
      ignoreExitValue true
@@ -117,11 +128,11 @@ task CmakeRelease(type:Exec) {
      }
      doFirst {
              // send target to cmake via CRUD_GEN_TOOL_NAME variable
-             environment "CRUD_GEN_TOOL_NAME",crudGenToolName
+             environment "CRUD_GEN_TOOL_NAME",cgt_crudGenToolName
              mkdir "${rootProject.buildDir}/${project.name}"
      }
      doLast {
-         logger.error("Result")
+         logger.error("Result:")
          if (execResult.exitValue) {
             logger.error(output())
             logger.error(ext.errorOutput())
@@ -129,15 +140,20 @@ task CmakeRelease(type:Exec) {
                 new Exception("Command '${commandLine.join(' ')}' failed; "
                               + "see task output for details.")
             )
-         }
+        } else {
+            logger.error("Compilation completed")
+        }
      }
 
 }
-task CmakeReleaseBuild(type:Exec) {
-     dependsOn CmakeRelease
+
+def cgt_cmakeReleaseBuildInputFiles = cgt_cmakeDebugBuildInputFiles
+def cgt_cmakeReleaseBuildOutputFiles = cgt_cmakeDebugBuildOutputFiles
+task cgt_CmakeReleaseBuild(type:Exec) {
+     dependsOn cgt_CmakeReleasePrep
      workingDir "${rootProject.buildDir}/${project.name}"
-     inputs.files(inputFiles2)
-     outputs.files(outputFiles2)
+     inputs.files(cgt_cmakeReleaseBuildInputFiles)
+     outputs.files(cgt_cmakeReleaseBuildOutputFiles)
      group = groupName
      description = 'Builds the crud_gen_tool'
      commandLine 'make','-k','-j'

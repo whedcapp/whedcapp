@@ -1,6 +1,23 @@
+/*
+  This file is part of Whedcapp - Well-being Health Environment Data Collection App - to collect self-evaluated data for research purpose
+  Copyright (C) 2020-2021  Jonas Mellin, Catharina Gillsjö
 
-def crudGenToolPath() {
-    return "${rootProject.buildDir}/"+project(':crud_gen_tool').name+"/${ext.crudGenToolName}"
+  Whedcapp is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  Whedcapp is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with Whedcapp.  If not, see <https://www.gnu.org/licenses/>.
+*/
+
+def cgt_crudGenToolPath() {
+    return "${rootProject.buildDir}/"+project(':crud_gen_tool').name+"/${ext.cgt_crudGenToolName}"
 }
 
 def dbs_dbDefPath() {
@@ -28,8 +45,8 @@ def dbs_crudSqlSrcPath() {
     return "${rootProject.buildDir}/"+project(':database').name+"/${ext.dbs_crudSqlSrcFileName}"
 }
 
-def dbCrudDartSrcPath() {
-    return "${rootProject.buildDir}/"+project(':database').name+"/${ext.dbCrudDartSrcName}"
+def srv_crudDartSrcPath() {
+    return "${rootProject.buildDir}/"+project(':database').name+"/${ext.srv_crudDartSrcFileName}"
 }
 // adapted from http://www.groovyconsole.appspot.com/script/324001
 static String checksum( String input ) {
@@ -140,14 +157,14 @@ def backquotifySqlId(String sqlId) {
     return result;
 }
 ext {
-    crudGenToolPath = this.&crudGenToolPath;
+    cgt_crudGenToolPath = this.&cgt_crudGenToolPath;
     dbs_dbDefPath = this.&dbs_dbDefPath;
     dbs_storedProceduresPath = this.&dbs_storedProceduresPath;
     dbs_crudCfgPath = this.&dbs_crudCfgPath;
     dbs_crudSqlSrcPath = this.&dbs_crudSqlSrcPath;
     dbUploadToDatabaseFiles = this.&dbUploadToDatabaseFiles
     dbUploadToDatabaseResultPath = this.&dbUploadToDatabaseResultPath
-    dbCrudDartSrcPath = this.&dbCrudDartSrcPath;
+    srv_crudDartSrcPath = this.&srv_crudDartSrcPath;
     checksum = this.&checksum;
     removeComments = this.&removeComments;
     quotifySqlUserId = this.&quotifySqlUserId;
