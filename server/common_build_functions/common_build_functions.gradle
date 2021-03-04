@@ -37,8 +37,9 @@ def dbUploadToDatabaseFiles() {
     return [ dbs_dbDefPath(), dbs_storedProceduresPath(), dbs_crudSqlSrcPath() ]
 }
 
-def dbUploadToDatabaseResultPath() {
-    return "${rootProject.buildDir}/"+project(':database').name+"/${ext.dbUploadToDatabaseResultName}" 
+
+def dbs_uploadToDatabaseTableFingerprintPath() {
+    return "${rootProject.buildDir}/"+project(':database').name+"/${ext.dbs_uploadToDatabaseTableFingerprintName}" 
 }
 
 def dbs_crudSqlSrcPath() {
@@ -163,7 +164,7 @@ ext {
     dbs_crudCfgPath = this.&dbs_crudCfgPath;
     dbs_crudSqlSrcPath = this.&dbs_crudSqlSrcPath;
     dbUploadToDatabaseFiles = this.&dbUploadToDatabaseFiles
-    dbUploadToDatabaseResultPath = this.&dbUploadToDatabaseResultPath
+    dbs_uploadToDatabaseTableFingerprintPath = this.&dbs_uploadToDatabaseTableFingerprintPath
     srv_crudDartSrcPath = this.&srv_crudDartSrcPath;
     checksum = this.&checksum;
     removeComments = this.&removeComments;

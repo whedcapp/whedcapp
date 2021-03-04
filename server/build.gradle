@@ -67,10 +67,10 @@ allprojects {
         ext.dbs_storedProceduresFileName = 'dbBaseStoredProcedures.sql'
     }
 
-    if (!ext.has('dbUploadToDatabaseResultName')) {
-        ext.dbUploadToDatabaseResultName = 'dbUploadToDatabaseResult.json'
+    if (!ext.has('dbs_uploadToDatabaseTableFingerprintName')) {
+        ext.dbs_uploadToDatabaseTableFingerprintName = 'dbUploadToDatabaseTableFingerprints.json'
     }
-    assert ext.dbUploadToDatabaseResultName != ''
+    assert ext.dbs_uploadToDatabaseTableFingerprintName != ''
     
     if (!ext.has('dbSetupStrategy')) {
         ext.dbSetupStrategy = 'initialize';

@@ -329,15 +329,14 @@ logger.info("dbs_dbFiles = "+dbs_dbFiles.join(", "))
 // find all Def.sql and Cfg.cs files sorted according to a number in the file
 // name if any, these are the configuration files used to generate the CRUD
 
-def dbs_dbCrudGenInputFiles = (dbs_dbCfgFiles+dbs_dbFiles).findAll { p -> (p.toString() =~ '^/((.+)/)+[0-9]*.*Def.sql$').find() || (p.toString() =~ '^/((.+)/)+[0-9]*.*Cfg.cs$').find() }.sort { a,b -> a.toString() < b.toString() ? -1 : 1 }
+def dbs_dbCrudGenInputFiles = (dbs_dbCfgFiles+dbs_dbFiles).findAll { p -> (p.toString() =~ '^/((.+)/)+[0-9]*.*Def\.sql$').find() || (p.toString() =~ '^/((.+)/)+[0-9]*.*Cfg\.cs$').find() }.sort { a,b -> a.toString() < b.toString() ? -1 : 1 }
 logger.info("dbs_dbCrudGenInputFiles = "+dbs_dbCrudGenInputFiles)
 
 //def dbUploadToDatabaseFiles = ext.dbUploadToDatabaseFiles //[ dbs_dbDefPath(), dbs_storedProceduresPath(), dbs_crudSqlSrcPath() ]
 logger.info("dbUploadFilegggggs = "+dbUploadToDatabaseFiles())
 
-def dbUploadProgressPath = "${rootProject.buildDir}/"+project(":database").name+"/dbUploadProgress.json"
-def dbUploadOutputFiles = [ dbUploadToDatabaseResultPath() ]
-logger.info("dbUploadOutputFiles = "+dbUploadOutputFiles)
+def dbs_uploadToDatabaseOutputFiles = [ dbs_uploadToDatabaseTableFingerprintPath() ]
+logger.info("dbs_uploadToDatabaseOutputFiles = "+dbs_uploadToDatabaseOutputFiles)
 
 def dbs_crudGenCfgPrepInputFiles = dbs_dbCfgSrcFiles
 
@@ -406,12 +405,10 @@ task dbs_CrudGen(type:Exec) {
         mkdir "${rootProject.buildDir}/${project.name}"
     }
 }
-def dbs_openDatabaseAsRootInputFiles = (dbs_dbCfgFiles+dbs_dbFiles).findAll { (it.toString() =~ '^.*.sql$').find() }.sort { a,b -> a.toString() > b.toString() ? 1 : -1 }
-def dbs_openDatabaseAsRootOutputFiles = dbUploadOutputFile
 task dbs_OpenDatabaseAsRoot() {
     dependsOn 'dbs_CrudGen'
-    inputs.files(dbs_openDatabaseAsRootInputFiles)
-    outputs.files(dbs_openDatabaseAsRootOutputFiles)
+    outputs.upToDateWhen { false }
+    
     group = 'Database'
     description 'Opens MySQL Database as an administrator with grant options'
     doFirst {
@@ -431,10 +428,9 @@ task dbs_OpenDatabaseAsRoot() {
         }
     }
 }
-task DropAndRecreateDatabaseIfNecessary() {
+task dbs_DropAndRecreateDatabaseIfNecessary() {
     dependsOn 'dbs_OpenDatabaseAsRoot'
-    inputs.files(dbUploadToDatabaseFiles())
-    outputs.files(dbUploadOutputFiles)
+    outputs.upToDateWhen { false }
     group = 'Database'
     description 'If database setup strategy is initialize, then drop and recreate whedcapp database. Use whedcapp database'
     doFirst {
@@ -451,11 +447,9 @@ task DropAndRecreateDatabaseIfNecessary() {
     }
     
 }
-task CreateWhedcappDatabaseAccessUser() {
-    dependsOn 'dbs_OpenDatabaseAsRoot'
-    dependsOn 'DropAndRecreateDatabaseIfNecessary'
-    inputs.files(dbUploadToDatabaseFiles())
-    outputs.files(dbUploadOutputFiles)
+task dbs_CreateWhedcappDatabaseAccessUser() {
+    dependsOn 'dbs_DropAndRecreateDatabaseIfNecessary'
+    outputs.upToDateWhen { false }
     group = 'Database'
     description 'Create whedcapp database access user as well as tables/triggers/procedures for keeping track of what has been uploaded'
     doFirst {
@@ -557,12 +551,13 @@ task CreateWhedcappDatabaseAccessUser() {
         }
     }
 }
-
-task UploadToDatabase() {
+def dbs_uploadToDatabaseInputFiles = (dbs_dbCfgFiles+dbs_dbFiles).findAll { p -> (p.toString() =~ '^/((.+)/)+.*\.sql').find() }.sort { a,b -> a.toString() > b.toString() ? 1 : -1 }
+logger.info("dbs_uploadToDatabaseInputFiles = "+dbs_uploadToDatabaseInputFiles)
+task dbs_UploadToDatabase() {
     dependsOn 'dbs_CrudGen'
-    dependsOn 'CreateWhedcappDatabaseAccessUser'
+    dependsOn 'dbs_CreateWhedcappDatabaseAccessUser'
     inputs.files(dbUploadToDatabaseFiles())
-    outputs.files(dbUploadOutputFiles)
+    outputs.files(dbs_uploadToDatabaseOutputFiles)
     group = 'Database'
     description = "Uploads database scheme."
     doFirst {
@@ -593,13 +588,21 @@ task UploadToDatabase() {
             }
         }
         try {
-            def uploadDatabaseResultFile = new File(dbUploadProgressPath);
+            
+            // open a writer to an output stream associated with the file
+            def uploadDatabaseResultFile = new File(dbs_uploadToDatabaseTableFingerprintPath());
             def uploadDatabaseResultOutputStream = uploadDatabaseResultFile.newOutputStream();
             def writer = uploadDatabaseResultOutputStream.newPrintWriter();
+
+            // for each row in the installation item digest table, output
+            // digest data that can be checked to see if a SQL definition
+            // has changed or not. This can be used to to make decisions
+            // concerning if a SQL definition should be uploaded or not
+            // and how to handle migration.
+            
             stmt.eachRow("SELECT JSON_ARRAYAGG(JSON_OBJECT('identifier',`wiid_item_identifier`,'type',`wiid_item_type`,'type_instance',`wiid_item_type_instance`,'digest',`wiid_item_digest`)) FROM `whedcapp`.`whedcapp_installation_item_digest`") { obj ->
                 logger.info(obj[0]);
                 logger.info(obj[0].getClass().getName());
-                //writer.writeLine(obj[0].toString());
                 uploadDatabaseResultFile << obj[0];
             }
             uploadDatabaseResultOutputStream.close();
@@ -670,7 +673,7 @@ gradle.taskGraph.whenReady { taskGraph ->
 } // end whenReady
 
 gradle.taskGraph.whenReady { taskGraph ->
-    if(taskGraph.hasTask(':database:CreateWhedcappDatabaseAccessUser')) {
+    if(taskGraph.hasTask(':database:dbs_CreateWhedcappDatabaseAccessUser')) {
 
         def pass = ''
         def user = ''
