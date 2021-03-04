@@ -47,7 +47,7 @@ allprojects {
     }
     assert ext.cgt_crudGenToolName != ''
     if (!ext.has('dbs_dbDefFileName')) {
-        ext.dbs_dbDefFileName = 'dbDef.sql'
+        ext.dbs_dbDefFileName = '08192_dbDef.sql'
     }
     assert ext.dbs_dbDefFileName != ''
     if (!ext.has('dbs_crudCfgFileName')) {
@@ -55,7 +55,7 @@ allprojects {
     }
     assert ext.dbs_crudCfgFileName != ''
     if (!ext.has('dbs_crudSqlSrcFileName')) {
-        ext.dbs_crudSqlSrcFileName = 'dbCrud.sql'
+        ext.dbs_crudSqlSrcFileName = '14336_dbCrud.sql'
     }
     assert ext.dbs_crudSqlSrcFileName != ''
     if (!ext.has('srv_crudDartSrcFileName')) {
@@ -64,7 +64,7 @@ allprojects {
     assert ext.srv_crudDartSrcFileName != ''
     ext.whedcappAdministratorUid = ''
     if (!ext.has('dbs_storedProceduresFileName')) {
-        ext.dbs_storedProceduresFileName = 'dbBaseStoredProcedures.sql'
+        ext.dbs_storedProceduresFileName = '12288_dbBaseStoredProcedures.sql'
     }
 
     if (!ext.has('dbs_uploadToDatabaseTableFingerprintName')) {

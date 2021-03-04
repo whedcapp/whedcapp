@@ -329,7 +329,7 @@ logger.info("dbs_dbFiles = "+dbs_dbFiles.join(", "))
 // find all Def.sql and Cfg.cs files sorted according to a number in the file
 // name if any, these are the configuration files used to generate the CRUD
 
-def dbs_dbCrudGenInputFiles = (dbs_dbCfgFiles+dbs_dbFiles).findAll { p -> (p.toString() =~ '^/((.+)/)+[0-9]*.*Def\.sql$').find() || (p.toString() =~ '^/((.+)/)+[0-9]*.*Cfg\.cs$').find() }.sort { a,b -> a.toString() < b.toString() ? -1 : 1 }
+def dbs_dbCrudGenInputFiles = (dbs_dbCfgFiles+dbs_dbFiles).findAll { p -> (p.toString() =~ '^/((.+)/)+[0-9]*.*Def\\.sql$').find() || (p.toString() =~ '^/((.+)/)+[0-9]*.*Cfg\\.cs$').find() }.sort { a,b -> a.toString() < b.toString() ? -1 : 1 }
 logger.info("dbs_dbCrudGenInputFiles = "+dbs_dbCrudGenInputFiles)
 
 //def dbUploadToDatabaseFiles = ext.dbUploadToDatabaseFiles //[ dbs_dbDefPath(), dbs_storedProceduresPath(), dbs_crudSqlSrcPath() ]
@@ -551,7 +551,7 @@ task dbs_CreateWhedcappDatabaseAccessUser() {
         }
     }
 }
-def dbs_uploadToDatabaseInputFiles = (dbs_dbCfgFiles+dbs_dbFiles).findAll { p -> (p.toString() =~ '^/((.+)/)+.*\.sql').find() }.sort { a,b -> a.toString() > b.toString() ? 1 : -1 }
+def dbs_uploadToDatabaseInputFiles = ((dbs_dbCfgFiles+dbs_dbFiles).findAll { p -> (p.toString() =~ '^/((.+)/)+.*\\.sql').find() }+[dbs_crudSqlSrcPath()]).sort { a,b -> a.toString() > b.toString() ? 1 : -1 }
 logger.info("dbs_uploadToDatabaseInputFiles = "+dbs_uploadToDatabaseInputFiles)
 task dbs_UploadToDatabase() {
     dependsOn 'dbs_CrudGen'
