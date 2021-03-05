@@ -16,6 +16,8 @@
  along with Whedcapp.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+// Automatically download drivers for Groovy MySQL access.
+
 buildscript{
     repositories{
         jcenter()
@@ -42,6 +44,9 @@ ext.wcau = ''
 def getWcau = {
     return ext.wcau
 };
+
+// ExtractedSqlStatement objects represent an SQL statement
+// extracted from an SQL script file.
 
 @AutoClone
 public  class ExtractedSqlStatement {
@@ -86,6 +91,9 @@ public  class ExtractedSqlStatement {
         return id + "-> <"+statement+">, ["+type+"]";
     }
 };
+
+// This iterator takes a script files without comments and
+// returns ExtractedSqlStatements until there are no more.
 
 class SqlScriptIterator implements Iterator<ExtractedSqlStatement> {
     public static class SqlPattern {
@@ -335,8 +343,8 @@ logger.info("dbs_dbCrudGenInputFiles = "+dbs_dbCrudGenInputFiles)
 //def dbUploadToDatabaseFiles = ext.dbUploadToDatabaseFiles //[ dbs_dbDefPath(), dbs_storedProceduresPath(), dbs_crudSqlSrcPath() ]
 logger.info("dbUploadFilegggggs = "+dbUploadToDatabaseFiles())
 
-def dbs_uploadToDatabaseOutputFiles = [ dbs_uploadToDatabaseTableFingerprintPath() ]
-logger.info("dbs_uploadToDatabaseOutputFiles = "+dbs_uploadToDatabaseOutputFiles)
+// Copy the '*.in' files and replace tokens. This as part of the preparation
+// of CRUD generation.
 
 def dbs_crudGenCfgPrepInputFiles = dbs_dbCfgSrcFiles
 
@@ -357,6 +365,9 @@ task dbs_CrudGenCfgPrep() {
         logger.info("m="+m)
     }
 }
+
+// Prepare by copying the rest of the specification files for CRUD generation.
+
 def dbs_crudGenPrepInputFiles = dbs_dbSrcFiles
 def dbs_crudGenPrepOutputFiles = [
     dbs_crudCfgPath()
@@ -374,6 +385,8 @@ task dbs_CrudGenPrep() {
         }
     }
 }
+
+// Generate the CRUD specification file.
 
 def dbs_crudGenInputFiles = dbs_dbCrudGenInputFiles + [ cgt_crudGenToolPath() ]
 def dbs_crudGenOutputFiles = [ dbs_crudSqlSrcPath()]
@@ -405,6 +418,39 @@ task dbs_CrudGen(type:Exec) {
         mkdir "${rootProject.buildDir}/${project.name}"
     }
 }
+//  ####   #####   ######  #    #
+// #    #  #    #  #       ##   #
+// #    #  #    #  #####   # #  #
+// #    #  #####   #       #  # #
+// #    #  #       #       #   ##
+//  ####   #       ######  #    #
+
+
+// #####     ##     #####    ##    #####     ##     ####   ######
+// #    #   #  #      #     #  #   #    #   #  #   #       #
+// #    #  #    #     #    #    #  #####   #    #   ####   #####
+// #    #  ######     #    ######  #    #  ######       #  #
+// #    #  #    #     #    #    #  #    #  #    #  #    #  #
+// #####   #    #     #    #    #  #####   #    #   ####   ######
+
+
+//   ##     ####
+//  #  #   #
+// #    #   ####
+// ######       #
+// #    #  #    #
+// #    #   ####
+
+
+// #####    ####    ####    #####
+// #    #  #    #  #    #     #
+// #    #  #    #  #    #     #
+// #####   #    #  #    #     #
+// #   #   #    #  #    #     #
+// #    #   ####    ####      #
+
+
+
 task dbs_OpenDatabaseAsRoot() {
     dependsOn 'dbs_CrudGen'
     outputs.upToDateWhen { false }
@@ -428,6 +474,58 @@ task dbs_OpenDatabaseAsRoot() {
         }
     }
 }
+
+// #####   #####    ####   #####
+// #    #  #    #  #    #  #    #
+// #    #  #    #  #    #  #    #
+// #    #  #####   #    #  #####
+// #    #  #   #   #    #  #
+// #####   #    #   ####   #
+
+
+//   ##    #    #  #####
+//  #  #   ##   #  #    #
+// #    #  # #  #  #    #
+// ######  #  # #  #    #
+// #    #  #   ##  #    #
+// #    #  #    #  #####
+
+
+// #####   ######   ####   #####   ######    ##     #####  ######
+// #    #  #       #    #  #    #  #        #  #      #    #
+// #    #  #####   #       #    #  #####   #    #     #    #####
+// #####   #       #       #####   #       ######     #    #
+// #   #   #       #    #  #   #   #       #    #     #    #
+// #    #  ######   ####   #    #  ######  #    #     #    ######
+
+
+// #####     ##     #####    ##    #####     ##     ####   ######
+// #    #   #  #      #     #  #   #    #   #  #   #       #
+// #    #  #    #     #    #    #  #####   #    #   ####   #####
+// #    #  ######     #    ######  #    #  ######       #  #
+// #    #  #    #     #    #    #  #    #  #    #  #    #  #
+// #####   #    #     #    #    #  #####   #    #   ####   ######
+
+
+//    #    ######
+//    #    #
+//    #    #####
+//    #    #
+//    #    #
+//    #    #
+
+
+// #    #  ######   ####   ######   ####    ####     ##    #####    #   #
+// ##   #  #       #    #  #       #       #        #  #   #    #    # #
+// # #  #  #####   #       #####    ####    ####   #    #  #    #     #
+// #  # #  #       #       #            #       #  ######  #####      #
+// #   ##  #       #    #  #       #    #  #    #  #    #  #   #      #
+// #    #  ######   ####   ######   ####    ####   #    #  #    #     #
+
+// If database is to be reinitialized, do that, otherwise, a migration
+// should take place. The migration is a future placeholder and is currently
+// not supported.
+
 task dbs_DropAndRecreateDatabaseIfNecessary() {
     dependsOn 'dbs_OpenDatabaseAsRoot'
     outputs.upToDateWhen { false }
@@ -447,6 +545,50 @@ task dbs_DropAndRecreateDatabaseIfNecessary() {
     }
     
 }
+
+//  ####   #####   ######    ##     #####  ######
+// #    #  #    #  #        #  #      #    #
+// #       #    #  #####   #    #     #    #####
+// #       #####   #       ######     #    #
+// #    #  #   #   #       #    #     #    #
+//  ####   #    #  ######  #    #     #    ######
+
+
+// #    #  #    #  ######  #####    ####     ##    #####   #####
+// #    #  #    #  #       #    #  #    #   #  #   #    #  #    #
+// #    #  ######  #####   #    #  #       #    #  #    #  #    #
+// # ## #  #    #  #       #    #  #       ######  #####   #####
+// ##  ##  #    #  #       #    #  #    #  #    #  #       #
+// #    #  #    #  ######  #####    ####   #    #  #       #
+
+
+// #####     ##     #####    ##    #####     ##     ####   ######
+// #    #   #  #      #     #  #   #    #   #  #   #       #
+// #    #  #    #     #    #    #  #####   #    #   ####   #####
+// #    #  ######     #    ######  #    #  ######       #  #
+// #    #  #    #     #    #    #  #    #  #    #  #    #  #
+// #####   #    #     #    #    #  #####   #    #   ####   ######
+
+
+//   ##     ####    ####   ######   ####    ####
+//  #  #   #    #  #    #  #       #       #
+// #    #  #       #       #####    ####    ####
+// ######  #       #       #            #       #
+// #    #  #    #  #    #  #       #    #  #    #
+// #    #   ####    ####   ######   ####    ####
+
+
+// #    #   ####   ######  #####
+// #    #  #       #       #    #
+// #    #   ####   #####   #    #
+// #    #       #  #       #####
+// #    #  #    #  #       #   #
+//  ####    ####   ######  #    #
+
+// Creates the whedcapp database access user with apropriate grants.
+// It also creates the table keeping track of installed/executed SQL
+// statements and their digests.
+
 task dbs_CreateWhedcappDatabaseAccessUser() {
     dependsOn 'dbs_DropAndRecreateDatabaseIfNecessary'
     outputs.upToDateWhen { false }
@@ -478,6 +620,7 @@ task dbs_CreateWhedcappDatabaseAccessUser() {
             throw new StopExecutionException("Could not create default whedcapp user \""+getMysqlWhedcappUserId()+"\""+sqex);
         }
         try {
+
             // create table for keeping track of if tables need to be reloaded or not
             stmt.execute """
                 CREATE TABLE IF NOT EXISTS `whedcapp`.`whedcapp_installation_item_digest`(
@@ -490,6 +633,9 @@ task dbs_CreateWhedcappDatabaseAccessUser() {
                     UNIQUE INDEX `wiid_unique_idx`(`wiid_item_identifier`,`wiid_item_type`,`wiid_item_type_instance`)
                 )
             """
+
+            // create trigger to double check that database constraints holds
+
             stmt.execute """
                     CREATE TRIGGER `whedcapp`.`whedcapp_installation_item_digest_insert_check`
                         BEFORE INSERT
@@ -526,6 +672,9 @@ task dbs_CreateWhedcappDatabaseAccessUser() {
                         END IF;
                     END
                     """
+
+            // create helper function or inserting values in the table
+
             stmt.execute """
                     CREATE FUNCTION `whedcapp`.`insert_whedcapp_installation_item_digest` (identifier VARCHAR(256), type VARCHAR(16), digest VARCHAR(64)) 
                     RETURNS INTEGER DETERMINISTIC
@@ -551,12 +700,39 @@ task dbs_CreateWhedcappDatabaseAccessUser() {
         }
     }
 }
+
+// #    #  #####   #        ####     ##    #####            #####   ####
+// #    #  #    #  #       #    #   #  #   #    #             #    #    #
+// #    #  #    #  #       #    #  #    #  #    #             #    #    #
+// #    #  #####   #       #    #  ######  #    #             #    #    #
+// #    #  #       #       #    #  #    #  #    #             #    #    #
+//  ####   #       ######   ####   #    #  #####              #     ####
+
+// #####     ##     #####    ##    #####     ##     ####   ######
+// #    #   #  #      #     #  #   #    #   #  #   #       #
+// #    #  #    #     #    #    #  #####   #    #   ####   #####
+// #    #  ######     #    ######  #    #  ######       #  #
+// #    #  #    #     #    #    #  #    #  #    #  #    #  #
+// #####   #    #     #    #    #  #####   #    #   ####   ######
+
+
+
+// Upload database scheme, base stored procedures and generated CRUD procedures
+// to the the database. It stores a digest of the SQL specification in a table
+// that is later dumped to a JSON file mapped on identifiers. This is used
+// to check if some file has been modified and is planned to be used for
+// migration.
+
 def dbs_uploadToDatabaseInputFiles = ((dbs_dbCfgFiles+dbs_dbFiles).findAll { p -> (p.toString() =~ '^/((.+)/)+.*\\.sql').find() }+[dbs_crudSqlSrcPath()]).sort { a,b -> a.toString() > b.toString() ? 1 : -1 }
 logger.info("dbs_uploadToDatabaseInputFiles = "+dbs_uploadToDatabaseInputFiles)
+
+def dbs_uploadToDatabaseOutputFiles = [ dbs_uploadToDatabaseTableFingerprintPath() ]
+logger.info("dbs_uploadToDatabaseOutputFiles = "+dbs_uploadToDatabaseOutputFiles)
+
 task dbs_UploadToDatabase() {
     dependsOn 'dbs_CrudGen'
     dependsOn 'dbs_CreateWhedcappDatabaseAccessUser'
-    inputs.files(dbUploadToDatabaseFiles())
+    inputs.files(dbs_uploadToDatabaseInputFiles)
     outputs.files(dbs_uploadToDatabaseOutputFiles)
     group = 'Database'
     description = "Uploads database scheme."
