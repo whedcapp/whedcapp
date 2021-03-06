@@ -1,0 +1,6 @@
+*** Variables ***
+${dbName}         @databaseName@
+${dbUserName}     @mysqlWhedcappUserId@
+${dbPassword}     @mysqlWhedcappPassword@
+${dbHost}         @mysqlWhedcappDatabaseHost@
+${dbPort}         @mysqlWhedcappDatabasePort@

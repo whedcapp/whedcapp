@@ -1,0 +1,8 @@
+*** Variables ***
+${UID_AMOUNT1}            1
+${UID_AMOUNT2}           10
+${UID_AMOUNT3}          100
+${UID_AMOUNT4}         1000
+${UID_SELF}            @whedcappTestUser@
+${UID_OTHER}           @whedcappOtherTestUser@
+

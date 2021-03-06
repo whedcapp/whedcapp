@@ -1,0 +1,64 @@
+
+/*
+ This file is part of Whedcapp - Well-being Health Environment Data Collection App - to collect self-evaluated data for research purpose
+ Copyright (C) 2020-2021  Jonas Mellin, Catharina Gillsjö
+
+ Whedcapp is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+ Whedcapp is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with Whedcapp.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+import org.apache.tools.ant.filters.*;
+
+def testSrcFiles = [ "**/*.robot.in", "**/*.robot" ].inject([]) { acc, val -> acc+project.fileTree(dir: "${projectDir}", include: val ) }
+
+
+
+def tst_prepareTestInputFiles = testSrcFiles + [ dbs_uploadToDatabaseTableFingerprintPath() ]
+logger.info("tst_prepareTestInputFiles = "+tst_prepareTestInputFiles.join(", "))
+def tst_prepareTestOutputFiles = testSrcFiles.inject([]) {acc, val -> acc+[ val.toString().replaceAll("^.*/test/","${rootProject.buildDir}/"+project(':test').name).replaceAll(".in","") ]}
+logger.info("tst_prepareTestOutputFiles = "+tst_prepareTestOutputFiles.join(", "))
+                                                                 
+                                                                 
+
+
+task tst_PrepareTest() {
+    dependsOn ':database:dbs_UploadToDatabase'
+    inputs.files(tst_prepareTestInputFiles)
+    outputs.files(tst_prepareTestOutputFiles)
+    doLast {
+        def tokenReplacements = [databaseName: 'whedcapp',
+                                 mysqlWhedcappUserId: 'test',
+                                 mysqlWhedcappPassword: 'test',
+                                 mysqlWHedcappDatabaseHost: 'localhost',
+                                 mysqlWhedcappDatabasePort: '3306',
+                                 whedcappTestUser: 'test@localhost',
+                                 whedcappOtherTestUser: 'othertest@localhost'
+        ] 
+        copy {
+            from "${projectDir}"
+            include "**/*.robot"
+            include "**/*.robot.in"
+            include "**/*.txt"
+            testSrcFiles.each { p -> from(p) }
+            into "${rootProject.buildDir}/${project.name}"
+            filter(ReplaceTokens,tokens:tokenReplacements)
+            rename '(.*).in', '$1'
+        }
+        mkdir "${rootProject.buildDir}/reports"
+    }
+}
+
+
+// Invoke the robot framework recursively
+task tst_PerformTest(type: Exec) {
+}

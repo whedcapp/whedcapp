@@ -1,0 +1,4 @@
+*** Settings ***
+Library           DatabaseLibrary
+Resource          ../Keywords/DatabaseKeywords.txt
+Resource          ../Variables/GlobalVariables.txt
