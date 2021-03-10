@@ -29,7 +29,9 @@ buildscript{
 }
 
 
+import groovy.json.JsonException;
 import groovy.json.JsonOutput;
+import groovy.json.JsonSlurper;
 import groovy.transform.AutoClone;
 import groovy.swing.SwingBuilder;
 import org.apache.tools.ant.filters.*;
@@ -39,11 +41,6 @@ import java.util.Optional
 import java.util.regex.*
 //import org.apache.commons.io.FileNameUtils
 
-// Whedcapp admin user identity
-ext.wcau = ''
-def getWcau = {
-    return ext.wcau
-};
 
 // ExtractedSqlStatement objects represent an SQL statement
 // extracted from an SQL script file.
@@ -299,21 +296,142 @@ def getMysqlWhedcappConnection = {
 // Identities and passwords, all which are set by querying the person
 // building the server part
 
+class UserPasswordInternal {
+    private String user;
+    private String password;
+    public UserPasswordInternal(final String user, final String password) {
+        this.user = user;
+        this.password = password;
+    }
+    public String getUser() {
+        return user;
+    }
+    public String getPassword() {
+        return password;
+    }
+    public String toString() {
+        return "User = \""+user+"\", password = \""+password+"\"";
+    }
+};
+
+class UserPassword {
+    private Script script;
+    private String context;
+    private String user;
+    private String password;
+    public UserPassword(Script script,String context, String user, String password) {
+        this.script = script;
+        this.context = context;
+        this.user = user;
+        this.password = password;
+    }
+    public String getContext() {
+        return context;
+    }
+    public String getUser() {
+        return user;
+    }
+    public String getPassword() {
+        return password;
+    }
+    public static getJsonPath(Script script,String context) {
+        return "${script.rootProject.buildDir}/"+script.project(':database').name+"/"+context+"-up.json";        
+    }
+    public static File getJsonFile(final Script script,final String context) {
+        return new File(getJsonPath(script,context));
+    }
+    public static getStoredUserPassword(final Script script, final String context) {
+        try {
+            UserPassword result;
+            def slurper = new JsonSlurper();
+            def json = slurper.parseText(getJsonFile(script,context).text);
+            return new UserPassword(script,context,json.user,json.password);
+        } catch (FileNotFoundException fnfe) {
+            return null;
+        } catch (JsonException je) {
+            throw new StopExecutionException("Something is wrong with the JSON of file \""+getJsonPath(context)+"\"");
+        }
+        
+    }
+    public saveUserPassword() {
+        try {
+            def userPasswordFile = getJsonFile(script,context);
+            userPasswordFile << JsonOutput.toJson(this);
+        } catch (Exception e) {
+            throw new StopExecutionException("Could not save user/password"+e);
+        }
+    }
+
+};
+
+class UserPasswordControl {
+    private String context;
+    private Boolean requirePassword;
+    private String title;
+    private String prompt;
+    private String defaultUser;
+    private String defaultPassword;
+    public UserPasswordControl(final String context, final Boolean requirePassword,final String title, final String prompt, final String defaultUser, final String defaultPassword) {
+        this.context = context;
+        this.requirePassword = requirePassword;
+        this.title = title;
+        this.prompt = prompt;
+        this.defaultUser = defaultUser;
+        this.defaultPassword = defaultPassword;
+    }
+    public String getContext() {
+        return context;
+    }
+    public Boolean getRequirePassword() {
+        return requirePassword;
+    }
+    public String getTitle() {
+        return title;
+    }
+    public String getPrompt() {
+        return prompt;
+    }
+    public String getDefaultUser() {
+        return defaultUser;
+    }
+    public String getDefaultPassword() {
+        return defaultPassword;
+    }
+};
+
+def task2context = [
+    ':database:dbs_CrudGenCfgPrep':new UserPasswordControl('whedcappAdministrator',false,'Whedcapp administrator account (not MySQL!)','Enter default Whedcapp administrator user data','',''),
+    ':database:dbs_CreateWhedcappDatabaseAccessUser':new UserPasswordControl('whedcappDatabaseAccessUser',true,'Whedcapp MySQL database access account','Enter Whedcapp database access user data','',''),
+    ':database:dbs_OpenDatabaseAsRoot':new UserPasswordControl('whedcappMysqlRoot',true,'MySQL root access account','Enter MySQL root access data','admin','')
+];
+
+ext.credentials = [
+    'whedcappAdministrator': null,
+    'whedcappDatabaseAccessUser': null,
+    'whedcappMysqlRoot': null
+];
+
+// Whedcapp admin user identity
+ext.wcau = ''
+def getWcau = {
+    return ext.credentials['whedcappAdministrator'].getUser()
+};
+
 ext.mysqlRootUserId = ''
 def getMysqlRootUserId = {
-    return ext.mysqlRootUserId
+    return ext.credentials['whedcappMysqlRoot'].getUser()
 }
 ext.mysqlRootPassword = ''
 def getMysqlRootPassword = {
-    return ext.mysqlRootPassword
+    return ext.credentials['whedcappMysqlRoot'].getPassword()
 }
 ext.mysqlWhedcappUserId = ''
 def getMysqlWhedcappUserId = {
-    return ext.mysqlWhedcappUserId
+    return ext.credentials['whedcappDatabaseAccessUser'].getUser()
 }
 ext.mysqlWhedcappPassword = ''
 def getMysqlWhedcappPassword = {
-    return ext.mysqlWhedcappPassword
+    return ext.credentials['whedcappDatabaseAccessUser'].getPassword()
 }
 
 def getMysqlWhedcappUserIsCreatedPath = {
@@ -777,8 +895,6 @@ task dbs_UploadToDatabase() {
             // and how to handle migration.
             
             stmt.eachRow("SELECT JSON_ARRAYAGG(JSON_OBJECT('identifier',`wiid_item_identifier`,'type',`wiid_item_type`,'type_instance',`wiid_item_type_instance`,'digest',`wiid_item_digest`)) FROM `whedcapp`.`whedcapp_installation_item_digest`") { obj ->
-                logger.info(obj[0]);
-                logger.info(obj[0].getClass().getName());
                 uploadDatabaseResultFile << obj[0];
             }
             uploadDatabaseResultOutputStream.close();
@@ -794,143 +910,81 @@ task dbs_UploadToDatabase() {
 task clean() {
     doFirst {
         delete "${rootProject.buildDir}/${project.name}"
-        logger.info(removeComments("/* Hello */ old friend"))
+    }
+}
+task resetCredentials() {
+    doFirst {
+        task2context.each { task, upc ->
+            delete UserPassword.getJsonPath(this,upc.getContext())
+        }
     }
 }
 
 // Solution based on https://www.timroes.de/using-password-prompts-with-gradle-build-files
 
-gradle.taskGraph.whenReady { taskGraph ->
-    //  if(taskGraph.hasTask(':database:dbs_OpenDatabaseAsRoot')  && !file(getMysqlWhedcappUserIsCreatedPath()).exists()) {
-    if(taskGraph.hasTask(':database:dbs_OpenDatabaseAsRoot')  && !file(getMysqlWhedcappUserIsCreatedPath()).exists()) {
 
-        def pass = ''
-        def user = ''
-        if(System.console() == null) {
-            new SwingBuilder().edt {
-                dialog(modal: true, // Otherwise the build will continue running before you closed the dialog
-                       title: 'Enter MySQL Root password', // Dialog title
-                       alwaysOnTop: true, // pretty much what the name says
-                       resizable: false, // Don't allow the user to resize the dialog
-                       locationRelativeTo: null, // Place dialog in center of the screen
-                       pack: true, // We need to pack the dialog (so it will take the size of it's children)
-                       show: true // Let's show it
-                ) {
-                    vbox { // Put everything below each other
-                        label(text: "Please enter Root administrator Id:")
-                        input1 = textField('admin')
-                        label(text: "Please enter key passphrase for MySQL root:")
+
+
+def swingit(final UserPasswordControl upc) {
+    def user = ''
+    def pass = ''
+    while (user == '' || ((pass == '' && upc.getRequirePassword()))) {
+        new SwingBuilder().edt {
+            dialog(modal: true, // Otherwise the build will continue running before you closed the dialog
+                   title: upc.getTitle(), // Dialog title
+                   alwaysOnTop: true, // pretty much what the name says
+                   resizable: false, // Don't allow the user to resize the dialog
+                   locationRelativeTo: null, // Place dialog in center of the screen
+                   pack: true, // We need to pack the dialog (so it will take the size of it's children)
+                   show: true // Let's show it
+            ) {
+                vbox { // Put everything below each other
+                    label(text: upc.getPrompt())
+                    input1 = textField(upc.getDefaultUser())
+                    if (upc.getRequirePassword()) {
+                        label(text: "Please enter key passphrase:")
                         input2 = passwordField()
-                        button(defaultButton: true, text: 'OK', actionPerformed: {
-                            user = input1.text
+                    }
+                    button(defaultButton: true, text: 'OK', actionPerformed: {
+                        user = input1.text
+                        if (upc.getRequirePassword()) {
                             pass = input2.text
-                            dispose(); // Close dialog
-                        })
-                    } // vbox end
-                } // dialog end
-            } // edt end
-        } else {
-            userRaw = System.console().read("\nPlease enter database root user name:");
-            user = new String(userRaw)
-            passRaw = System.console().readPassword("\nPlease enter key passphrase for MySQL root: ")
-            pass = new String(passRaw)
-        }
-        logger.info("User = "+user)
-        logger.info("Pass = "+pass)
-
-        if(user.size() <=0 || pass.size() <= 0) {
-            throw new InvalidUserDataException("You must enter a root user identity and a password to proceed.")
-        }
-
-        project.ext.mysqlRootUserId = user
-        project.ext.mysqlRootPassword = pass;
-
-    } // end if has task
-} // end whenReady
-
+                        }
+                        dispose(); // Close dialog
+                    })
+                } // vbox end
+            } // dialog end
+        } // edt end
+    }
+    return [user,pass];
+}
 gradle.taskGraph.whenReady { taskGraph ->
-    if(taskGraph.hasTask(':database:dbs_CreateWhedcappDatabaseAccessUser')) {
-
-        def pass = ''
-        def user = ''
-        if(System.console() == null) {
-            new SwingBuilder().edt {
-                dialog(modal: true, // Otherwise the build will continue running before you closed the dialog
-                       title: 'Enter MySQL Whedcapp password', // Dialog title
-                       alwaysOnTop: true, // pretty much what the name says
-                       resizable: false, // Don't allow the user to resize the dialog
-                       locationRelativeTo: null, // Place dialog in center of the screen
-                       pack: true, // We need to pack the dialog (so it will take the size of it's children)
-                       show: true // Let's show it
-                ) {
-                    vbox { // Put everything below each other
-                        label(text: "Please enter Whedcapp administrator Id:")
-                        input1 = textField()
-                        label(text: "Please enter key passphrase for Whedcapp:")
-                        input2 = passwordField()
-                        button(defaultButton: true, text: 'OK', actionPerformed: {
-                            user = input1.text;
-                            pass = input2.text; // Set pass variable to value of input field
-                            dispose(); // Close dialog
-                        })
-                    } // vbox end
-                } // dialog end
-            } // edt end
-        } else {
-            userRaw = System.console().read("\nPlease enter Whedcapp database user name:");
-            user = new String(userRaw)
-            passRaw = System.console().readPassword("\nPlease enter key passphrase for Whedcapp: ")
-            pass = new String(passRaw)
-        }
-        logger.info("User 2 = "+user)
-        logger.info("Pass 2 = "+pass)
-
-        if(user.size() <=0 || pass.size() <= 0) {
-            throw new InvalidUserDataException("You must enter a user identity or password to proceed.")
-        }
-
-        project.ext.mysqlWhedcappUserId = user;
-        project.ext.mysqlWhedcappPassword = pass;
-
-    } // end if has task
-} // end whenReady
-
-// Whedcapp administrator email:
-
-gradle.taskGraph.whenReady { taskGraph ->
-    if(taskGraph.hasTask(':database:dbs_CrudGenCfgPrep') ) {
-
-        def user = ''
-        if(System.console() == null) {
-            new SwingBuilder().edt {
-                dialog(modal: true, // Otherwise the build will continue running before you closed the dialog
-                       title: 'Enter Whedcapp administrator user identity', // Dialog title
-                       alwaysOnTop: true, // pretty much what the name says
-                       resizable: false, // Don't allow the user to resize the dialog
-                       locationRelativeTo: null, // Place dialog in center of the screen
-                       pack: true, // We need to pack the dialog (so it will take the size of it's children)
-                       show: true // Let's show it
-                ) {
-                    vbox { // Put everything below each other
-                        label(text: "Please enter Whedcapp administrator user identity (email):")
-                        input = textField()
-                        button(defaultButton: true, text: 'OK', actionPerformed: {
-                            user = input.text; // Set pass variable to value of input field
-                            dispose(); // Close dialog
-                        })
-                    } // vbox end
-                } // dialog end
-            } // edt end
-        } else {
-            userRaw = System.console().readPassword("\nPlease enter Whedcapp administrator user identity (email): ")
-            user = new String(userRaw)
-        }
-
-        if(user.size() <= 0) {
-            throw new InvalidUserDataException("You must enter a Whedcapp administrator user identity (email) to proceed.")
-        }
-
-        project.ext.wcau = user;
-
-    } // end if has task
-} // end whenReady
+    def user = '', pass = ''
+    task2context.each { task,upc ->
+        if (taskGraph.hasTask(task)) {
+            logger.info("Require password:"+upc.getRequirePassword())
+            def up = UserPassword.getStoredUserPassword(this,upc.getContext());
+            if (up == null) {
+                // get the user name/password
+                if(System.console() == null) {
+                    (user,pass) = swingit(upc);
+                } else {
+                    userRaw = System.console().read("\n"+upc.getPromptOrTitle()+":");
+                    user = new String(userRaw)
+                    if (upc.requirePassword()) {
+                        passRaw = System.console().readPassword("\nPlease enter key passphrase: ")
+                        pass = new String(passRaw)
+                    }
+                } // if (System.console()
+                UserPassword up2 = new UserPassword(this,upc.getContext(),user,pass);
+                up2.saveUserPassword();
+                
+            } else {
+                user = up.getUser();
+                pass = up.getPassword();
+            } // if (up == null)
+            ext.credentials[upc.getContext()] = new UserPasswordInternal(user,pass);
+            logger.info("Credentials ["+upc.getContext()+"] = "+ext.credentials[upc.getContext()])
+        } // if (taskGraph.hasTask())
+    } // task2context.each {
+}

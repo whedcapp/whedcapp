@@ -19,7 +19,7 @@
 
 import org.apache.tools.ant.filters.*;
 
-def testSrcFiles = [ "**/*.robot.in", "**/*.robot" ].inject([]) { acc, val -> acc+project.fileTree(dir: "${projectDir}", include: val ) }
+def testSrcFiles = [ "**/*.robot.in", "**/*.robot", "**/*.txt", "**/*.txt.in" ].inject([]) { acc, val -> acc+project.fileTree(dir: "${projectDir}", include: val ) }
 
 
 
@@ -36,10 +36,10 @@ task tst_PrepareTest() {
     inputs.files(tst_prepareTestInputFiles)
     outputs.files(tst_prepareTestOutputFiles)
     doLast {
-        def tokenReplacements = [databaseName: 'whedcapp',
-                                 mysqlWhedcappUserId: 'test',
-                                 mysqlWhedcappPassword: 'test',
-                                 mysqlWHedcappDatabaseHost: 'localhost',
+        def tokenReplacements = [databaseName: '\'whedcapp\'',
+                                 mysqlWhedcappUserId: '\'test\'',
+                                 mysqlWhedcappPassword: '\'test\'',
+                                 mysqlWhedcappDatabaseHost: '\'localhost\'',
                                  mysqlWhedcappDatabasePort: '3306',
                                  whedcappTestUser: 'test@localhost',
                                  whedcappOtherTestUser: 'othertest@localhost'
@@ -49,7 +49,7 @@ task tst_PrepareTest() {
             include "**/*.robot"
             include "**/*.robot.in"
             include "**/*.txt"
-            testSrcFiles.each { p -> from(p) }
+            include "**/*.txt.in"
             into "${rootProject.buildDir}/${project.name}"
             filter(ReplaceTokens,tokens:tokenReplacements)
             rename '(.*).in', '$1'
