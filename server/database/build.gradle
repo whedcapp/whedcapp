@@ -293,6 +293,7 @@ def getMysqlWhedcappConnection = {
     return ext.mysqlWhedcappConnection
 }
 
+
 // Identities and passwords, all which are set by querying the person
 // building the server part
 
@@ -644,9 +645,12 @@ task dbs_OpenDatabaseAsRoot() {
 // should take place. The migration is a future placeholder and is currently
 // not supported.
 
+def dbs_DropAndRecreateDatabaseIfNecessaryOutputFile = new File("${rootProject.buildDir}/${project.name}/dbs_DropAndRecreateDatabaseIfNecessary.txt") ;
+def dbs_DropAndRecreateDatabaseIfNecessaryOutputFiles = [ dbs_DropAndRecreateDatabaseIfNecessaryOutputFile ];
+
 task dbs_DropAndRecreateDatabaseIfNecessary() {
     dependsOn 'dbs_OpenDatabaseAsRoot'
-    outputs.upToDateWhen { false }
+    outputs.files(dbs_DropAndRecreateDatabaseIfNecessaryOutputFiles);
     group = 'Database'
     description 'If database setup strategy is initialize, then drop and recreate whedcapp database. Use whedcapp database'
     doFirst {
@@ -657,6 +661,8 @@ task dbs_DropAndRecreateDatabaseIfNecessary() {
                 stmt.execute("CREATE DATABASE `whedcapp`");
             }
             stmt.execute("USE `whedcapp`");
+            Date date = new Date();
+            dbs_DropAndRecreateDatabaseIfNecessaryOutputFile << "Ready at "+date.toString();
         } catch (SQLException sqe) {
             throw new StopExecutionException("Could not setup database: "+sqex);
         }
@@ -707,9 +713,12 @@ task dbs_DropAndRecreateDatabaseIfNecessary() {
 // It also creates the table keeping track of installed/executed SQL
 // statements and their digests.
 
+def dbs_CreateWhedcappDatabaseAccessUserOutputFile = new File("${rootProject.buildDir}/${project.name}/dbs_CreateWhedcappDatabaseAccessUserReady.txt") 
+def dbs_CreateWhedcappDatabaseAccessUserOutputFiles = [ dbs_CreateWhedcappDatabaseAccessUserOutputFile ]
+
 task dbs_CreateWhedcappDatabaseAccessUser() {
     dependsOn 'dbs_DropAndRecreateDatabaseIfNecessary'
-    outputs.upToDateWhen { false }
+    outputs.files(dbs_CreateWhedcappDatabaseAccessUserOutputFiles);
     group = 'Database'
     description 'Create whedcapp database access user as well as tables/triggers/procedures for keeping track of what has been uploaded'
     doFirst {
@@ -812,9 +821,36 @@ task dbs_CreateWhedcappDatabaseAccessUser() {
                         RETURN last_insert_id();
                     END;
                     """
+            Date date = new Date();
+            dbs_CreateWhedcappDatabaseAccessUserOutputFile << "Whedcapp user created at "+date.toString();
         } catch (SQLException sqex) {
             throw new StopExecutionException("Could not create default whedcapp user \""+getMysqlWhedcappUserId()+"\""+sqex);
         } finally {
+        }
+    }
+}
+
+task dbs_OpenDatabaseAsWhedcappDatabaseAccessUser() {
+    dependsOn 'dbs_CreateWhedcappDatabaseAccessUser'
+    outputs.upToDateWhen { false }
+    
+    group = 'Database'
+    description 'Opens MySQL Database as an whedcapp database access user'
+    doFirst {
+        try {
+            def mysql = buildscript.configurations.classpath.find { it.toString().contains("mysql-connector-java") }
+            URLClassLoader loader = GroovyObject.class.classLoader
+            loader.addURL(file(mysql).toURL())
+            
+            logger.info("Password inside open database as whedcapp database access user: "+getMysqlWhedcappPassword())
+            def db = [url: "jdbc:mysql://127.0.0.1/",
+                      user: getMysqlWhedcappUserId(), password: getMysqlWhedcappPassword(), driver: 'com.mysql.jdbc.Driver']
+            logger.info("Password inside open database as whedcapp database access user: "+getMysqlWhedcappPassword()+", inside db.password = "+db.password)
+            project.ext.mysqlWhedcappConnection = groovy.sql.Sql.newInstance(db.url, db.user, db.password, db.driver)
+            logger.info("Conn = "+project.ext.mysqlWhedcappConnection)
+            logger.info("Conn2 = "+getMysqlWhedcappConnection())
+        } catch (SQLException sqex) {
+            throw new StopExecutionException("Could not login as mysql whedcapp database access user "+sqex.toString())
         }
     }
 }
@@ -959,10 +995,15 @@ def swingit(final UserPasswordControl upc) {
     return [user,pass];
 }
 gradle.taskGraph.whenReady { taskGraph ->
+    mkdir "${rootProject.buildDir}/${project.name}"
     def user = '', pass = ''
+
+    // iterate over credentials
     task2context.each { task,upc ->
+        // if associated task is to be evaluated, then
         if (taskGraph.hasTask(task)) {
             logger.info("Require password:"+upc.getRequirePassword())
+            // fetch stored credentials, if any
             def up = UserPassword.getStoredUserPassword(this,upc.getContext());
             if (up == null) {
                 // get the user name/password

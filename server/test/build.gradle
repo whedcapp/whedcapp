@@ -36,9 +36,10 @@ task tst_PrepareTest() {
     inputs.files(tst_prepareTestInputFiles)
     outputs.files(tst_prepareTestOutputFiles)
     doLast {
+        logger.info("Credentials = "+project(':database').ext.credentials['whedcappAdministrator']);
         def tokenReplacements = [databaseName: '\'whedcapp\'',
-                                 mysqlWhedcappUserId: '\'test\'',
-                                 mysqlWhedcappPassword: '\'test\'',
+                                 mysqlWhedcappUserId: '\''+project(':database').ext.credentials['whedcappDatabaseAccessUser'].getUser()+'\'',
+                                 mysqlWhedcappPassword: '\''+project(':database').ext.credentials['whedcappDatabaseAccessUser'].getPassword()+'\'',
                                  mysqlWhedcappDatabaseHost: '\'localhost\'',
                                  mysqlWhedcappDatabasePort: '3306',
                                  whedcappTestUser: 'test@localhost',
