@@ -37,13 +37,14 @@ task tst_PrepareTest() {
     outputs.files(tst_prepareTestOutputFiles)
     doLast {
         logger.info("Credentials = "+project(':database').ext.credentials['whedcappAdministrator']);
-        def tokenReplacements = [databaseName: '\'whedcapp\'',
-                                 mysqlWhedcappUserId: '\''+project(':database').ext.credentials['whedcappDatabaseAccessUser'].getUser()+'\'',
-                                 mysqlWhedcappPassword: '\''+project(':database').ext.credentials['whedcappDatabaseAccessUser'].getPassword()+'\'',
-                                 mysqlWhedcappDatabaseHost: '\'localhost\'',
-                                 mysqlWhedcappDatabasePort: '3306',
-                                 whedcappTestUser: 'test@localhost',
-                                 whedcappOtherTestUser: 'othertest@localhost'
+        def tokenReplacements = [databaseName: '\'whedcapp\''
+                                 ,whedcappAdministrator: '\''+project(':database').ext.credentials['whedcappAdministrator'].getUser()+'\''
+                                 ,mysqlWhedcappUserId: '\''+project(':database').ext.credentials['whedcappDatabaseAccessUser'].getUser()+'\''
+                                 ,mysqlWhedcappPassword: '\''+project(':database').ext.credentials['whedcappDatabaseAccessUser'].getPassword()+'\''
+                                 ,mysqlWhedcappDatabaseHost: '\'localhost\''
+                                 ,mysqlWhedcappDatabasePort: '3306'
+                                 ,whedcappTestUser: 'test@localhost'
+                                 ,whedcappOtherTestUser: 'othertest@localhost'
         ] 
         copy {
             from "${projectDir}"
@@ -53,7 +54,7 @@ task tst_PrepareTest() {
             include "**/*.txt.in"
             into "${rootProject.buildDir}/${project.name}"
             filter(ReplaceTokens,tokens:tokenReplacements)
-            rename '(.*).in', '$1'
+            rename '(.*)\\.in', '$1'
         }
         mkdir "${rootProject.buildDir}/reports"
     }

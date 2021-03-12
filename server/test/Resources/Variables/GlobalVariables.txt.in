@@ -1,4 +1,5 @@
 *** Variables ***
+${ADMIN}               @whedcappAdministrator@
 ${UID_AMOUNT1}            1
 ${UID_AMOUNT2}           10
 ${UID_AMOUNT3}          100

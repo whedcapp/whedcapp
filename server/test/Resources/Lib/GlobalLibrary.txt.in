@@ -2,3 +2,4 @@
 Library           DatabaseLibrary
 Resource          ../Keywords/DatabaseKeywords.txt
 Resource          ../Variables/GlobalVariables.txt
+Resource          ../Variables/DatabaseVariables.txt
