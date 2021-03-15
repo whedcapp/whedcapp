@@ -14,7 +14,7 @@
                     {
                         "calling_uid_key": {
                             "table": "whedcapp.uid",
-                            "column": "uid_text"
+                            "column": "id_uid"
                         }
                     }
                 ],

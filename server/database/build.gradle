@@ -713,11 +713,16 @@ task dbs_DropAndRecreateDatabaseIfNecessary() {
 // It also creates the table keeping track of installed/executed SQL
 // statements and their digests.
 
+def dbs_CreateWhedcappDatabaseAccessUserInputFiles = ((dbs_dbCfgFiles+dbs_dbFiles).findAll { p -> (p.toString() =~ '^/((.+)/)+.*\\.sql').find() }+[dbs_crudSqlSrcPath()]).sort { a,b -> a.toString() > b.toString() ? 1 : -1 }
+logger.info("dbs_CreateWhedcappDatabaseAccessUserInputFiles = "+dbs_CreateWhedcappDatabaseAccessUserInputFiles)
+
+
 def dbs_CreateWhedcappDatabaseAccessUserOutputFile = new File("${rootProject.buildDir}/${project.name}/dbs_CreateWhedcappDatabaseAccessUserReady.txt") 
 def dbs_CreateWhedcappDatabaseAccessUserOutputFiles = [ dbs_CreateWhedcappDatabaseAccessUserOutputFile ]
 
 task dbs_CreateWhedcappDatabaseAccessUser() {
     dependsOn 'dbs_DropAndRecreateDatabaseIfNecessary'
+    inputs.files(dbs_CreateWhedcappDatabaseAccessUserInputFiles)
     outputs.files(dbs_CreateWhedcappDatabaseAccessUserOutputFiles);
     group = 'Database'
     description 'Create whedcapp database access user as well as tables/triggers/procedures for keeping track of what has been uploaded'
