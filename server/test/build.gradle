@@ -33,19 +33,22 @@ logger.info("tst_prepareTestOutputFiles = "+tst_prepareTestOutputFiles.join(", "
 
 task tst_PrepareTest() {
     dependsOn ':database:dbs_UploadToDatabase'
+    dependsOn ':database:dbs_OpenDatabaseAsWhedcappDatabaseTestAccessUser'
     inputs.files(tst_prepareTestInputFiles)
     outputs.files(tst_prepareTestOutputFiles)
     doLast {
         logger.info("Credentials = "+project(':database').ext.credentials['whedcappAdministrator']);
+        logger.info("Test credentials = "+project(':database').ext.credentials['whedcappDatabaseTestAccessUser']);
         def tokenReplacements = [databaseName: '\'whedcapp\''
                                  ,whedcappAdministrator: '\''+project(':database').ext.credentials['whedcappAdministrator'].getUser()+'\''
-                                 ,mysqlWhedcappUserId: '\''+project(':database').ext.credentials['whedcappDatabaseAccessUser'].getUser()+'\''
-                                 ,mysqlWhedcappPassword: '\''+project(':database').ext.credentials['whedcappDatabaseAccessUser'].getPassword()+'\''
+                                 ,mysqlWhedcappUserId: '\''+project(':database').ext.credentials['whedcappDatabaseTestAccessUser'].getUser()+'\''
+                                 ,mysqlWhedcappPassword: '\''+project(':database').ext.credentials['whedcappDatabaseTestAccessUser'].getPassword()+'\''
                                  ,mysqlWhedcappDatabaseHost: '\'localhost\''
                                  ,mysqlWhedcappDatabasePort: '3306'
                                  ,whedcappTestUser: 'test@localhost'
                                  ,whedcappOtherTestUser: 'othertest@localhost'
-        ] 
+        ]
+        logger.info("TR = "+tokenReplacements)
         copy {
             from "${projectDir}"
             include "**/*.robot"

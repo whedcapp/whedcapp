@@ -292,6 +292,10 @@ ext.mysqlWhedcappConnection = ''
 def getMysqlWhedcappConnection = {
     return ext.mysqlWhedcappConnection
 }
+ext.mysqlTestWhedcappConnection = ''
+def getMysqlTestWhedcappConnection = {
+    return ext.mysqlTestWhedcappConnection
+}
 
 
 // Identities and passwords, all which are set by querying the person
@@ -403,13 +407,15 @@ class UserPasswordControl {
 def task2context = [
     ':database:dbs_CrudGenCfgPrep':new UserPasswordControl('whedcappAdministrator',false,'Whedcapp administrator account (not MySQL!)','Enter default Whedcapp administrator user data','',''),
     ':database:dbs_CreateWhedcappDatabaseAccessUser':new UserPasswordControl('whedcappDatabaseAccessUser',true,'Whedcapp MySQL database access account','Enter Whedcapp database access user data','',''),
+    ':database:dbs_CreateWhedcappDatabaseTestAccessUser':new UserPasswordControl('whedcappDatabaseTestAccessUser',true,'Whedcapp MySQL database test access account','Enter Whedcapp database test access user data','',''),
     ':database:dbs_OpenDatabaseAsRoot':new UserPasswordControl('whedcappMysqlRoot',true,'MySQL root access account','Enter MySQL root access data','admin','')
 ];
 
 ext.credentials = [
-    'whedcappAdministrator': null,
-    'whedcappDatabaseAccessUser': null,
-    'whedcappMysqlRoot': null
+    'whedcappAdministrator': null
+    ,'whedcappDatabaseAccessUser': null
+    ,'whedcappDatabaseTestAccessUser': null
+    ,'whedcappMysqlRoot': null
 ];
 
 // Whedcapp admin user identity
@@ -433,6 +439,13 @@ def getMysqlWhedcappUserId = {
 ext.mysqlWhedcappPassword = ''
 def getMysqlWhedcappPassword = {
     return ext.credentials['whedcappDatabaseAccessUser'].getPassword()
+}
+
+def getMysqlTestWhedcappUserId = {
+    return ext.credentials['whedcappDatabaseTestAccessUser'].getUser()
+}
+def getMysqlTestWhedcappPassword = {
+    return ext.credentials['whedcappDatabaseTestAccessUser'].getPassword()
 }
 
 def getMysqlWhedcappUserIsCreatedPath = {
@@ -732,7 +745,7 @@ task dbs_CreateWhedcappDatabaseAccessUser() {
     doFirst {
         def stmt = getMysqlRootConnection()
         try {
-
+            stmt.execute("DROP USER IF EXISTS "+quotifySqlUserId(getMysqlWhedcappUserId()));
             stmt.execute("CREATE USER IF NOT EXISTS "+quotifySqlUserId(getMysqlWhedcappUserId())+" IDENTIFIED BY '"+getMysqlWhedcappPassword()+"'");
         } catch (SQLException sqex) {
             throw new StopExecutionException("Could not create default whedcapp user \""+getMysqlWhedcappUserId()+"\""+sqex);
@@ -838,6 +851,54 @@ task dbs_CreateWhedcappDatabaseAccessUser() {
     }
 }
 
+// Creates the whedcapp database access user with apropriate grants.
+// It also creates the table keeping track of installed/executed SQL
+// statements and their digests.
+
+def dbs_CreateWhedcappDatabaseTestAccessUserInputFiles = ((dbs_dbCfgFiles+dbs_dbFiles).findAll { p -> (p.toString() =~ '^/((.+)/)+.*\\.sql').find() }+[dbs_crudSqlSrcPath()]).sort { a,b -> a.toString() > b.toString() ? 1 : -1 }
+logger.info("dbs_CreateWhedcappDatabaseTestAccessUserInputFiles = "+dbs_CreateWhedcappDatabaseTestAccessUserInputFiles)
+
+
+def dbs_CreateWhedcappDatabaseTestAccessUserOutputFile = new File("${rootProject.buildDir}/${project.name}/dbs_CreateWhedcappDatabaseTestAccessUserReady.txt") 
+def dbs_CreateWhedcappDatabaseTestAccessUserOutputFiles = [ dbs_CreateWhedcappDatabaseAccessUserOutputFile ]
+
+task dbs_CreateWhedcappDatabaseTestAccessUser() {
+    dependsOn 'dbs_DropAndRecreateDatabaseIfNecessary'
+    inputs.files(dbs_CreateWhedcappDatabaseTestAccessUserInputFiles)
+    outputs.files(dbs_CreateWhedcappDatabaseTestAccessUserOutputFiles);
+    group = 'Database'
+    description 'Create whedcapp database test access user'
+    doFirst {
+        def stmt = getMysqlRootConnection()
+        try {
+            stmt.execute("DROP USER IF EXISTS "+quotifySqlUserId(getMysqlTestWhedcappUserId()));
+            stmt.execute("CREATE USER IF NOT EXISTS "+quotifySqlUserId(getMysqlTestWhedcappUserId())+" IDENTIFIED BY '"+getMysqlTestWhedcappPassword()+"'");
+            logger.info("Created "+getMysqlTestWhedcappUserId()+" with password "+getMysqlTestWhedcappPassword())
+        } catch (SQLException sqex) {
+            throw new StopExecutionException("Could not create default whedcapp user \""+getMysqlWhedcappUserId()+"\""+sqex);
+        }
+        try {
+            // set appropriate privileges for whedcapp access user, essentially only "EXECUTE" stored procedures
+            stmt.execute("REVOKE ALL PRIVILEGES ON "+backquotifySqlId("whedcapp.*")+" FROM "+quotifySqlUserId(getMysqlTestWhedcappUserId()));
+        } catch (SQLException sqex) {
+            // ignore that no grants are there to be revoked
+            logger.info("sqex.getSQLState() == '42000' =="+(sqex.getSQLState() == '42000'));
+            logger.info("sqex.getErrorCode() == 1141 =="+(sqex.getErrorCode() == 1141));
+            if (!((sqex.getSQLState() == '42000') && (sqex.getErrorCode() == 1141))) {
+                throw new StopExecutionException("Could not create default whedcapp user \""+getMysqlWhedcappUserId()+"\""+sqex+", state = "+sqex.getSQLState()+", "+sqex.getErrorCode());
+            }
+            
+        }
+        try {
+            stmt.execute("GRANT EXECUTE,SELECT ON "+backquotifySqlId("whedcapp.*")+" TO "+quotifySqlUserId(getMysqlTestWhedcappUserId()));
+            Date date = new Date();
+            dbs_CreateWhedcappDatabaseTestAccessUserOutputFile << "Whedcapp test user created at "+date.toString();
+        } catch (SQLException sqex) {
+            throw new StopExecutionException("Could not create default whedcapp user \""+getMysqlWhedcappUserId()+"\""+sqex);
+        }
+    }
+}
+
 task dbs_OpenDatabaseAsWhedcappDatabaseAccessUser() {
     dependsOn 'dbs_CreateWhedcappDatabaseAccessUser'
     outputs.upToDateWhen { false }
@@ -857,6 +918,30 @@ task dbs_OpenDatabaseAsWhedcappDatabaseAccessUser() {
             project.ext.mysqlWhedcappConnection = groovy.sql.Sql.newInstance(db.url, db.user, db.password, db.driver)
             logger.info("Conn = "+project.ext.mysqlWhedcappConnection)
             logger.info("Conn2 = "+getMysqlWhedcappConnection())
+        } catch (SQLException sqex) {
+            throw new StopExecutionException("Could not login as mysql whedcapp database access user "+sqex.toString())
+        }
+    }
+}
+task dbs_OpenDatabaseAsWhedcappDatabaseTestAccessUser() {
+    dependsOn 'dbs_CreateWhedcappDatabaseTestAccessUser'
+    outputs.upToDateWhen { false }
+    
+    group = 'Database'
+    description 'Opens MySQL Database as an whedcapp database test access user'
+    doFirst {
+        try {
+            def mysql = buildscript.configurations.classpath.find { it.toString().contains("mysql-connector-java") }
+            URLClassLoader loader = GroovyObject.class.classLoader
+            loader.addURL(file(mysql).toURL())
+            
+            logger.info("Password inside open database as whedcapp database access user: "+getMysqlTestWhedcappPassword())
+            def db = [url: "jdbc:mysql://127.0.0.1/",
+                      user: getMysqlTestWhedcappUserId(), password: getMysqlTestWhedcappPassword(), driver: 'com.mysql.jdbc.Driver']
+            logger.info("Password inside open database as whedcapp database access user: "+getMysqlTestWhedcappPassword()+", inside db.password = "+db.password)
+            project.ext.mysqlTestWhedcappConnection = groovy.sql.Sql.newInstance(db.url, db.user, db.password, db.driver)
+            logger.info("Conn = "+project.ext.mysqlTestWhedcappConnection)
+            logger.info("Conn2 = "+getMysqlTestWhedcappConnection())
         } catch (SQLException sqex) {
             throw new StopExecutionException("Could not login as mysql whedcapp database access user "+sqex.toString())
         }
