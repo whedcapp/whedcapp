@@ -165,7 +165,7 @@ SELECT "Participant", `id_acl_level`, `id_loc` FROM `whedcapp`.`acl_level`, `whe
 CREATE TABLE `whedcapp`.`uid` (
   `id_uid` INTEGER NOT NULL AUTO_INCREMENT,
   `uid_text` VARCHAR(64) NOT NULL,
-  `uid_id_superuser` BOOLEAN DEFAULT FALSE,
+  `uid_is_superuser` BOOLEAN DEFAULT FALSE,
   `uid_is_personal_data_controller` BOOLEAN DEFAULT FALSE,
   `uid_is_whedcapp_administrator` BOOLEAN DEFAULT FALSE,
   `uid_is_quesionnaire_maintainer` BOOLEAN DEFAULT FALSE,
@@ -174,7 +174,7 @@ CREATE TABLE `whedcapp`.`uid` (
   CONSTRAINT `uid_text_is_not_empty` CHECK (`uid_text` <> "")
   );
 
-INSERT INTO `whedcapp`.`uid`(uid_text,uid_id_superuser)
+INSERT INTO `whedcapp`.`uid`(uid_text,uid_is_superuser)
     VALUES ('@whedcappAdministrator@',true);  
   
 /* PROJECT

@@ -23,22 +23,22 @@ CREATE FUNCTION `whedcapp`.`check_acl`(id_uid_par INT,
 										is_personal_data_controller_par BOOLEAN,
                                         is_whedcapp_administrator_par BOOLEAN,
                                         is_project_owner_par BOOLEAN,
-                                        is_researcher BOOLEAN,
+                                        is_researcher_par BOOLEAN,
                                         is_supporter_par BOOLEAN,
                                         is_participant_par BOOLEAN,
                                         is_questionnaire_manager_par BOOLEAN) RETURNS BOOLEAN DETERMINISTIC
 BEGIN
 	DECLARE acl_check_var INT;
-    IF is_super_user_par OR is_personal_data_controller OR is_whedcapp_administrator THEN
+    IF is_superuser_par OR is_personal_data_controller_par OR is_whedcapp_administrator_par THEN
 		SELECT COUNT(`id_uid`) INTO acl_check_var
 			FROM `whedcapp`.`uid` 
             WHERE `id_uid` = `id_uid_par` 
 				AND (
-						(`is_superuser` AND is_superuser_par)
+						(`uid_is_superuser` AND is_superuser_par)
 					OR 
-						(`is_whedcapp_administrator` AND is_whedcapp_administrator_par) 
+						(`uid_is_whedcapp_administrator` AND is_whedcapp_administrator_par) 
 					OR 
-						(`is_personal_data_controller` AND is_personal_data_controller_par)
+						(`uid_is_personal_data_controller` AND is_personal_data_controller_par)
 					);
 		IF acl_check_var > 0 THEN
 			RETURN TRUE;
@@ -57,7 +57,7 @@ BEGIN
 				OR
 					(is_project_owner_par AND `id_acl_level` IN (SELECT `id_acl_level` FROM `whedcapp`.`acl_level` WHERE `acl_level_key` = "project_owneer"))
 				OR
-					(is_researcber_par AND `id_acl_level` IN (SELECT `id_acl_level` FROM `whedcapp`.`acl_level` WHERE `acl_level_key` = "researcher"))
+					(is_researcher_par AND `id_acl_level` IN (SELECT `id_acl_level` FROM `whedcapp`.`acl_level` WHERE `acl_level_key` = "researcher"))
 				OR
 					(is_supporter_par AND `id_acl_level` IN (SELECT `id_acl_level` FROM `whedcapp`.`acl_level` WHERE `acl_level_key` = "supporter"))
 				OR

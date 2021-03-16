@@ -645,11 +645,14 @@ task dbs_OpenDatabaseAsRoot() {
 // should take place. The migration is a future placeholder and is currently
 // not supported.
 
+def dbs_DropAndRecreateDatabaseIfNecessaryInputFiles = ((dbs_dbCfgFiles+dbs_dbFiles).findAll { p -> (p.toString() =~ '^/((.+)/)+.*\\.sql').find() }+[dbs_crudSqlSrcPath()]).sort { a,b -> a.toString() > b.toString() ? 1 : -1 }
+logger.info("dbs_DropAndRecreateDatabaseIfNecessaryInputFiles = "+dbs_DropAndRecreateDatabaseIfNecessaryInputFiles)
 def dbs_DropAndRecreateDatabaseIfNecessaryOutputFile = new File("${rootProject.buildDir}/${project.name}/dbs_DropAndRecreateDatabaseIfNecessary.txt") ;
 def dbs_DropAndRecreateDatabaseIfNecessaryOutputFiles = [ dbs_DropAndRecreateDatabaseIfNecessaryOutputFile ];
 
 task dbs_DropAndRecreateDatabaseIfNecessary() {
     dependsOn 'dbs_OpenDatabaseAsRoot'
+    inputs.files(dbs_DropAndRecreateDatabaseIfNecessaryInputFiles);
     outputs.files(dbs_DropAndRecreateDatabaseIfNecessaryOutputFiles);
     group = 'Database'
     description 'If database setup strategy is initialize, then drop and recreate whedcapp database. Use whedcapp database'
