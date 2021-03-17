@@ -16,9 +16,13 @@ ${UID_SPEC3}   '{a-zA-Z}{a-zA-Z0-9}*\@{a-zA-Z}{a-zA-Z0-9}*.{a-zA-Z}{a-zA-Z0-9}*'
 *** Keywords ***
 Create single consistent UID should succeed
     [Arguments]           ${uid_no}    ${uid_spec}    ${is_superuser}    ${is_pdc}    ${is_adm}    ${is_qm}    ${seed}
-    ${uidAdmin}  Query    SELECT `id_uid` FROM `whedcapp`.`uid` WHERE `uid_text` = ${ADMIN}
+    ${uidAdmin}  Query    SELECT `id_uid` FROM `whedcapp`.`uid` WHERE `uid_text` = ${ADMIN}    True
     @{result}    Query    SELECT `whedcapp`.`uid_insert_writeSelf`(${uidAdmin[0][0]},${uid_spec},${is_superuser},${is_pdc},${is_adm},${is_qm})    True
     Log Many    @{result}
+    Row Count Is Equal To X    SELECT * FROM `whedcapp`.`uid` WHERE `uid_text` = ${uid_spec}    1    False
+
+
+
 
 
 *** Test Cases ***                                UID_NO        UID_SPEC        SUPERUSER    PDC      ADM      QM       SEED

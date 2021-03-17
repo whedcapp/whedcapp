@@ -890,7 +890,7 @@ task dbs_CreateWhedcappDatabaseTestAccessUser() {
             
         }
         try {
-            stmt.execute("GRANT EXECUTE,SELECT ON "+backquotifySqlId("whedcapp.*")+" TO "+quotifySqlUserId(getMysqlTestWhedcappUserId()));
+            stmt.execute("GRANT EXECUTE,SELECT,INSERT ON "+backquotifySqlId("whedcapp.*")+" TO "+quotifySqlUserId(getMysqlTestWhedcappUserId()));
             Date date = new Date();
             dbs_CreateWhedcappDatabaseTestAccessUserOutputFile << "Whedcapp test user created at "+date.toString();
         } catch (SQLException sqex) {

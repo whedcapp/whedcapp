@@ -18,6 +18,7 @@
  */
 
 import org.apache.tools.ant.filters.*;
+import java.io.File;
 
 def testSrcFiles = [ "**/*.robot.in", "**/*.robot", "**/*.txt", "**/*.txt.in" ].inject([]) { acc, val -> acc+project.fileTree(dir: "${projectDir}", include: val ) }
 
@@ -57,13 +58,24 @@ task tst_PrepareTest() {
             include "**/*.txt.in"
             into "${rootProject.buildDir}/${project.name}"
             filter(ReplaceTokens,tokens:tokenReplacements)
-            rename '(.*)\\.in', '$1'
+            rename '(.*)\\.in$', '$1'
         }
         mkdir "${rootProject.buildDir}/reports"
     }
 }
 
+def tst_performTestInputFiles = tst_prepareTestOutputFiles
+def tst_performTestOutputFiles = [ "${rootProject.buildDir}/reports/log.html", "${rootProject.buildDir}/reports/output.html", "${rootProject.buildDir}/reports/output.xml" ]
 
 // Invoke the robot framework recursively
 task tst_PerformTest(type: Exec) {
+    dependsOn ':test:tst_PrepareTest'
+    workingDir "${rootProject.buildDir}/${project.name}"
+    inputs.files(tst_performTestInputFiles)
+    outputs.files(tst_performTestOutputFiles)
+    commandLine "robot",'--outputdir',"${rootProject.buildDir}/reports","."
+    standardOutput = new ByteArrayOutputStream()
+    ext.output = {
+        return standardOutput.toString()
+    }
 }
