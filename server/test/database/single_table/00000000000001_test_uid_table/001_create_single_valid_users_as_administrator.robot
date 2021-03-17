@@ -17,7 +17,7 @@ ${UID_SPEC3}   '{a-zA-Z}{a-zA-Z0-9}*\@{a-zA-Z}{a-zA-Z0-9}*.{a-zA-Z}{a-zA-Z0-9}*'
 Create single consistent UID should succeed
     [Arguments]           ${uid_no}    ${uid_spec}    ${is_superuser}    ${is_pdc}    ${is_adm}    ${is_qm}    ${seed}
     ${uidAdmin}  Query    SELECT `id_uid` FROM `whedcapp`.`uid` WHERE `uid_text` = ${ADMIN}
-    @{result}    Query    SELECT `whedcapp`.`uid_insert_writeSelf`(${uidAdmin},${uid_spec},${is_superuser},${is_pdc},${is_adm},${is_qm})
+    @{result}    Query    SELECT `whedcapp`.`uid_insert_writeSelf`(${uidAdmin[0][0]},${uid_spec},${is_superuser},${is_pdc},${is_adm},${is_qm})    True
     Log Many    @{result}
 
 
