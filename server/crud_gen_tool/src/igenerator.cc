@@ -13,16 +13,80 @@
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    along with Foobar.  If not, see <https://www.gnu.org/licenses/>.
+    along with Whedcapp.  If not, see <https://www.gnu.org/licenses/>.
 */
 #include "common.hh"
 #include "igenerator.hh"
 #include "generatorSql.hh"
 
-std::unique_ptr<IGenerator> PartSqlCrudGen::IGenerator::create(const std::string& cfg) {
-  std::string tmp = toupper(cfg);
-  if (tmp == "SQL") {
-    return std::make_unique<GeneratorSql>();
+namespace PartSqlCrudGen {
+
+  std::unique_ptr<IGenerator> IGenerator::create(const std::string& cfg) {
+    std::string tmp = toupper(cfg);
+    if (tmp == "SQL") {
+      return std::make_unique<GeneratorSql>();
+    }
+    throw std::logic_error("Configuration string \""+cfg+"\" is not implemented yet");
   }
-  throw std::logic_error("Configuration string is not implemented yet");
+
+  IGenerateColumnList::IGenerateColumnList() {}
+
+  const bool GenerateColumnList::isContextParameter(const ShPtr2Column& shPtr2Column) const {
+    const auto& vecOfPar2Ref = getOptContextParameter()->getVecOfPar2Ref();
+    const bool isContextParameter =
+      std::any_of(
+                  vecOfPar2Ref.begin(),
+                  vecOfPar2Ref.end(),
+                  [this,shPtr2Column](const auto par2Ref) {
+                    return
+                      par2Ref.second.getColumnIdentity() == shPtr2Column->getIdentity()
+                      && par2Ref.second.getTableIdentity() == this->getShPtr2Table()->getIdentity();
+                  }
+                  );
+    return isContextParameter;
+  }
+
+  std::ostream& GenerateColumnList::generatePrefix() {
+    return getStr();
+  }
+
+  std::ostream& GenerateColumnList::generateSuffix() {
+    return getStr();
+  }
+
+  std::ostream& GenerateColumnList::generateColumn(const ShPtr2Column& shPtr2Column)  {
+    getStr() << shPtr2Column->getIdentity();
+    return getStr();
+  }
+
+  std::ostream& GenerateColumnList::generateReplacementColumn(const ShPtr2Column& shPtr2Column) {
+    return getStr();
+  }
+
+  std::ostream& GenerateColumnList::generateColumnList() {
+    for (const auto& col: *(getShPtr2Columns())) {
+      if (shouldAttributeBeListed(col)) {
+        if (getNotFirst()) {
+          getStr() << ", ";
+        }
+        generateColumn(col);
+        setNotFirst();
+      } else if (shouldReplacementAttributeBeListed(col)) {
+        if (getNotFirst()) {
+          getStr() << ", ";
+        }
+        generateReplacementColumn(col);
+        setNotFirst();
+      }
+      
+    }
+    return getStr();
+  }
+
+  std::ostream& GenerateColumnList::generate() {
+    generatePrefix();
+    generateColumnList();
+    generateSuffix();
+    return getStr();
+  }
 }

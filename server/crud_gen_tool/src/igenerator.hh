@@ -13,7 +13,7 @@
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    along with Foobar.  If not, see <https://www.gnu.org/licenses/>.
+    along with Whedcapp.  If not, see <https://www.gnu.org/licenses/>.
 */
 #ifndef IGENERATOR_HH
 #define IGENERATOR_HH
@@ -28,6 +28,74 @@ namespace PartSqlCrudGen {
   public:
     virtual void generate(const Options& options, const std::shared_ptr<Driver>& shPtr2Driver) const = 0;
     static std::unique_ptr<IGenerator> create(const std::string& cfg);
+  };
+  class IGenerateColumnList {
+  public:
+    IGenerateColumnList();
+    enum GenerateKind { onlyColumnParameters,
+                        columnParametersWithTypeInformation,
+                        columnParametersForUpdate,
+                        onlyPrimaryKey,
+                        columnParametersForSelect,
+                        onlyColumnParametersIncludingId};
+    virtual std::ostream& generatePrefix() = 0;
+    virtual const bool shouldAttributeBeListed(const ShPtr2Column& shPtr2Column) const = 0;
+    virtual const bool shouldReplacementAttributeBeListed(const ShPtr2Column& shPtr2Column) const = 0;
+    virtual std::ostream& generateColumn(const ShPtr2Column& shPtr2Column) = 0;
+    virtual std::ostream& generateReplacementColumn(const ShPtr2Column& shPtr2Column) = 0;
+    virtual std::ostream& generateColumnList() = 0;
+    virtual std::ostream& generateSuffix() = 0;
+    virtual std::ostream& generate() = 0;
+  };
+
+  class GenerateColumnList: public IGenerateColumnList {
+    bool notFirst;
+    bool lastConsideredAttributeListed;
+    std::ostream& str;
+    ShPtr2Table shPtr2Table;
+    ShPtr2Columns shPtr2Columns;
+    std::optional<ContextParameter> optContextParameter;
+    std::string suffix;    
+  protected:
+    GenerateColumnList(std::ostream& str,const ShPtr2Table& shPtr2Table,const std::optional<ContextParameter>& optContextParameter = std::nullopt, const std::string& suffix = ""): IGenerateColumnList(),notFirst(false),lastConsideredAttributeListed(false),str(str),shPtr2Table(shPtr2Table),optContextParameter(optContextParameter),suffix(suffix) {}
+  public:
+    inline bool getNotFirst() const {
+      return this->notFirst;
+    }
+    inline void setNotFirst() {
+      this->notFirst = true;
+    }
+    inline bool getLastConsideredAttributeListed() {
+      return lastConsideredAttributeListed;
+    }
+    inline void setLastConsideredAttributeListed() {
+      this->lastConsideredAttributeListed = true;
+    }
+    inline void unsetLastConsideredAttributeListed() {
+      this->lastConsideredAttributeListed = false;
+    }
+    inline std::ostream& getStr() {
+      return str;
+    }
+    inline const ShPtr2Table& getShPtr2Table() const {
+      return shPtr2Table;
+    }
+    inline const ShPtr2Columns getShPtr2Columns() const {
+      return shPtr2Table->getShPtr2Columns();
+    }
+    inline const std::optional<ContextParameter>& getOptContextParameter() const {
+      return optContextParameter;
+    }
+    inline const std::string& getSuffix() const {
+      return suffix;
+    }
+    const bool isContextParameter(const ShPtr2Column& shPtr2Column) const;
+    std::ostream& generatePrefix() override;
+    std::ostream& generateColumn(const ShPtr2Column& shPtr2Column)  override;
+    std::ostream& generateReplacementColumn(const ShPtr2Column& shPtr2Column) override;
+    std::ostream& generateColumnList() override;
+    std::ostream& generateSuffix() override;
+    std::ostream& generate() override;
   };
 }
 
