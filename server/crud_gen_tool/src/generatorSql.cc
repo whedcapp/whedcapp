@@ -199,7 +199,7 @@ namespace PartSqlCrudGen {
       }
       if (op != DatabaseOperation::Type::dbDelete && op != DatabaseOperation::Type::dbSelect) {
         //generateColumnList(str,tableMetaData->getShPtr2Columns(),GenerateKind::columnParametersWithTypeInformation,cp,"_par");
-        std::unique_ptr<GenerateColumnListSql> gclsColumnParametersWithTypeInformation =
+        std::unique_ptr<IGenerateColumnList> gclsColumnParametersWithTypeInformation =
           GenerateColumnListSql::create(
                                         IGenerateColumnList::GenerateKind::columnParametersWithTypeInformation,
                                         str,
@@ -211,7 +211,7 @@ namespace PartSqlCrudGen {
 
       } else if (op == DatabaseOperation::Type::dbDelete) {
         //generateColumnList(str,tableMetaData->getShPtr2Columns(),GenerateKind::onlyPrimaryKey,cp,"_par");
-        std::unique_ptr<GenerateColumnListSql> gclsOnlyPrimaryKey =
+        std::unique_ptr<IGenerateColumnList> gclsOnlyPrimaryKey =
           GenerateColumnListSql::create(
                                         IGenerateColumnList::GenerateKind::onlyPrimaryKey,
                                         str,
@@ -221,7 +221,17 @@ namespace PartSqlCrudGen {
                                         );
         gclsOnlyPrimaryKey->generate();
       } else { // dbSelect
-        generateColumnList(str,tableMetaData->getShPtr2Columns(),GenerateKind::columnParametersForSelect,cp,"_par");
+        //generateColumnList(str,tableMetaData->getShPtr2Columns(),GenerateKind::columnParametersForSelect,cp,"_par");
+        std::unique_ptr<IGenerateColumnList> gclsColumnParametersForSelect =
+          GenerateColumnListSql::create(
+                                        IGenerateColumnList::GenerateKind::columnParametersForSelect,
+                                        str,
+                                        tableMetaData,
+                                        cp,
+                                        "_par"
+                                        );
+        gclsColumnParametersForSelect->generate();
+        
       }
       str << ")"  << (op == DatabaseOperation::Type::dbInsert? " RETURNS INTEGER DETERMINISTIC MODIFIES SQL DATA ":"") << std::endl << "BEGIN" << std::endl;
     } catch (const std::out_of_range& oore) {
@@ -278,7 +288,7 @@ namespace PartSqlCrudGen {
       {
         str << std::setw(options.outputCodeTabWidth) << " " << "INSERT INTO " << tableMetaData->getIdentity().getBackquoted() << " ( ";
         //generateColumnList(str,tableMetaData->getShPtr2Columns(),GenerateKind::onlyColumnParameters);
-        std::unique_ptr<GenerateColumnListSql> gclsOnlyColumnParameters =
+        std::unique_ptr<IGenerateColumnList> gclsOnlyColumnParameters =
           GenerateColumnListSql::create(
                                         IGenerateColumnList::GenerateKind::onlyColumnParameters,
                                         str,
@@ -288,7 +298,7 @@ namespace PartSqlCrudGen {
         str << ")" << std::endl;
         str << std::setw(options.outputCodeTabWidth*2) << " " << "VALUES (";
         //generateColumnList(str,tableMetaData->getShPtr2Columns(),GenerateKind::onlyColumnParameters,std::nullopt,"_par");
-        std::unique_ptr<GenerateColumnListSql> gclsOnlyColumnParameters2 =
+        std::unique_ptr<IGenerateColumnList> gclsOnlyColumnParameters2 =
           GenerateColumnListSql::create(
                                         IGenerateColumnList::GenerateKind::onlyColumnParameters,
                                         str,
@@ -310,7 +320,7 @@ namespace PartSqlCrudGen {
         str << std::setw(options.outputCodeTabWidth*2) << " " << "SET " << std::endl;
         str << std::setw(options.outputCodeTabWidth*3) << " ";
         //generateColumnList(str,tableMetaData->getShPtr2Columns(),GenerateKind::columnParametersForUpdate,cp);
-        std::unique_ptr<GenerateColumnListSql> gclsColumnParametersForUpdate =
+        std::unique_ptr<IGenerateColumnList> gclsColumnParametersForUpdate =
           GenerateColumnListSql::create(
                                         IGenerateColumnList::GenerateKind::columnParametersForUpdate,
                                         str,
@@ -486,7 +496,7 @@ namespace PartSqlCrudGen {
     return getStr();
   }
 
-  std::unique_ptr<GenerateColumnListSql> GenerateColumnListSql::create(IGenerateColumnList::GenerateKind generateKind,std::ostream& str, const ShPtr2Table& shPtr2Table, const std::optional<ContextParameter>& optContextParameter, const std::string& suffix ) {
+  std::unique_ptr<IGenerateColumnList> GenerateColumnListSql::create(IGenerateColumnList::GenerateKind generateKind,std::ostream& str, const ShPtr2Table& shPtr2Table, const std::optional<ContextParameter>& optContextParameter, const std::string& suffix ) {
     switch(generateKind) {
     case onlyColumnParameters:
       return std::make_unique<GclsOnlyColumnParameters>(str,shPtr2Table, optContextParameter, suffix);
@@ -497,6 +507,7 @@ namespace PartSqlCrudGen {
     case onlyPrimaryKey:
       return std::make_unique<GclsOnlyPrimaryKey>(str,shPtr2Table, optContextParameter, suffix);
     case columnParametersForSelect:
+      return std::make_unique<GclsColumnParametersForSelect>(str,shPtr2Table, optContextParameter, suffix);
     case onlyColumnParametersIncludingId:
     default:
       return nullptr;
@@ -555,4 +566,20 @@ namespace PartSqlCrudGen {
     return shPtr2Column->isPrimaryKey() && isContextParameter(shPtr2Column);
   }
 
+  const bool GclsColumnParametersForSelect::shouldAttributeBeListed(const ShPtr2Column& shPtr2Column) const {
+    return true;
+  }
+
+  const bool GclsColumnParametersForSelect::shouldReplacementAttributeBeListed(const ShPtr2Column& shPtr2Column) const {
+    return false;
+  }
+
+  std::ostream& GclsColumnParametersForSelect::generateColumn(const ShPtr2Column& shPtr2Column) {
+    getStr() << " " << shPtr2Column->getIdentity().getBackquoted(getSuffix()+"_cmp") << " VARCHAR(3), ";
+    GclsOnlyColumnParameters::generateColumn(shPtr2Column);
+    getStr() << " " << shPtr2Column->getType();
+    return getStr();
+  }
+  
+  
 }

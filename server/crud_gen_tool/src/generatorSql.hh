@@ -64,7 +64,7 @@ namespace PartSqlCrudGen {
     const bool shouldAttributeBeListed(const ShPtr2Column& shPtr2Column) const override;
     const bool shouldReplacementAttributeBeListed(const ShPtr2Column& shPtr2Column) const override;
     std::ostream& generateColumn(const ShPtr2Column& shPtr2Column)  override;
-    static std::unique_ptr<GenerateColumnListSql> create(IGenerateColumnList::GenerateKind generateKind,std::ostream& str, const ShPtr2Table& shPtr2Table, const std::optional<ContextParameter>& optContextParameter = std::nullopt, const std::string& suffix = "");
+    static std::unique_ptr<IGenerateColumnList> create(IGenerateColumnList::GenerateKind generateKind,std::ostream& str, const ShPtr2Table& shPtr2Table, const std::optional<ContextParameter>& optContextParameter = std::nullopt, const std::string& suffix = "");
     
   };
   // Only column parameters without primary key for, for example
@@ -97,6 +97,15 @@ namespace PartSqlCrudGen {
     GclsOnlyPrimaryKey(std::ostream& str, const ShPtr2Table& shPtr2Table, const std::optional<ContextParameter>& optContextParameter = std::nullopt, const std::string& suffix = ""): GclsOnlyColumnParameters(str,shPtr2Table, optContextParameter, suffix) {}
     const bool shouldAttributeBeListed(const ShPtr2Column& shPtr2Column) const override;
     const bool shouldReplacementAttributeBeListed(const ShPtr2Column& shPtr2Column) const override;
+    
+  };
+
+  class GclsColumnParametersForSelect: public GclsOnlyColumnParameters {
+  public:
+    GclsColumnParametersForSelect(std::ostream& str, const ShPtr2Table& shPtr2Table, const std::optional<ContextParameter>& optContextParameter = std::nullopt, const std::string& suffix = ""): GclsOnlyColumnParameters(str,shPtr2Table, optContextParameter, suffix) {}
+    const bool shouldAttributeBeListed(const ShPtr2Column& shPtr2Column) const override;
+    const bool shouldReplacementAttributeBeListed(const ShPtr2Column& shPtr2Column) const override;
+    std::ostream& generateColumn(const ShPtr2Column& shPtr2Column) override;
     
   };
 
