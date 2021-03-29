@@ -559,13 +559,19 @@ namespace PartSqlCrudGen {
   }
 
   const bool GclsOnlyPrimaryKey::shouldAttributeBeListed(const ShPtr2Column& shPtr2Column) const {
-    return shPtr2Column->isPrimaryKey() && !isContextParameter(shPtr2Column);
+    return shPtr2Column->isPrimaryKey() ;
   }
 
   const bool GclsOnlyPrimaryKey::shouldReplacementAttributeBeListed(const ShPtr2Column& shPtr2Column) const {
-    return shPtr2Column->isPrimaryKey() && isContextParameter(shPtr2Column);
+    return false;
   }
 
+  std::ostream& GclsOnlyPrimaryKey::generateColumn(const ShPtr2Column& shPtr2Column) {
+    GclsOnlyColumnParameters::generateColumn(shPtr2Column);
+    getStr() << " " << shPtr2Column->getType();
+    return getStr();
+  }
+  
   const bool GclsColumnParametersForSelect::shouldAttributeBeListed(const ShPtr2Column& shPtr2Column) const {
     return true;
   }

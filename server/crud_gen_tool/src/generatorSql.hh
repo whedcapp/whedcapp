@@ -97,6 +97,7 @@ namespace PartSqlCrudGen {
     GclsOnlyPrimaryKey(std::ostream& str, const ShPtr2Table& shPtr2Table, const std::optional<ContextParameter>& optContextParameter = std::nullopt, const std::string& suffix = ""): GclsOnlyColumnParameters(str,shPtr2Table, optContextParameter, suffix) {}
     const bool shouldAttributeBeListed(const ShPtr2Column& shPtr2Column) const override;
     const bool shouldReplacementAttributeBeListed(const ShPtr2Column& shPtr2Column) const override;
+    std::ostream& generateColumn(const ShPtr2Column& shPtr2Column) override;
     
   };
 
