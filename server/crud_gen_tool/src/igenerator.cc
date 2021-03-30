@@ -39,8 +39,8 @@ namespace PartSqlCrudGen {
                   vecOfPar2Ref.end(),
                   [this,shPtr2Column](const auto par2Ref) {
                     return
-                      par2Ref.second.getColumnIdentity() == shPtr2Column->getIdentity()
-                      && par2Ref.second.getTableIdentity() == this->getShPtr2Table()->getIdentity();
+                      par2Ref.second.getColumnIdentity() == shPtr2Column->getIdentity();
+                    //&& par2Ref.second.getTableIdentity() == this->getShPtr2Table()->getIdentity();
                   }
                   );
     return isContextParameter;
@@ -67,7 +67,6 @@ namespace PartSqlCrudGen {
     for (const auto& col: *(getShPtr2Columns())) {
       if (shouldAttributeBeListed(col)) {
         if (getNotFirst()) {
-          std::cerr << getShPtr2Table()->getIdentity() << "." << col->getIdentity() << " has a comma " << std::endl;
           getStr() << ", ";
         }
         generateColumn(col);

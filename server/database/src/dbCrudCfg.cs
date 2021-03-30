@@ -12,7 +12,7 @@
             "writeSelf": {
                 "$ADMIN$": [
                     {
-                        "calling_uid_key": {
+                        "calling_id_uid": {
                             "table": "whedcapp.uid",
                             "column": "id_uid"
                         }
@@ -20,7 +20,7 @@
                 ],
                 "$ADMIN_LIMITED_SELECT$": [
                     {
-                        "calling_uid_key": {
+                        "calling_id_uid": {
                             "table": "whedcapp.uid",
                             "column": "id_uid"
                         }
@@ -28,7 +28,7 @@
                 ],
                 "$SELECT_ONLY$": [
                     {
-                        "calling_uid_key": {
+                        "calling_id_uid": {
                             "table": "whedcapp.uid",
                             "column": "id_uid"
                         }
@@ -36,13 +36,13 @@
                 ],
                 "$PROJECT$": [
                     {
-                        "calling_uid_key": {
+                        "calling_id_uid": {
                             "table": "whedcapp.uid",
                             "column": "id_uid"
                         }
                     },
                     {
-                        "id_proj": {
+                        "context_id_proj": {
                             "table": "whedcapp.project",
                             "column": "id_proj"
                         }
@@ -50,13 +50,13 @@
                 ], 
                 "$ANSWER$":  [
                     {
-                        "calling_uid_key": {
+                        "calling_id_uid": {
                             "table": "whedcapp.uid",
                             "column": "id_uid"
                         }
                     },
                     {
-                        "id_proj": {
+                        "context_id_proj": {
                             "table": "whedcapp.project",
                             "column": "id_proj"
                         }
@@ -70,13 +70,13 @@
                 ], 
                 "$QUESTIONNAIRE$":  [
                     {
-                        "calling_uid_key": {
+                        "calling_id_uid": {
                             "table": "whedcapp.uid",
                             "column": "id_uid"
                         }
                     },
                     {
-                        "questionnaire_key": {
+                        "context_id_questionnaire": {
                             "table": "whedcapp.questionnaire",
                             "column": "id_questionnaire"
                         }
@@ -86,7 +86,7 @@
             "writeOther": {
                 "$ADMIN$": [
                     {
-                        "calling_uid_key": {
+                        "calling_id_uid": {
                             "table": "whedcapp.uid",
                             "column": "id_uid"
                         }
@@ -101,7 +101,7 @@
                 ], 
                 "$ADMIN_LIMITED_SELECT$": [
                     {
-                        "calling_uid_key": {
+                        "calling_id_uid": {
                             "table": "whedcapp.uid",
                             "column": "id_uid"
                         }
@@ -116,7 +116,7 @@
                 ], 
                 "$SELECT_ONLY$":  [
                     {
-                        "calling_uid_key": {
+                        "calling_id_uid": {
                             "table": "whedcapp.uid",
                             "column": "id_uid"
                         }
@@ -131,13 +131,13 @@
                 ], 
                 "$PROJECT$":  [
                     {
-                        "calling_uid_key": {
+                        "calling_id_uid": {
                             "table": "whedcapp.uid",
                             "column": "id_uid"
                         }
-                    },
+                    }, 
                     {
-                        "id_proj": {
+                        "context_id_proj": {
                             "table": "whedcapp.project",
                             "column": "id_proj"
                         }
@@ -152,13 +152,13 @@
                 ], 
                 "$ANSWER$":  [
                     {
-                        "calling_uid_key": {
+                        "calling_id_uid": {
                             "table": "whedcapp.uid",
                             "column": "id_uid"
                         }
                     },
                     {
-                        "id_proj": {
+                        "context_id_proj": {
                             "table": "whedcapp.project",
                             "column": "id_proj"
                         }
@@ -178,14 +178,14 @@
                 ], 
                 "$QUESTIONNAIRE$":  [
                     {
-                        "calling_uid_key": {
+                        "calling_id_uid": {
                             "table": "whedcapp.uid",
                             "column": "id_uid"
                         }
                     },
                     {
                     
-                        "questionnaire_key": {
+                        "context_id_questionnaire": {
                             "table": "whedcapp.questionnaire",
                             "column": "id_questionnaire"
                         }
@@ -202,7 +202,7 @@
             "readSelf": {
                 "$ADMIN$": [
                     {
-                        "calling_uid_key": {
+                        "calling_id_uid": {
                             "table": "whedcapp.uid",
                             "column": "id_uid"
                         }
@@ -210,7 +210,7 @@
                 ],
                 "$ADMIN_LIMITED_SELECT$": [
                     {
-                        "calling_uid_key": {
+                        "calling_id_uid": {
                             "table": "whedcapp.uid",
                             "column": "id_uid"
                         }
@@ -218,7 +218,7 @@
                 ],
                 "$SELECT_ONLY$": [
                     {
-                        "calling_uid_key": {
+                        "calling_id_uid": {
                             "table": "whedcapp.uid",
                             "column": "id_uid"
                         }
@@ -226,13 +226,13 @@
                 ],
                 "$PROJECT$": [
                     {
-                        "calling_uid_key": {
+                        "calling_id_uid": {
                             "table": "whedcapp.uid",
                             "column": "id_uid"
                         }
                     },
                     {
-                        "id_proj": {
+                        "context_id_proj": {
                             "table": "whedcapp.project",
                             "column": "id_proj"
                         }
@@ -240,13 +240,13 @@
                 ], 
                 "$ANSWER$":  [
                     {
-                        "calling_uid_key": {
+                        "calling_id_uid": {
                             "table": "whedcapp.uid",
                             "column": "id_uid"
                         }
                     },
                     {
-                        "id_proj": {
+                        "context_id_proj": {
                             "table": "whedcapp.project",
                             "column": "id_proj"
                         }
@@ -260,13 +260,13 @@
                 ], 
                 "$QUESTIONNAIRE$":  [
                     {
-                        "calling_uid_key": {
+                        "calling_id_uid": {
                             "table": "whedcapp.uid",
                             "column": "id_uid"
                         }
                     },
                     {
-                        "questionnaire_key": {
+                        "context_id_questionnaire": {
                             "table": "whedcapp.questionnaire",
                             "column": "id_questionnaire"
                         }
@@ -276,7 +276,7 @@
             "readOther": {
                 "$ADMIN$": [
                     {
-                        "calling_uid_key": {
+                        "calling_id_uid": {
                             "table": "whedcapp.uid",
                             "column": "id_uid"
                         }
@@ -291,7 +291,7 @@
                 ], 
                 "$ADMIN_LIMITED_SELECT$": [
                     {
-                        "calling_uid_key": {
+                        "calling_id_uid": {
                             "table": "whedcapp.uid",
                             "column": "id_uid"
                         }
@@ -306,7 +306,7 @@
                 ], 
                 "$SELECT_ONLY$":  [
                     {
-                        "calling_uid_key": {
+                        "calling_id_uid": {
                             "table": "whedcapp.uid",
                             "column": "id_uid"
                         }
@@ -321,13 +321,13 @@
                 ], 
                 "$PROJECT$":  [
                     {
-                        "calling_uid_key": {
+                        "calling_id_uid": {
                             "table": "whedcapp.uid",
                             "column": "id_uid"
                         }
                     },
                     {
-                        "id_proj": {
+                        "context_id_proj": {
                             "table": "whedcapp.project",
                             "column": "id_proj"
                         }
@@ -342,13 +342,13 @@
                 ], 
                 "$ANSWER$":  [
                     {
-                        "calling_uid_key": {
+                        "calling_id_uid": {
                             "table": "whedcapp.uid",
                             "column": "id_uid"
                         }
                     },
                     {
-                        "id_proj": {
+                        "context_id_proj": {
                             "table": "whedcapp.project",
                             "column": "id_proj"
                         }
@@ -368,13 +368,13 @@
                 ], 
                 "$QUESTIONNAIRE$":  [
                     {
-                        "calling_uid_key": {
+                        "calling_id_uid": {
                             "table": "whedcapp.uid",
                             "column": "id_uid"
                         }
                     },
                     {
-                        "questionnaire_key": {
+                        "context_id_questionnaire": {
                             "table": "whedcapp.questionnaire",
                             "column": "id_questionnaire"
                         }
@@ -395,23 +395,23 @@
     {
         
         "$ADMIN$":
-        "\tIF NOT `whedcapp`.`check_top_administrator_rights`(calling_uid_key_par) THEN\n\t\tSIGNAL SQLSTATE '4<ERR>'\n\t\t\tSET MESSAGE_TEXT = 'You are not allowed to <OPERATION> <A_TABLE> for <DOMAIN>. You must be either a superuser or a whedcapp administrator.';\n\tEND IF;\n",
+        "\tIF NOT `whedcapp`.`check_top_administrator_rights`(calling_id_uid_par) THEN\n\t\tSIGNAL SQLSTATE '4<ERR>'\n\t\t\tSET MESSAGE_TEXT = 'You are not allowed to <OPERATION> <A_TABLE> for <DOMAIN>. You must be either a superuser or a whedcapp administrator.';\n\tEND IF;\n",
 
         "$ADMIN_LIMITED_SELECT$":
-        "\tIF NOT `whedcapp`.`check_top_administrator_limited_select_rights`(calling_uid_key_par) THEN\n\t\tSIGNAL SQLSTATE '4<ERR>'\n\t\t\tSET MESSAGE_TEXT = 'You are not allowed to <OPERATION> <A_TABLE> for <DOMAIN>. You must be either a superuser, a whedcapp administrator, a project owner or a researcher.';\n\tEND IF;\n",
+        "\tIF NOT `whedcapp`.`check_top_administrator_limited_select_rights`(calling_id_uid_par) THEN\n\t\tSIGNAL SQLSTATE '4<ERR>'\n\t\t\tSET MESSAGE_TEXT = 'You are not allowed to <OPERATION> <A_TABLE> for <DOMAIN>. You must be either a superuser, a whedcapp administrator, a project owner or a researcher.';\n\tEND IF;\n",
 
         "$PROJECT$":
-        "\tIF NOT `whedcapp`.`check_project_owner_rights`(calling_uid_key_par,proj_key_par) THEN\n\t\tSIGNAL SQLSTATE '4<ERR>'\n\t\t\tSET MESSAGE_TEXT = 'You are not allowed to <OPERATION> <A_TABLE> for <DOMAIN>. You must be either a superuser, a whedcapp administrator or a project owner.';\n\tEND IF;\n",
+        "\tIF NOT `whedcapp`.`check_project_owner_rights`(calling_id_uid_par,context_id_proj) THEN\n\t\tSIGNAL SQLSTATE '4<ERR>'\n\t\t\tSET MESSAGE_TEXT = 'You are not allowed to <OPERATION> <A_TABLE> for <DOMAIN>. You must be either a superuser, a whedcapp administrator or a project owner.';\n\tEND IF;\n",
 
         "$SELECT_ONLY$":
-        "\tIF NOT `whedcapp`.`check_select_only_rights`(calling_uid_key_par) THEN\n\t\tSIGNAL SQLSTATE '4<ERR>'\n\t\t\tSET MESSAGE_TEXT = 'You are not allowed to <OPERATION> <A_TABLE> for <DOMAIN>. ';\n\tEND IF;\n",
+        "\tIF NOT `whedcapp`.`check_select_only_rights`(calling_id_uid_par) THEN\n\t\tSIGNAL SQLSTATE '4<ERR>'\n\t\t\tSET MESSAGE_TEXT = 'You are not allowed to <OPERATION> <A_TABLE> for <DOMAIN>. ';\n\tEND IF;\n",
 
         
         "$ANSWER$":
-        "\tIF NOT `whedcapp`.`check_participant_rights`(calling_uid_key_par,proj_key_par,proj_round_key_par) THEN\n\t\tSIGNAL SQLSTATE '4<ERR>'\n\t\t\tSET MESSAGE_TEXT = 'You are not allowed to <OPERATION> <A_TABLE> for <DOMAIN>. You must either be a supporter or a participant.';\n\tEND IF;\n",
+        "\tIF NOT `whedcapp`.`check_participant_rights`(calling_id_uid_par,context_id_proj,proj_round_key_par) THEN\n\t\tSIGNAL SQLSTATE '4<ERR>'\n\t\t\tSET MESSAGE_TEXT = 'You are not allowed to <OPERATION> <A_TABLE> for <DOMAIN>. You must either be a supporter or a participant.';\n\tEND IF;\n",
         
         "$QUESTIONNAIRE$":
-        "\tIF NOT `whedcapp`.`check_questionnaire_maintainer_rights`(calling_uid_key_par,questionnaire_key_par) THEN\n\t\tSIGNAL SQLSTATE '4<ERR>'\n\t\t\tSET MESSAGE_TEXT = 'You are not allowed to <OPERATION> <A_TABLE> for <DOMAIN>. You must  be a questionnaire maintainer.';\n\tEND IF;\n"
+        "\tIF NOT `whedcapp`.`check_questionnaire_maintainer_rights`(calling_id_uid_par,context_id_questionnaire) THEN\n\t\tSIGNAL SQLSTATE '4<ERR>'\n\t\t\tSET MESSAGE_TEXT = 'You are not allowed to <OPERATION> <A_TABLE> for <DOMAIN>. You must  be a questionnaire maintainer.';\n\tEND IF;\n"
     }
     ,
     "declaration":

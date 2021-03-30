@@ -33,11 +33,11 @@ namespace PartSqlCrudGen {
   public:
     IGenerateColumnList();
     enum GenerateKind { onlyColumnParameters,
-                        columnParametersWithTypeInformation,
+                        columnParametersWithTypeInformationInParameterList,
                         columnParametersForUpdate,
-                        onlyPrimaryKey,
-                        columnParametersForSelect,
-                        onlyColumnParametersIncludingId};
+                        onlyPrimaryKeyInParameterList,
+                        columnParametersForSelectInParameterList,
+                        onlyColumnParametersIncludingIdForSelect};
     virtual std::ostream& generatePrefix() = 0;
     virtual const bool shouldAttributeBeListed(const ShPtr2Column& shPtr2Column) const = 0;
     virtual const bool shouldReplacementAttributeBeListed(const ShPtr2Column& shPtr2Column) const = 0;

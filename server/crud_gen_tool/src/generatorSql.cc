@@ -74,67 +74,67 @@ namespace PartSqlCrudGen {
   }
 
   enum GenerateKind { onlyColumnParameters, columnParametersWithTypeInformation, columnParametersForUpdate, onlyPrimaryKey, columnParametersForSelect, onlyColumnParametersIncludingId};
-  static std::ostream& generateColumnList(std::ostream& str, const ShPtr2Columns& shPtr2Columns, GenerateKind generateKind,  const std::optional<ContextParameter>& optContextParameter = std::nullopt, const std::string& suffix = "") {
-    if (generateKind == GenerateKind::columnParametersForUpdate && suffix != "") {
-      throw std::logic_error("Suffix must not be set if update information is true");
-    }
-    bool notFirst = false;
-    for (const auto& c: *shPtr2Columns) {
-      if (optContextParameter) {
-        const auto& vecOfPar2Ref = optContextParameter->getVecOfPar2Ref();
-        std::cout << "Checking " << c->getIdentity() << std::endl;
-        for (const auto& par2Ref: vecOfPar2Ref) {
-          std::cout << par2Ref.first << " -> " << par2Ref.second.getTableIdentity() << ", " << par2Ref.second.getColumnIdentity() << std::endl;
-        }
-        if (std::any_of(vecOfPar2Ref.begin(),vecOfPar2Ref.end(),[c](const auto par2Ref) { return par2Ref.first == c->getIdentity(); })) {
-          continue;
-        }
-      }
-      if (notFirst) {
-        str << ", ";
-      }
-      if ((!c->isPrimaryKey() && generateKind != GenerateKind::onlyPrimaryKey) ||
-          (c->isPrimaryKey() && (generateKind == GenerateKind::onlyPrimaryKey || generateKind == GenerateKind::onlyColumnParametersIncludingId || generateKind == GenerateKind::columnParametersForSelect))) {
-        if (generateKind == GenerateKind::columnParametersForSelect) {
-          str << c->getIdentity().getBackquoted(suffix+"_cmp") << " VARCHAR(3), " << std::endl;
-        }
-        str << c->getIdentity().getBackquoted(suffix);
-        notFirst = true;
-        if (generateKind == GenerateKind::columnParametersWithTypeInformation ||
-            generateKind == GenerateKind::columnParametersForSelect || 
-            generateKind == GenerateKind::onlyPrimaryKey) {
-          str << " " << c -> getType();
-        } else if (generateKind == GenerateKind::columnParametersForUpdate) {
-          // TODO: If it is part of the context parameter, then
-          // change to the context parameter name rather than
-          // a parameter name based on the column name suffixed with
-          // "_par"
-          str << " = ";
-          // find the object and use it
-          const auto& vecOfPar2Ref = optContextParameter->getVecOfPar2Ref();
-          for (const auto& par2Ref: vecOfPar2Ref) {
-            std::cout << par2Ref.first << " -> " << par2Ref.second.getTableIdentity() << ", " << par2Ref.second.getColumnIdentity() << std::endl;
-          }
-          const auto& contextParInfoIt = std::find_if(vecOfPar2Ref.begin(),vecOfPar2Ref.end(),[c](const auto par2Ref) { return par2Ref.second.getColumnIdentity() == c->getIdentity(); });
-          if (contextParInfoIt != vecOfPar2Ref.end()) {
-            // this attribute is covered as a context parameter, use
-            // that instead
-            str << "Replacement par here!!";
-          } else {
-            // this attribute is not covered by a context parameter, use
-            // the attribute
-            str << c->getIdentity().getBackquoted("_par");
-          }
+  // static std::ostream& generateColumnList(std::ostream& str, const ShPtr2Columns& shPtr2Columns, GenerateKind generateKind,  const std::optional<ContextParameter>& optContextParameter = std::nullopt, const std::string& suffix = "") {
+  //   if (generateKind == GenerateKind::columnParametersForUpdate && suffix != "") {
+  //     throw std::logic_error("Suffix must not be set if update information is true");
+  //   }
+  //   bool notFirst = false;
+  //   for (const auto& c: *shPtr2Columns) {
+  //     if (optContextParameter) {
+  //       const auto& vecOfPar2Ref = optContextParameter->getVecOfPar2Ref();
+  //       std::cout << "Checking " << c->getIdentity() << std::endl;
+  //       for (const auto& par2Ref: vecOfPar2Ref) {
+  //         std::cout << par2Ref.first << " -> " << par2Ref.second.getTableIdentity() << ", " << par2Ref.second.getColumnIdentity() << std::endl;
+  //       }
+  //       if (std::any_of(vecOfPar2Ref.begin(),vecOfPar2Ref.end(),[c](const auto par2Ref) { return par2Ref.first == c->getIdentity(); })) {
+  //         continue;
+  //       }
+  //     }
+  //     if (notFirst) {
+  //       str << ", ";
+  //     }
+  //     if ((!c->isPrimaryKey() && generateKind != GenerateKind::onlyPrimaryKey) ||
+  //         (c->isPrimaryKey() && (generateKind == GenerateKind::onlyPrimaryKey || generateKind == GenerateKind::onlyColumnParametersIncludingId || generateKind == GenerateKind::columnParametersForSelect))) {
+  //       if (generateKind == GenerateKind::columnParametersForSelect) {
+  //         str << c->getIdentity().getBackquoted(suffix+"_cmp") << " VARCHAR(3), " << std::endl;
+  //       }
+  //       str << c->getIdentity().getBackquoted(suffix);
+  //       notFirst = true;
+  //       if (generateKind == GenerateKind::columnParametersWithTypeInformation ||
+  //           generateKind == GenerateKind::columnParametersForSelect || 
+  //           generateKind == GenerateKind::onlyPrimaryKey) {
+  //         str << " " << c -> getType();
+  //       } else if (generateKind == GenerateKind::columnParametersForUpdate) {
+  //         // TODO: If it is part of the context parameter, then
+  //         // change to the context parameter name rather than
+  //         // a parameter name based on the column name suffixed with
+  //         // "_par"
+  //         str << " = ";
+  //         // find the object and use it
+  //         const auto& vecOfPar2Ref = optContextParameter->getVecOfPar2Ref();
+  //         for (const auto& par2Ref: vecOfPar2Ref) {
+  //           std::cout << par2Ref.first << " -> " << par2Ref.second.getTableIdentity() << ", " << par2Ref.second.getColumnIdentity() << std::endl;
+  //         }
+  //         const auto& contextParInfoIt = std::find_if(vecOfPar2Ref.begin(),vecOfPar2Ref.end(),[c](const auto par2Ref) { return par2Ref.second.getColumnIdentity() == c->getIdentity(); });
+  //         if (contextParInfoIt != vecOfPar2Ref.end()) {
+  //           // this attribute is covered as a context parameter, use
+  //           // that instead
+  //           str << "Replacement par here!!";
+  //         } else {
+  //           // this attribute is not covered by a context parameter, use
+  //           // the attribute
+  //           str << c->getIdentity().getBackquoted("_par");
+  //         }
           
-        }
-        if (c->isPrimaryKey() && generateKind == GenerateKind::onlyPrimaryKey) {
-          break;
-        }
-      } 
+  //       }
+  //       if (c->isPrimaryKey() && generateKind == GenerateKind::onlyPrimaryKey) {
+  //         break;
+  //       }
+  //     } 
       
-    }
-    return str;
-  }
+  //   }
+  //   return str;
+  // }
   
   std::ostream& GeneratorSql::generateCreateProcedureOrFunction(std::ostream& str,
                                                                 const Options& options,
@@ -195,44 +195,41 @@ namespace PartSqlCrudGen {
         throw std::logic_error("There must be an table definition missing");
       }
       if (op != DatabaseOperation::Type::dbDelete && op != DatabaseOperation::Type::dbSelect) {
-        //generateColumnList(str,tableMetaData->getShPtr2Columns(),GenerateKind::columnParametersWithTypeInformation,cp,"_par");
-        std::unique_ptr<IGenerateColumnList> gclsColumnParametersWithTypeInformation =
+        std::cerr << "Start generating for " << tableMetaData->getIdentity() << std::endl;
+        std::unique_ptr<IGenerateColumnList> gclsColumnParametersWithTypeInformationInParameterList =
           GenerateColumnListSql::create(
-                                        IGenerateColumnList::GenerateKind::columnParametersWithTypeInformation,
+                                        IGenerateColumnList::GenerateKind::columnParametersWithTypeInformationInParameterList,
                                         str,
                                         tableMetaData,
                                         cp,
                                         "_par",
                                         notFirstContextParameter
                                         );
-        gclsColumnParametersWithTypeInformation->generate();
+        gclsColumnParametersWithTypeInformationInParameterList->generate();
+        std::cerr << "End generating for " << tableMetaData->getIdentity() << std::endl;
 
       } else if (op == DatabaseOperation::Type::dbDelete) {
-        //generateColumnList(str,tableMetaData->getShPtr2Columns(),GenerateKind::onlyPrimaryKey,cp,"_par");
-        std::cerr << "Generate dbDelete: start for " << accessType << ", " << tableMetaData->getIdentity() << std::endl;
-        std::unique_ptr<IGenerateColumnList> gclsOnlyPrimaryKey =
+        std::unique_ptr<IGenerateColumnList> gclsOnlyPrimaryKeyInParameterList =
           GenerateColumnListSql::create(
-                                        IGenerateColumnList::GenerateKind::onlyPrimaryKey,
+                                        IGenerateColumnList::GenerateKind::onlyPrimaryKeyInParameterList,
                                         str,
                                         tableMetaData,
                                         cp,
                                         "_par",
                                         notFirstContextParameter
                                         );
-        gclsOnlyPrimaryKey->generate();
-        std::cerr << "Generate dbDelete: end for " << accessType << std::endl;
+        gclsOnlyPrimaryKeyInParameterList->generate();
       } else { // dbSelect
-        //generateColumnList(str,tableMetaData->getShPtr2Columns(),GenerateKind::columnParametersForSelect,cp,"_par");
-        std::unique_ptr<IGenerateColumnList> gclsColumnParametersForSelect =
+        std::unique_ptr<IGenerateColumnList> gclsColumnParametersForSelectInParameterList =
           GenerateColumnListSql::create(
-                                        IGenerateColumnList::GenerateKind::columnParametersForSelect,
+                                        IGenerateColumnList::GenerateKind::columnParametersForSelectInParameterList,
                                         str,
                                         tableMetaData,
                                         cp,
                                         "_par",
                                         notFirstContextParameter
                                         );
-        gclsColumnParametersForSelect->generate();
+        gclsColumnParametersForSelectInParameterList->generate();
         
       }
       str << ")"  << (op == DatabaseOperation::Type::dbInsert? " RETURNS INTEGER DETERMINISTIC MODIFIES SQL DATA ":"") << std::endl << "BEGIN" << std::endl;
@@ -285,27 +282,29 @@ namespace PartSqlCrudGen {
                                                 const DatabaseOperation::Type& op,
                                                 const Access::Type& at) const {
     const auto& ts = options.getConfiguration().getTableSpec(tableMetaData->getIdentity().getSecondary());
+    const auto& tc = ts.getTabCfgTemplate(op);
+    const auto& tmplName = tc.getName();
+    const auto& cp = options.getConfiguration().getContextParameter(OutputLanguage::Type::Sql, at, tmplName);
     switch (op) {
     case DatabaseOperation::Type::dbInsert:
       {
         str << std::setw(options.outputCodeTabWidth) << " " << "INSERT INTO " << tableMetaData->getIdentity().getBackquoted() << " ( ";
-        //generateColumnList(str,tableMetaData->getShPtr2Columns(),GenerateKind::onlyColumnParameters);
         std::unique_ptr<IGenerateColumnList> gclsOnlyColumnParameters =
           GenerateColumnListSql::create(
                                         IGenerateColumnList::GenerateKind::onlyColumnParameters,
                                         str,
-                                        tableMetaData
+                                        tableMetaData,
+                                        cp
                                         );
         gclsOnlyColumnParameters->generate();
         str << ")" << std::endl;
         str << std::setw(options.outputCodeTabWidth*2) << " " << "VALUES (";
-        //generateColumnList(str,tableMetaData->getShPtr2Columns(),GenerateKind::onlyColumnParameters,std::nullopt,"_par");
         std::unique_ptr<IGenerateColumnList> gclsOnlyColumnParameters2 =
           GenerateColumnListSql::create(
                                         IGenerateColumnList::GenerateKind::onlyColumnParameters,
                                         str,
                                         tableMetaData,
-                                        std::nullopt,
+                                        cp,
                                         "_par"
                                         );
         gclsOnlyColumnParameters2->generate();
@@ -321,7 +320,6 @@ namespace PartSqlCrudGen {
         str << std::setw(options.outputCodeTabWidth) << " " << "UPDATE " << tableMetaData->getIdentity().getBackquoted() << std::endl;
         str << std::setw(options.outputCodeTabWidth*2) << " " << "SET " << std::endl;
         str << std::setw(options.outputCodeTabWidth*3) << " ";
-        //generateColumnList(str,tableMetaData->getShPtr2Columns(),GenerateKind::columnParametersForUpdate,cp);
         std::unique_ptr<IGenerateColumnList> gclsColumnParametersForUpdate =
           GenerateColumnListSql::create(
                                         IGenerateColumnList::GenerateKind::columnParametersForUpdate,
@@ -361,7 +359,15 @@ namespace PartSqlCrudGen {
     case DatabaseOperation::Type::dbSelect:
       {
         str << std::setw(options.outputCodeTabWidth) << " "  << "SELECT ";
-        generateColumnList(str,tableMetaData->getShPtr2Columns(),GenerateKind::onlyColumnParametersIncludingId);
+        //generateColumnList(str,tableMetaData->getShPtr2Columns(),GenerateKind::onlyColumnParametersIncludingId);
+        std::unique_ptr<IGenerateColumnList> gclsColumnParametersIncludingIdForSelect =
+          GenerateColumnListSql::create(
+                                        IGenerateColumnList::GenerateKind::onlyColumnParametersIncludingIdForSelect,
+                                        str,
+                                        tableMetaData,
+                                        cp
+                                        );
+        gclsColumnParametersIncludingIdForSelect->generate();
         str << std::endl;
         str << std::setw(options.outputCodeTabWidth*2) << " "  << "FROM " << tableMetaData->getIdentity().getBackquoted() << std::endl;
         str << std::setw(options.outputCodeTabWidth*2) << " "  << "WHERE "  << std::endl;
@@ -440,7 +446,6 @@ namespace PartSqlCrudGen {
                         {aTablePattern,"a/an "+tableName},
                           {domainPattern,accessType2Output(at)}
                   });
-                //              str << "BANZAI: \"" << pps.getTablePattern() << "\", \"" << at << "\", \"" << op << std::endl;
                 str << ppir << std::endl;
               }
             }
@@ -503,24 +508,30 @@ namespace PartSqlCrudGen {
     case onlyColumnParameters:
       return std::make_unique<GclsOnlyColumnParameters>(str,shPtr2Table, optContextParameter, suffix,notFirst);
     case columnParametersWithTypeInformation:
-      return std::make_unique<GclsColumnParametersWithTypeInformation>(str,shPtr2Table, optContextParameter, suffix,notFirst);
+      return std::make_unique<GclsColumnParametersWithTypeInformationInParameterList>(str,shPtr2Table, optContextParameter, suffix,notFirst);
     case columnParametersForUpdate:
       return std::make_unique<GclsColumnParametersForUpdate>(str,shPtr2Table, optContextParameter, suffix,notFirst);
-    case onlyPrimaryKey:
-      return std::make_unique<GclsOnlyPrimaryKey>(str,shPtr2Table, optContextParameter, suffix,notFirst);
+    case onlyPrimaryKeyInParameterList:
+      return std::make_unique<GclsOnlyPrimaryKeyInParameterList>(str,shPtr2Table, optContextParameter, suffix,notFirst);
     case columnParametersForSelect:
-      return std::make_unique<GclsColumnParametersForSelect>(str,shPtr2Table, optContextParameter, suffix,notFirst);
-    case onlyColumnParametersIncludingId:
+      return std::make_unique<GclsColumnParametersForSelectInParameterList>(str,shPtr2Table, optContextParameter, suffix,notFirst);
+    case onlyColumnParametersIncludingIdForSelect:
+      return std::make_unique<GclsColumnParametersIncludingIdForSelect>(str,shPtr2Table, optContextParameter, suffix,notFirst);
     default:
       return nullptr;
     }
   }
 
   const bool GclsOnlyColumnParameters::shouldAttributeBeListed(const ShPtr2Column& shPtr2Column) const {
-    return !shPtr2Column->isPrimaryKey();
+    return !shPtr2Column->isPrimaryKey() && !isContextParameter(shPtr2Column);
   }
 
-  std::ostream& GclsColumnParametersWithTypeInformation::generateColumn(const ShPtr2Column& shPtr2Column)  {
+  const bool GclsColumnParametersWithTypeInformationInParameterList::shouldAttributeBeListed(const ShPtr2Column& shPtr2Column) const  {
+    std::cerr << shPtr2Column->getIdentity() << "=> pk = " << shPtr2Column->isPrimaryKey() << ", cp = " << isContextParameter(shPtr2Column) << std::endl;
+    return !shPtr2Column->isPrimaryKey() && !isContextParameter(shPtr2Column);
+  }
+
+  std::ostream& GclsColumnParametersWithTypeInformationInParameterList::generateColumn(const ShPtr2Column& shPtr2Column)  {
     GclsOnlyColumnParameters::generateColumn(shPtr2Column);
     getStr() << " " << shPtr2Column->getType();
     return getStr();
@@ -553,41 +564,47 @@ namespace PartSqlCrudGen {
     // is one place to modify the condition, but the cost is a less
     // understandable design
     const auto& vecOfPar2Ref = getOptContextParameter()->getVecOfPar2Ref();
-    const auto& contextParInfoIt = std::find_if(vecOfPar2Ref.begin(),vecOfPar2Ref.end(),[this,shPtr2Column](const auto par2Ref) { return par2Ref.second.getColumnIdentity() == shPtr2Column->getIdentity() && par2Ref.second.getTableIdentity() == this->getShPtr2Table()->getIdentity(); });
+    const auto& contextParInfoIt = std::find_if(vecOfPar2Ref.begin(),vecOfPar2Ref.end(),[this,shPtr2Column](const auto par2Ref) { return par2Ref.second.getColumnIdentity() == shPtr2Column->getIdentity() ; });
     Identity replacementId(contextParInfoIt->first);
     getStr() << " = " << replacementId.getBackquoted(getSuffix());
     return getStr();
       
   }
 
-  const bool GclsOnlyPrimaryKey::shouldAttributeBeListed(const ShPtr2Column& shPtr2Column) const {
+  const bool GclsOnlyPrimaryKeyInParameterList::shouldAttributeBeListed(const ShPtr2Column& shPtr2Column) const {
     return shPtr2Column->isPrimaryKey() && !isContextParameter(shPtr2Column);
   }
 
-  const bool GclsOnlyPrimaryKey::shouldReplacementAttributeBeListed(const ShPtr2Column& shPtr2Column) const {
+  const bool GclsOnlyPrimaryKeyInParameterList::shouldReplacementAttributeBeListed(const ShPtr2Column& shPtr2Column) const {
     return false;
   }
 
-  std::ostream& GclsOnlyPrimaryKey::generateColumn(const ShPtr2Column& shPtr2Column) {
+  std::ostream& GclsOnlyPrimaryKeyInParameterList::generateColumn(const ShPtr2Column& shPtr2Column) {
     GclsOnlyColumnParameters::generateColumn(shPtr2Column);
     getStr() << " " << shPtr2Column->getType();
     return getStr();
   }
   
-  const bool GclsColumnParametersForSelect::shouldAttributeBeListed(const ShPtr2Column& shPtr2Column) const {
-    return true;
+  const bool GclsColumnParametersForSelectInParameterList::shouldAttributeBeListed(const ShPtr2Column& shPtr2Column) const {
+    return !isContextParameter(shPtr2Column);
   }
 
-  const bool GclsColumnParametersForSelect::shouldReplacementAttributeBeListed(const ShPtr2Column& shPtr2Column) const {
+  const bool GclsColumnParametersForSelectInParameterList::shouldReplacementAttributeBeListed(const ShPtr2Column& shPtr2Column) const {
     return false;
   }
 
-  std::ostream& GclsColumnParametersForSelect::generateColumn(const ShPtr2Column& shPtr2Column) {
+  std::ostream& GclsColumnParametersForSelectInParameterList::generateColumn(const ShPtr2Column& shPtr2Column) {
     getStr() << " " << shPtr2Column->getIdentity().getBackquoted(getSuffix()+"_cmp") << " VARCHAR(3), ";
     GclsOnlyColumnParameters::generateColumn(shPtr2Column);
     getStr() << " " << shPtr2Column->getType();
     return getStr();
   }
   
+  const bool GclsColumnParametersIncludingIdForSelect::shouldAttributeBeListed(const ShPtr2Column& shPtr2Column) const {
+    return true;
+  }
+  const bool GclsColumnParametersIncludingIdForSelect::shouldReplacementAttributeBeListed(const ShPtr2Column& shPtr2Column) const {
+    return false;
+  }
   
 }

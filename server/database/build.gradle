@@ -521,7 +521,9 @@ task dbs_CrudGenPrep() {
 // Generate the CRUD specification file.
 
 def dbs_crudGenInputFiles = dbs_dbCrudGenInputFiles + [ cgt_crudGenToolPath() ]
+logger.info("dbs_crudGenInputFiles = "+dbs_crudGenInputFiles);
 def dbs_crudGenOutputFiles = [ dbs_crudSqlSrcPath()]
+logger.info("dbs_crudGenOutputFiles = "+dbs_crudGenOutputFiles);
 
 task dbs_CrudGen(type:Exec) {
     dependsOn 'dbs_CrudGenPrep'
@@ -662,6 +664,7 @@ def dbs_DropAndRecreateDatabaseIfNecessaryInputFiles = ((dbs_dbCfgFiles+dbs_dbFi
 logger.info("dbs_DropAndRecreateDatabaseIfNecessaryInputFiles = "+dbs_DropAndRecreateDatabaseIfNecessaryInputFiles)
 def dbs_DropAndRecreateDatabaseIfNecessaryOutputFile = new File("${rootProject.buildDir}/${project.name}/dbs_DropAndRecreateDatabaseIfNecessary.txt") ;
 def dbs_DropAndRecreateDatabaseIfNecessaryOutputFiles = [ dbs_DropAndRecreateDatabaseIfNecessaryOutputFile ];
+logger.info("dbs_DropAndRecreateDatabaseIfNecessaryOutputFiles = "+dbs_DropAndRecreateDatabaseIfNecessaryOutputFiles)
 
 task dbs_DropAndRecreateDatabaseIfNecessary() {
     dependsOn 'dbs_OpenDatabaseAsRoot'
@@ -678,7 +681,7 @@ task dbs_DropAndRecreateDatabaseIfNecessary() {
             }
             stmt.execute("USE `whedcapp`");
             Date date = new Date();
-            dbs_DropAndRecreateDatabaseIfNecessaryOutputFile << "Ready at "+date.toString();
+            dbs_DropAndRecreateDatabaseIfNecessaryOutputFile << "Ready at "+date.toString()+"\n";
         } catch (SQLException sqe) {
             throw new StopExecutionException("Could not setup database: "+sqex);
         }
@@ -843,7 +846,7 @@ task dbs_CreateWhedcappDatabaseAccessUser() {
                     END;
                     """
             Date date = new Date();
-            dbs_CreateWhedcappDatabaseAccessUserOutputFile << "Whedcapp user created at "+date.toString();
+            dbs_CreateWhedcappDatabaseAccessUserOutputFile << "Whedcapp user created at "+date.toString()+"\n";
         } catch (SQLException sqex) {
             throw new StopExecutionException("Could not create default whedcapp user \""+getMysqlWhedcappUserId()+"\""+sqex);
         } finally {
@@ -892,7 +895,7 @@ task dbs_CreateWhedcappDatabaseTestAccessUser() {
         try {
             stmt.execute("GRANT EXECUTE,SELECT,INSERT ON "+backquotifySqlId("whedcapp.*")+" TO "+quotifySqlUserId(getMysqlTestWhedcappUserId()));
             Date date = new Date();
-            dbs_CreateWhedcappDatabaseTestAccessUserOutputFile << "Whedcapp test user created at "+date.toString();
+            dbs_CreateWhedcappDatabaseTestAccessUserOutputFile << "Whedcapp test user created at "+date.toString()+"\n";
         } catch (SQLException sqex) {
             throw new StopExecutionException("Could not create default whedcapp user \""+getMysqlWhedcappUserId()+"\""+sqex);
         }
@@ -1005,8 +1008,12 @@ task dbs_UploadToDatabase() {
                 }
                 
             } catch (SQLException sqex) {
+                logger.info("Removing ${dbs_DropAndRecreateDatabaseIfNecessaryOutputFile}");
+                delete "${dbs_DropAndRecreateDatabaseIfNecessaryOutputFile}";
                 throw new StopExecutionException("Something is wrong with SQL Statement: "+sqex);             
             } catch (Exception ex) {
+                logger.info("Removing ${dbs_DropAndRecreateDatabaseIfNecessaryOutputFile}");
+                delete "${dbs_DropAndRecreateDatabaseIfNecessaryOutputFile}";
                 throw new StopExecutionException("Something is wrong, but not with the SQL Statement: "+ex);             
             }
         }
@@ -1028,8 +1035,12 @@ task dbs_UploadToDatabase() {
             }
             uploadDatabaseResultOutputStream.close();
         } catch (SQLException sqex) {
+            logger.info("Removing ${dbs_DropAndRecreateDatabaseIfNecessaryOutputFile}");
+            delete "${dbs_DropAndRecreateDatabaseIfNecessaryOutputFile}";
             throw new StopExecutionException("Something is wrong with SQL Statement: "+sqex);             
         } catch (Exception ex) {
+            logger.info("Removing ${dbs_DropAndRecreateDatabaseIfNecessaryOutputFile}");
+            delete "${dbs_DropAndRecreateDatabaseIfNecessaryOutputFile}";
             throw new StopExecutionException("Something is wrong, but not with the SQL Statement: "+ex);             
         }
 

@@ -16,6 +16,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
     */
 
+
 DELIMITER $$
 CREATE FUNCTION `whedcapp`.`check_acl`(
                                         id_uid_par INT, 
@@ -80,20 +81,5 @@ $$
 CREATE FUNCTION `whedcapp`.`check_project_supporter_rights`(id_uid_par INT,id_proj_par INT) RETURNS BOOLEAN DETERMINISTIC
 BEGIN
 	RETURN `whedcapp`.`check_acl`(id_uid_par,id_proj_par,TRUE,FALSE,TRUE,TRUE,FALSE,TRUE,FALSE,FALSE);
-END;
-$$
-CREATE PROCEDURE `whedcapp`.`project_get_uid`(id_proj_par INT)
-BEGIN
-        SELECT `id_uid`
-               FROM `whedcapp`.`uid`
-               WHERE `id_uid` IN (SELECT `id_uid`
-                                         FROM `whedcapp`.`acl`
-                                         WHERE
-                                                `id_proj` IN (SELECT `id_proj`
-                                                                     FROM `whedcapp`.`project`
-                                                                     WHERE `id_proj` = id_proj_par
-                                                             )
-                                 );
-                                                  
 END;
 $$

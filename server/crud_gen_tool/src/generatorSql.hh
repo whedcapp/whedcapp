@@ -76,9 +76,10 @@ namespace PartSqlCrudGen {
     
   };
 
-  class GclsColumnParametersWithTypeInformation: public GclsOnlyColumnParameters {
+  class GclsColumnParametersWithTypeInformationInParameterList: public GclsOnlyColumnParameters {
   public:
-    GclsColumnParametersWithTypeInformation(std::ostream& str, const ShPtr2Table& shPtr2Table, const std::optional<ContextParameter>& optContextParameter = std::nullopt, const std::string& suffix = "", bool notFirst = false): GclsOnlyColumnParameters(str,shPtr2Table, optContextParameter, suffix,notFirst) {}
+    GclsColumnParametersWithTypeInformationInParameterList(std::ostream& str, const ShPtr2Table& shPtr2Table, const std::optional<ContextParameter>& optContextParameter = std::nullopt, const std::string& suffix = "", bool notFirst = false): GclsOnlyColumnParameters(str,shPtr2Table, optContextParameter, suffix,notFirst) {}
+    const bool shouldAttributeBeListed(const ShPtr2Column& shPtr2Column) const override;
     std::ostream& generateColumn(const ShPtr2Column& shPtr2Column)  override;
   };
 
@@ -92,22 +93,29 @@ namespace PartSqlCrudGen {
     
   };
 
-  class GclsOnlyPrimaryKey: public GclsOnlyColumnParameters {
+  class GclsOnlyPrimaryKeyInParameterList: public GclsOnlyColumnParameters {
   public:
-    GclsOnlyPrimaryKey(std::ostream& str, const ShPtr2Table& shPtr2Table, const std::optional<ContextParameter>& optContextParameter = std::nullopt, const std::string& suffix = "", bool notFirst = false): GclsOnlyColumnParameters(str,shPtr2Table, optContextParameter, suffix, notFirst) {}
+    GclsOnlyPrimaryKeyInParameterList(std::ostream& str, const ShPtr2Table& shPtr2Table, const std::optional<ContextParameter>& optContextParameter = std::nullopt, const std::string& suffix = "", bool notFirst = false): GclsOnlyColumnParameters(str,shPtr2Table, optContextParameter, suffix, notFirst) {}
     const bool shouldAttributeBeListed(const ShPtr2Column& shPtr2Column) const override;
     const bool shouldReplacementAttributeBeListed(const ShPtr2Column& shPtr2Column) const override;
     std::ostream& generateColumn(const ShPtr2Column& shPtr2Column) override;
     
   };
 
-  class GclsColumnParametersForSelect: public GclsOnlyColumnParameters {
+  class GclsColumnParametersForSelectInParameterList: public GclsOnlyColumnParameters {
   public:
-    GclsColumnParametersForSelect(std::ostream& str, const ShPtr2Table& shPtr2Table, const std::optional<ContextParameter>& optContextParameter = std::nullopt, const std::string& suffix = "", bool notFirst = false): GclsOnlyColumnParameters(str,shPtr2Table, optContextParameter, suffix, notFirst) {}
+    GclsColumnParametersForSelectInParameterList(std::ostream& str, const ShPtr2Table& shPtr2Table, const std::optional<ContextParameter>& optContextParameter = std::nullopt, const std::string& suffix = "", bool notFirst = false): GclsOnlyColumnParameters(str,shPtr2Table, optContextParameter, suffix, notFirst) {}
     const bool shouldAttributeBeListed(const ShPtr2Column& shPtr2Column) const override;
     const bool shouldReplacementAttributeBeListed(const ShPtr2Column& shPtr2Column) const override;
     std::ostream& generateColumn(const ShPtr2Column& shPtr2Column) override;
     
+  };
+
+  class GclsColumnParametersIncludingIdForSelect: public GclsOnlyColumnParameters {
+  public:
+    GclsColumnParametersIncludingIdForSelect(std::ostream& str, const ShPtr2Table& shPtr2Table, const std::optional<ContextParameter>& optContextParameter = std::nullopt, const std::string& suffix = "", bool notFirst = false): GclsOnlyColumnParameters(str,shPtr2Table, optContextParameter, suffix,notFirst) {}
+    const bool shouldAttributeBeListed(const ShPtr2Column& shPtr2Column) const override;
+    const bool shouldReplacementAttributeBeListed(const ShPtr2Column& shPtr2Column) const override;
   };
 
 }
