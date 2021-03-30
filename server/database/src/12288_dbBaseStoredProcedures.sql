@@ -17,10 +17,11 @@
     */
 
 DELIMITER $$
-CREATE FUNCTION `whedcapp`.`check_acl`(id_uid_par INT, 
-										id_proj_par INT,
-										is_superuser_par BOOLEAN, 
-										is_personal_data_controller_par BOOLEAN,
+CREATE FUNCTION `whedcapp`.`check_acl`(
+                                        id_uid_par INT, 
+				        id_proj_par INT,
+					is_superuser_par BOOLEAN, 
+					is_personal_data_controller_par BOOLEAN,
                                         is_whedcapp_administrator_par BOOLEAN,
                                         is_project_owner_par BOOLEAN,
                                         is_researcher_par BOOLEAN,
@@ -28,11 +29,11 @@ CREATE FUNCTION `whedcapp`.`check_acl`(id_uid_par INT,
                                         is_participant_par BOOLEAN,
                                         is_questionnaire_manager_par BOOLEAN) RETURNS BOOLEAN DETERMINISTIC
 BEGIN
-	DECLARE acl_check_var INT;
+    DECLARE acl_check_var INT;
     IF is_superuser_par OR is_personal_data_controller_par OR is_whedcapp_administrator_par THEN
 		SELECT COUNT(`id_uid`) INTO acl_check_var
 			FROM `whedcapp`.`uid` 
-            WHERE `id_uid` = `id_uid_par` 
+                             WHERE `id_uid` = `id_uid_par` 
 				AND (
 						(`uid_is_superuser` AND is_superuser_par)
 					OR 
@@ -46,7 +47,7 @@ BEGIN
     END IF;
     SELECT COUNT(DISTINCT `id_acl`) INTO acl_check_var
 		FROM `whedcapp`.`acl`
-        WHERE 
+                     WHERE 
 				`id_proj`= id_proj_par AND `id_uid` = id_uid_par 
 			AND (
 					(is_superuser_par AND `id_acl_level` IN (SELECT `id_acl_level` FROM `whedcapp`.`acl_level` WHERE `acl_level_key` = "superuser"))
@@ -79,5 +80,20 @@ $$
 CREATE FUNCTION `whedcapp`.`check_project_supporter_rights`(id_uid_par INT,id_proj_par INT) RETURNS BOOLEAN DETERMINISTIC
 BEGIN
 	RETURN `whedcapp`.`check_acl`(id_uid_par,id_proj_par,TRUE,FALSE,TRUE,TRUE,FALSE,TRUE,FALSE,FALSE);
+END;
+$$
+CREATE PROCEDURE `whedcapp`.`project_get_uid`(id_proj_par INT)
+BEGIN
+        SELECT `id_uid`
+               FROM `whedcapp`.`uid`
+               WHERE `id_uid` IN (SELECT `id_uid`
+                                         FROM `whedcapp`.`acl`
+                                         WHERE
+                                                `id_proj` IN (SELECT `id_proj`
+                                                                     FROM `whedcapp`.`project`
+                                                                     WHERE `id_proj` = id_proj_par
+                                                             )
+                                 );
+                                                  
 END;
 $$

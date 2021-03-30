@@ -22,7 +22,7 @@
                     {
                         "calling_uid_key": {
                             "table": "whedcapp.uid",
-                            "column": "uid_text"
+                            "column": "id_uid"
                         }
                     }
                 ],
@@ -30,7 +30,7 @@
                     {
                         "calling_uid_key": {
                             "table": "whedcapp.uid",
-                            "column": "uid_text"
+                            "column": "id_uid"
                         }
                     }
                 ],
@@ -38,13 +38,13 @@
                     {
                         "calling_uid_key": {
                             "table": "whedcapp.uid",
-                            "column": "uid_text"
+                            "column": "id_uid"
                         }
                     },
                     {
-                        "proj_key": {
+                        "id_proj": {
                             "table": "whedcapp.project",
-                            "column": "proj_key"
+                            "column": "id_proj"
                         }
                     }
                 ], 
@@ -52,19 +52,19 @@
                     {
                         "calling_uid_key": {
                             "table": "whedcapp.uid",
-                            "column": "uid_text"
+                            "column": "id_uid"
                         }
                     },
                     {
-                        "proj_key": {
+                        "id_proj": {
                             "table": "whedcapp.project",
-                            "column": "proj_key"
+                            "column": "id_proj"
                         }
                     },
                     {
                         "proj_round_key": {
                             "table": "whedcapp.project_round",
-                            "column": "proj_round_key"
+                            "column": "id_proj_round"
                         }
                     }
                 ], 
@@ -72,13 +72,13 @@
                     {
                         "calling_uid_key": {
                             "table": "whedcapp.uid",
-                            "column": "uid_text"
+                            "column": "id_uid"
                         }
                     },
                     {
                         "questionnaire_key": {
                             "table": "whedcapp.questionnaire",
-                            "column": "questionnaire_key"
+                            "column": "id_questionnaire"
                         }
                     }
                 ]
@@ -88,13 +88,13 @@
                     {
                         "calling_uid_key": {
                             "table": "whedcapp.uid",
-                            "column": "uid_text"
+                            "column": "id_uid"
                         }
                     },
                     {
                         "other_uid_key": {
                             "table": "whedcapp.uid",
-                            "column": "uid_text"
+                            "column": "id_uid"
                         }
                         
                     }
@@ -103,13 +103,13 @@
                     {
                         "calling_uid_key": {
                             "table": "whedcapp.uid",
-                            "column": "uid_text"
+                            "column": "id_uid"
                         }
                     },
                     {
                         "other_uid_key": {
                             "table": "whedcapp.uid",
-                            "column": "uid_text"
+                            "column": "id_uid"
                         }
                         
                     }
@@ -118,13 +118,13 @@
                     {
                         "calling_uid_key": {
                             "table": "whedcapp.uid",
-                            "column": "uid_text"
+                            "column": "id_uid"
                         }
                     },
                     {
                         "other_uid_key": {
                             "table": "whedcapp.uid",
-                            "column": "uid_text"
+                            "column": "id_uid"
                         }
                         
                     }
@@ -133,19 +133,19 @@
                     {
                         "calling_uid_key": {
                             "table": "whedcapp.uid",
-                            "column": "uid_text"
+                            "column": "id_uid"
                         }
                     },
                     {
-                        "proj_key": {
+                        "id_proj": {
                             "table": "whedcapp.project",
-                            "column": "proj_key"
+                            "column": "id_proj"
                         }
                     },
                     {
                         "other_uid_key": {
                             "table": "whedcapp.uid",
-                            "column": "uid_text"
+                            "column": "id_uid"
                         }
                         
                     }
@@ -154,25 +154,25 @@
                     {
                         "calling_uid_key": {
                             "table": "whedcapp.uid",
-                            "column": "uid_text"
+                            "column": "id_uid"
                         }
                     },
                     {
-                        "proj_key": {
+                        "id_proj": {
                             "table": "whedcapp.project",
-                            "column": "proj_key"
+                            "column": "id_proj"
                         }
                     },
                     {
                         "proj_round_key": {
                             "table": "whedcapp.project_round",
-                            "column": "proj_round_key"
+                            "column": "id_proj_round"
                         }
                     },
                     {
                         "other_uid_key": {
                             "table": "whedcapp.uid",
-                            "column": "uid_text"
+                            "column": "id_uid"
                         }
                     }
                 ], 
@@ -180,20 +180,20 @@
                     {
                         "calling_uid_key": {
                             "table": "whedcapp.uid",
-                            "column": "uid_text"
+                            "column": "id_uid"
                         }
                     },
                     {
                     
                         "questionnaire_key": {
                             "table": "whedcapp.questionnaire",
-                            "column": "questionnaire_key"
+                            "column": "id_questionnaire"
                         }
                     },
                     {
                         "uid_respondee_key": {
                             "table": "whedcapp.uid",
-                            "column": "uid_text"
+                            "column": "id_uid"
                         }
                         
                     }
@@ -204,7 +204,7 @@
                     {
                         "calling_uid_key": {
                             "table": "whedcapp.uid",
-                            "column": "uid_text"
+                            "column": "id_uid"
                         }
                     }
                 ],
@@ -212,7 +212,7 @@
                     {
                         "calling_uid_key": {
                             "table": "whedcapp.uid",
-                            "column": "uid_text"
+                            "column": "id_uid"
                         }
                     }
                 ],
@@ -220,7 +220,7 @@
                     {
                         "calling_uid_key": {
                             "table": "whedcapp.uid",
-                            "column": "uid_text"
+                            "column": "id_uid"
                         }
                     }
                 ],
@@ -228,13 +228,13 @@
                     {
                         "calling_uid_key": {
                             "table": "whedcapp.uid",
-                            "column": "uid_text"
+                            "column": "id_uid"
                         }
                     },
                     {
-                        "proj_key": {
+                        "id_proj": {
                             "table": "whedcapp.project",
-                            "column": "proj_key"
+                            "column": "id_proj"
                         }
                     }
                 ], 
@@ -242,19 +242,19 @@
                     {
                         "calling_uid_key": {
                             "table": "whedcapp.uid",
-                            "column": "uid_text"
+                            "column": "id_uid"
                         }
                     },
                     {
-                        "proj_key": {
+                        "id_proj": {
                             "table": "whedcapp.project",
-                            "column": "proj_key"
+                            "column": "id_proj"
                         }
                     },
                     {
                         "proj_round_key": {
                             "table": "whedcapp.project_round",
-                            "column": "proj_round_key"
+                            "column": "id_proj_round"
                         }
                     }
                 ], 
@@ -262,13 +262,13 @@
                     {
                         "calling_uid_key": {
                             "table": "whedcapp.uid",
-                            "column": "uid_text"
+                            "column": "id_uid"
                         }
                     },
                     {
                         "questionnaire_key": {
                             "table": "whedcapp.questionnaire",
-                            "column": "questionnaire_key"
+                            "column": "id_questionnaire"
                         }
                     }
                 ]
@@ -278,13 +278,13 @@
                     {
                         "calling_uid_key": {
                             "table": "whedcapp.uid",
-                            "column": "uid_text"
+                            "column": "id_uid"
                         }
                     },
                     {
                         "other_uid_key": {
                             "table": "whedcapp.uid",
-                            "column": "uid_text"
+                            "column": "id_uid"
                         }
                         
                     }
@@ -293,13 +293,13 @@
                     {
                         "calling_uid_key": {
                             "table": "whedcapp.uid",
-                            "column": "uid_text"
+                            "column": "id_uid"
                         }
                     },
                     {
                         "other_uid_key": {
                             "table": "whedcapp.uid",
-                            "column": "uid_text"
+                            "column": "id_uid"
                         }
                         
                     }
@@ -308,13 +308,13 @@
                     {
                         "calling_uid_key": {
                             "table": "whedcapp.uid",
-                            "column": "uid_text"
+                            "column": "id_uid"
                         }
                     },
                     {
                         "other_uid_key": {
                             "table": "whedcapp.uid",
-                            "column": "uid_text"
+                            "column": "id_uid"
                         }
                         
                     }
@@ -323,19 +323,19 @@
                     {
                         "calling_uid_key": {
                             "table": "whedcapp.uid",
-                            "column": "uid_text"
+                            "column": "id_uid"
                         }
                     },
                     {
-                        "proj_key": {
+                        "id_proj": {
                             "table": "whedcapp.project",
-                            "column": "proj_key"
+                            "column": "id_proj"
                         }
                     },
                     {
                         "other_uid_key": {
                             "table": "whedcapp.uid",
-                            "column": "uid_text"
+                            "column": "id_uid"
                         }
                         
                     }
@@ -344,25 +344,25 @@
                     {
                         "calling_uid_key": {
                             "table": "whedcapp.uid",
-                            "column": "uid_text"
+                            "column": "id_uid"
                         }
                     },
                     {
-                        "proj_key": {
+                        "id_proj": {
                             "table": "whedcapp.project",
-                            "column": "proj_key"
+                            "column": "id_proj"
                         }
                     },
                     {
                         "proj_round_key": {
                             "table": "whedcapp.project_round",
-                            "column": "proj_round_key"
+                            "column": "id_proj_round"
                         }
                     },
                     {
                         "other_uid_key": {
                             "table": "whedcapp.uid",
-                            "column": "uid_text"
+                            "column": "id_uid"
                         }
                     }
                 ], 
@@ -370,19 +370,19 @@
                     {
                         "calling_uid_key": {
                             "table": "whedcapp.uid",
-                            "column": "uid_text"
+                            "column": "id_uid"
                         }
                     },
                     {
                         "questionnaire_key": {
                             "table": "whedcapp.questionnaire",
-                            "column": "questionnaire_key"
+                            "column": "id_questionnaire"
                         }
                     },
                     {
                         "uid_respondee_key": {
                             "table": "whedcapp.uid",
-                            "column": "uid_text"
+                            "column": "id_uid"
                         }
                         
                     }

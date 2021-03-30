@@ -67,6 +67,7 @@ namespace PartSqlCrudGen {
     for (const auto& col: *(getShPtr2Columns())) {
       if (shouldAttributeBeListed(col)) {
         if (getNotFirst()) {
+          std::cerr << getShPtr2Table()->getIdentity() << "." << col->getIdentity() << " has a comma " << std::endl;
           getStr() << ", ";
         }
         generateColumn(col);

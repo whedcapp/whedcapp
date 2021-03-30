@@ -57,7 +57,7 @@ namespace PartSqlCrudGen {
     std::optional<ContextParameter> optContextParameter;
     std::string suffix;    
   protected:
-    GenerateColumnList(std::ostream& str,const ShPtr2Table& shPtr2Table,const std::optional<ContextParameter>& optContextParameter = std::nullopt, const std::string& suffix = ""): IGenerateColumnList(),notFirst(false),lastConsideredAttributeListed(false),str(str),shPtr2Table(shPtr2Table),optContextParameter(optContextParameter),suffix(suffix) {}
+    GenerateColumnList(std::ostream& str,const ShPtr2Table& shPtr2Table,const std::optional<ContextParameter>& optContextParameter = std::nullopt, const std::string& suffix = "",bool notFirst = false): IGenerateColumnList(),notFirst(notFirst),lastConsideredAttributeListed(false),str(str),shPtr2Table(shPtr2Table),optContextParameter(optContextParameter),suffix(suffix) {}
   public:
     inline bool getNotFirst() const {
       return this->notFirst;
