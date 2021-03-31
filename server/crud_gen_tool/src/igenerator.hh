@@ -37,7 +37,9 @@ namespace PartSqlCrudGen {
                         columnParametersForUpdate,
                         onlyPrimaryKeyInParameterList,
                         columnParametersForSelectInParameterList,
-                        onlyColumnParametersIncludingIdForSelect};
+                        onlyColumnParametersIncludingIdForSelect,
+                        columnParametersForDelete
+    };
     virtual std::ostream& generatePrefix() = 0;
     virtual const bool shouldAttributeBeListed(const ShPtr2Column& shPtr2Column) const = 0;
     virtual const bool shouldReplacementAttributeBeListed(const ShPtr2Column& shPtr2Column) const = 0;
