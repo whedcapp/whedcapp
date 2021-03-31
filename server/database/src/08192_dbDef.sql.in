@@ -2432,7 +2432,30 @@ $$
   #####  ### ######  
 */
 $$
-
+CREATE TRIGGER `whedcapp`.`uid_update_check`
+       BEFORE UPDATE
+       ON `whedcapp`.`uid` FOR EACH ROW
+BEGIN
+        IF new.`uid_text` <> old.`uid_text` THEN
+           SIGNAL SQLSTATE '45044'
+                  SET MESSAGE_TEXT = 'Cannot update the identity of a user';
+        END IF;
+        IF old.`uid_text` = '@whedcappAdministrator@' and new.`uid_is_superuser` = false THEN
+           SIGNAL SQLSTATE '45045'
+                  SET MESSAGE_TEXT = 'Cannot demote whedcapp administrator';
+        END IF;
+END;
+$$
+CREATE TRIGGER `whedcapp`.`uid_delete_check`
+       BEFORE DELETE
+       ON `whedcapp`.`uid` FOR EACH ROW
+BEGIN
+        IF old.`uid_text` = '@whedcappAdministrator@'  THEN
+           SIGNAL SQLSTATE '45046'
+                  SET MESSAGE_TEXT = 'Cannot delete whedcapp administrator';
+        END IF;
+END;
+$$
 DELIMITER ;
 
 

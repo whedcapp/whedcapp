@@ -271,28 +271,39 @@ namespace PartSqlCrudGen {
         
         str << std::endl;
         str << std::setw(options.outputCodeTabWidth*2) << " " << "WHERE ";
-        const std::string& acronym = ts.getAcronym();
+        // const std::string& acronym = ts.getAcronym();
       
-        std::string colNamePrefix;
-        if (acronym!="") {
-          colNamePrefix = acronym;
-        } else {
-          colNamePrefix = tableMetaData->getIdentity().getSecondary();
-        }
-        if (ts.hasKeyAttribute()) {
-          str << colNamePrefix << "_key";
-          str << " = " << colNamePrefix << "_key_par;";
-        } else {
-          // get primary key
-          str << tableMetaData->getPrimaryKeyColumn()->getIdentity().getPrimary() 
-              << " = " << tableMetaData->getPrimaryKeyColumn()->getIdentity().getPrimary() << "_par;"; 
-        }
+        // std::string colNamePrefix;
+        // if (acronym!="") {
+        //   colNamePrefix = acronym;
+        // } else {
+        //   colNamePrefix = tableMetaData->getIdentity().getSecondary();
+        // }
+        // if (ts.hasKeyAttribute()) {
+        //   str << colNamePrefix << "_key";
+        //   str << " = " << colNamePrefix << "_key_par;";
+        // } else {
+        //   // get primary key
+        //   str << tableMetaData->getPrimaryKeyColumn()->getIdentity().getPrimary() 
+        //       << " = " << tableMetaData->getPrimaryKeyColumn()->getIdentity().getPrimary() << "_par;"; 
+        // }
+        std::unique_ptr<IGenerateColumnList> gclsColumnParametersForDelete =
+          GenerateColumnListSql::create(
+                                        IGenerateColumnList::GenerateKind::columnParametersForDelete,
+                                        str,
+                                        tableMetaData,
+                                        cp,
+                                        "_par"
+                                        );
+        gclsColumnParametersForDelete->generate();
+        str << ";" << std::endl;
+
       }
       break;
     case DatabaseOperation::Type::dbDelete:
       {
         str << std::setw(options.outputCodeTabWidth) << " "  << "DELETE FROM " << tableMetaData->getIdentity().getBackquoted() << std::endl;
-        str << std::setw(options.outputCodeTabWidth*2) << " " << "WHERE "; // << tableMetaData->getPrimaryKeyColumn()->getIdentity().getPrimary() << " = " <<  tableMetaData->getPrimaryKeyColumn()->getIdentity().getPrimary() << "_par;" << std::endl;
+        str << std::setw(options.outputCodeTabWidth*2) << " " << "WHERE "; 
         std::unique_ptr<IGenerateColumnList> gclsColumnParametersForDelete =
           GenerateColumnListSql::create(
                                         IGenerateColumnList::GenerateKind::columnParametersForDelete,

@@ -452,7 +452,7 @@
             "step": 1,
             "tablePattern": ".*",
             "domainPattern": "write.*",
-            "operationPattern": "(insert|update|delete)",
+            "operationPattern": "(insert|delete)",
             "instruction":
             "\tIF ROW_COUNT() < 1 THEN\n\t\tSIGNAL SQLSTATE '4<ERR>'\n\t\t\tSET MESSAGE_TEXT = 'You are allowed to <OPERATION> <A_TABLE> for <DOMAIN>, but something went wrong';\n\tEND IF;\n"
         },
