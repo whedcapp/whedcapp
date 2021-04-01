@@ -172,6 +172,8 @@ namespace PartSqlCrudGen {
   
   class ContextParameter: public ConfigurationItem {
     std::vector<std::pair<std::string,Reference>> vecOfPar2Ref;
+    bool accessControl;
+    bool context;
     nlohmann::json contextParameter;
   public:
     ContextParameter(IConfiguration& iConfiguration,nlohmann::json& contextParameter): ConfigurationItem(iConfiguration),contextParameter(contextParameter) {
@@ -187,11 +189,13 @@ namespace PartSqlCrudGen {
           if (!value.is_object()) {
             throw std::logic_error("Context parameter specification does not contain a proper reference");
           }
-          if (!value.contains("table") || !value.contains("column")) {
-            throw std::logic_error("Context parameter specification, reference lacks either table or column in reference");
+          if (!value.contains("table") || !value.contains("column") || !value.contains("accessControl") || !value.contains("context")) {
+            throw std::logic_error("Context parameter specification, reference lacks either table or column in reference or accessControl/context specification is missing");
           }
           const Identity tid(tokenize(value["table"],'.'));
           const Identity cid(tokenize(value["column"],'.'));
+          accessControl = value["accessControl"];
+          context = value["context"];
           if (cid.isSplitIdentifier()) {
             throw std::logic_error("Context parameter, column is a split identifier, disallowed for columns ");
           }
@@ -212,6 +216,12 @@ namespace PartSqlCrudGen {
     };
     const decltype(vecOfPar2Ref)& getVecOfPar2Ref() const {
       return  vecOfPar2Ref;
+    }
+    const bool isUsedAsAccessControl() const {
+      return accessControl;
+    }
+    const bool isPartOfContext() const {
+      return context;
     }
   };
 
