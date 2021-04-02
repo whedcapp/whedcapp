@@ -105,19 +105,19 @@ namespace PartSqlCrudGen {
         str << par2ref.first << "_par" << " "; // the name of the parameter
         VecOfShPtr2Table::iterator votit = std::find_if(vecOfShPtr2Table.begin(),
                                                         vecOfShPtr2Table.end(),
-                                                        [par2ref](ShPtr2Table shPtr2Table){ return shPtr2Table->getIdentity() == par2ref.second.getTableIdentity(); });
+                                                        [par2ref](ShPtr2Table shPtr2Table){ return shPtr2Table->getIdentity() == par2ref.second.getReference().getTableIdentity() && par2ref.second.getContext(); });
         if (votit == vecOfShPtr2Table.end()) {
           std::ostringstream msg;
-          msg << "Table definition \"" << par2ref.second.getTableIdentity() << "\" is missing, either the context parameter reference is incorrect or the table definition is missing";
+          msg << "Table definition \"" << par2ref.second.getReference().getTableIdentity() << "\" is missing, either the context parameter reference is incorrect or the table definition is missing";
           throw std::logic_error(msg.str());
         }
         try {
-          auto col = (*votit)->getShPtr2Columns()->getShPtr2Column(par2ref.second.getColumnIdentity());
+          auto col = (*votit)->getShPtr2Columns()->getShPtr2Column(par2ref.second.getReference().getColumnIdentity());
           auto& type = col->getType();
           str << type;
         } catch (const std::out_of_range& oor) {
           std::ostringstream msg;
-          msg << "No such column \"" << par2ref.second.getColumnIdentity() <<"\"";
+          msg << "No such column \"" << par2ref.second.getReference().getColumnIdentity() <<"\"";
           throw std::logic_error(msg.str());
         }
         
@@ -526,7 +526,7 @@ namespace PartSqlCrudGen {
     // is one place to modify the condition, but the cost is a less
     // understandable design
     const auto& vecOfPar2Ref = getOptContextParameter()->getVecOfPar2Ref();
-    const auto& contextParInfoIt = std::find_if(vecOfPar2Ref.begin(),vecOfPar2Ref.end(),[this,shPtr2Column](const auto par2Ref) { return par2Ref.second.getColumnIdentity() == shPtr2Column->getIdentity() ; });
+    const auto& contextParInfoIt = std::find_if(vecOfPar2Ref.begin(),vecOfPar2Ref.end(),[this,shPtr2Column](const auto par2Ref) { return par2Ref.second.getReference().getColumnIdentity() == shPtr2Column->getIdentity() && par2Ref.second.getContext(); });
     Identity replacementId(contextParInfoIt->first);
     getStr() << " = " << replacementId.getBackquoted(getSuffix());
     return getStr();
@@ -596,7 +596,7 @@ namespace PartSqlCrudGen {
     // is one place to modify the condition, but the cost is a less
     // understandable design
     const auto& vecOfPar2Ref = getOptContextParameter()->getVecOfPar2Ref();
-    const auto& contextParInfoIt = std::find_if(vecOfPar2Ref.begin(),vecOfPar2Ref.end(),[this,shPtr2Column](const auto par2Ref) { return par2Ref.second.getColumnIdentity() == shPtr2Column->getIdentity() ; });
+    const auto& contextParInfoIt = std::find_if(vecOfPar2Ref.begin(),vecOfPar2Ref.end(),[this,shPtr2Column](const auto par2Ref) { return par2Ref.second.getReference().getColumnIdentity() == shPtr2Column->getIdentity() && par2Ref.second.getContext(); });
     Identity replacementId(contextParInfoIt->first);
     getStr() << " = " << replacementId.getBackquoted(getSuffix());
     return getStr();

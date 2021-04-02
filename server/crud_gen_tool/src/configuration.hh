@@ -171,9 +171,25 @@ namespace PartSqlCrudGen {
 
   
   class ContextParameter: public ConfigurationItem {
-    std::vector<std::pair<std::string,Reference>> vecOfPar2Ref;
-    bool accessControl;
-    bool context;
+  public:
+    class CtxtParSpec {
+      const Reference& reference;
+      bool accessControl;
+      bool context;
+    public:
+      CtxtParSpec(const Reference& reference, bool accessControl, bool context): reference(reference), accessControl(accessControl), context(context) {}
+      const Reference& getReference() const {
+        return reference;
+      }
+      const bool getAccessControl() const {
+        return accessControl;
+      }
+      const bool getContext() const {
+        return context;
+      }
+    };
+  private:
+    std::vector<std::pair<std::string,CtxtParSpec>> vecOfPar2Ref;
     nlohmann::json contextParameter;
   public:
     ContextParameter(IConfiguration& iConfiguration,nlohmann::json& contextParameter): ConfigurationItem(iConfiguration),contextParameter(contextParameter) {
@@ -194,13 +210,14 @@ namespace PartSqlCrudGen {
           }
           const Identity tid(tokenize(value["table"],'.'));
           const Identity cid(tokenize(value["column"],'.'));
-          accessControl = value["accessControl"];
-          context = value["context"];
+          bool accessControl = value["accessControl"];
+          bool context = value["context"];
           if (cid.isSplitIdentifier()) {
             throw std::logic_error("Context parameter, column is a split identifier, disallowed for columns ");
           }
           const Reference reference(tid,cid);
-          vecOfPar2Ref.push_back(std::make_pair(key,reference));
+          const CtxtParSpec ctxtParSpec(reference,accessControl,context);
+          vecOfPar2Ref.push_back(std::make_pair(key,ctxtParSpec));
           ++count;
         }
         if (count>1) {
@@ -217,11 +234,8 @@ namespace PartSqlCrudGen {
     const decltype(vecOfPar2Ref)& getVecOfPar2Ref() const {
       return  vecOfPar2Ref;
     }
-    const bool isUsedAsAccessControl() const {
-      return accessControl;
-    }
-    const bool isPartOfContext() const {
-      return context;
+    const decltype(vecOfPar2Ref)& getVecOfPar2CtxtSpec() const {
+      return vecOfPar2Ref;
     }
   };
 
