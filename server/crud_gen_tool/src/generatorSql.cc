@@ -105,7 +105,7 @@ namespace PartSqlCrudGen {
         str << par2ref.first << "_par" << " "; // the name of the parameter
         VecOfShPtr2Table::iterator votit = std::find_if(vecOfShPtr2Table.begin(),
                                                         vecOfShPtr2Table.end(),
-                                                        [par2ref](ShPtr2Table shPtr2Table){ return shPtr2Table->getIdentity() == par2ref.second.getReference().getTableIdentity() && par2ref.second.getContext(); });
+                                                        [par2ref](ShPtr2Table shPtr2Table){ return shPtr2Table->getIdentity() == par2ref.second.getReference().getTableIdentity(); });
         if (votit == vecOfShPtr2Table.end()) {
           std::ostringstream msg;
           msg << "Table definition \"" << par2ref.second.getReference().getTableIdentity() << "\" is missing, either the context parameter reference is incorrect or the table definition is missing";

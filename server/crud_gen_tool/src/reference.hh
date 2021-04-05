@@ -28,6 +28,7 @@ namespace PartSqlCrudGen {
     Identity columnIdentity;
   public:
     Reference(const Identity& tableIdentity,const Identity& columnIdentity): tableIdentity(tableIdentity), columnIdentity(columnIdentity) {}
+    Reference(const Reference& reference): tableIdentity(reference.tableIdentity),columnIdentity(reference.columnIdentity) {}
     inline const Identity& getTableIdentity() const {
       return tableIdentity;
     }

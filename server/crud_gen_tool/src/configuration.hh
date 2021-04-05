@@ -173,7 +173,7 @@ namespace PartSqlCrudGen {
   class ContextParameter: public ConfigurationItem {
   public:
     class CtxtParSpec {
-      const Reference& reference;
+      Reference reference;
       bool accessControl;
       bool context;
     public:
