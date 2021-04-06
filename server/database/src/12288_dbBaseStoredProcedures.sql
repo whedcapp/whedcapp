@@ -174,6 +174,35 @@ BEGIN
     RETURN FALSE;
 END;
 $$
+CREATE FUNCTION `whedcapp`.`check_questionnaire_self`(id_uid_par INT, id_questionnaire_par INT) RETURNS BOOLEAN DETERMINISTIC
+BEGIN
+    DECLARE no_of_qm INT;
+    SELECT COUNT(`id_uid`) INTO no_of_qm
+        FROM `whedcapp`.`uq_rel`
+        WHERE
+                `id_questionnaire` = id_questionnaire_par
+            AND
+                `id_uid` IN     (SELECT `id_uid`
+                                    FROM `whedcapp`.`uid`
+                                    WHERE
+                                            `id_uid` = id_uid_par
+                                        AND
+                                            `is_questionnaire_maintainer`
+                                );
+    RETURN no_of_qm > 0;
+END;
+$$
+CREATE FUNCTION `whedcapp`.`check_questionnaire_other`(id_uid_par INT, id_questionnaire_par INT,other_uid_par INT, time_par DATETIME) RETURNS BOOLEAN DETERMINISTIC
+BEGIN
+    IF NOT `whedcapp`.`check_questionnaire_self`(other_uid_par,id_questionnaire_par) THEN
+        RETURN FALSE;
+    END IF;
+    IF `whedcapp`.`check_administrator_rights`(id_uid_par) THEN
+        RETURN TRUE;
+    END IF;
+    RETURN FALSE;
+END;
+$$
 CREATE FUNCTION `whedcapp`.`check_top_administrator_rights`(id_uid_par INT) RETURNS BOOLEAN DETERMINISTIC
 BEGIN
 	RETURN `whedcapp`.`check_administrator_rights`(id_uid_par);
