@@ -499,7 +499,7 @@
     {
         
         "$ADMIN$":
-        "\tIF NOT `whedcapp`.`check_top_administrator_rights`(calling_id_uid_par) THEN\n\t\tSIGNAL SQLSTATE '4<ERR>'\n\t\t\tSET MESSAGE_TEXT = 'You are not allowed to <OPERATION> <A_TABLE> for <DOMAIN>. You must be either a superuser or a whedcapp administrator.';\n\tEND IF;\n",
+        "\tIF NOT `whedcapp`.`check_administrator_rights`(calling_id_uid_par) THEN\n\t\tSIGNAL SQLSTATE '4<ERR>'\n\t\t\tSET MESSAGE_TEXT = 'You are not allowed to <OPERATION> <A_TABLE> for <DOMAIN>. You must be either a superuser or a whedcapp administrator.';\n\tEND IF;\n",
 
         "$ADMIN_LIMITED_SELECT$":
         "\tIF NOT `whedcapp`.`check_top_administrator_limited_select_rights`(calling_id_uid_par) THEN\n\t\tSIGNAL SQLSTATE '4<ERR>'\n\t\t\tSET MESSAGE_TEXT = 'You are not allowed to <OPERATION> <A_TABLE> for <DOMAIN>. You must be either a superuser, a whedcapp administrator, a project owner or a researcher.';\n\tEND IF;\n",

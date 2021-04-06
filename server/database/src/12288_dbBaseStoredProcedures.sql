@@ -68,9 +68,115 @@ BEGIN
 	RETURN acl_check_var>0;
 END;
 $$
+CREATE FUNCTION `whedcapp`.`check_administrator_rights`(id_uid_par INT) RETURNS BOOLEAN DETERMINISTIC
+BEGIN
+    DECLARE no_of_admin_rights INT;
+    SELECT COUNT(`id_uid`) INTO no_of_admin_rights
+        FROM `whedcapp`.`uid`
+        WHERE ( `uid_is_superuser` OR `uid_is_whedcapp_administrator`) AND `id_uid` = id_uid_par;
+    RETURN no_of_admin_rights>0;
+END;
+$$
+CREATE FUNCTION `whedcapp`.`check_project_owner_self`(id_uid_par INT, id_proj_par INT) RETURNS BOOLEAN DETERMINISTIC
+BEGIN
+    DECLARE no_of_project_owner INT;
+    SELECT COUNT(`id_uid`) INTO no_of_project_owner
+        FROM `whedcapp`.`acl`
+        WHERE
+                `id_uid` = id_uid_par
+            AND
+                `id_acl_level` IN   (SELECT `id_acl_level`
+                                        FROM `whedcapp`.`acl_level`
+                                        WHERE `acl_level_key` = "project_owner"
+                                    )
+            AND
+                `id_proj` = id_proj_par;
+    RETURN no_of_project_owner > 0;
+               
+END;
+$$
+CREATE FUNCTION `whedcapp`.`check_project_owner_other`(id_uid_par INT, id_proj_par INT,other_uid_par INT, time_par DATETIME) RETURNS BOOLEAN DETERMINISTIC
+BEGIN
+    IF NOT `whedcapp`.`check_project_owner_self`(other_uid_par,id_proj_par) THEN
+        RETURN FALSE;
+    END IF;
+    IF `whedcapp`.`check_administrator_rights`(id_uid_par) THEN
+        RETURN TRUE;
+    END IF;
+    RETURN FALSE;
+END;
+$$
+CREATE FUNCTION `whedcapp`.`check_answer_self`(id_uid_par INT, id_proj_par INT, id_proj_round_par INT) RETURNS BOOLEAN DETERMINISTIC
+BEGIN
+    DECLARE no_of_participant INT;
+    SELECT COUNT(`id_uid`) INTO no_of_participant
+        FROM `whedcapp`.`acl`
+        WHERE
+                `id_uid` = id_uid_par
+            AND
+                `id_acl_level` IN   (SELECT `id_acl_level`
+                                        FROM `whedcapp`.`acl_level`
+                                        WHERE `acl_level_key` = "participant"
+                                    )
+            AND
+                `id_proj` = id_proj_par
+            AND
+                `id_proj` IN    (SELECT `id_proj`
+                                    FROM `whedcapp`.`project_round`
+                                    WHERE
+                                            `id_proj_round` = id_proj_round_par
+                                        AND
+                                            `id_proj_round` IN  (SELECT `id_proj_round`
+                                                                    FROM `whedcapp`.`pp_rel`
+                                                                    WHERE
+                                                                            `id_part` IN    (SELECT `id_part`
+                                                                                                FROM `whedcapp`.`participant`
+                                                                                                WHERE `id_uid` = id_uid_par
+                                                                                            )
+                                                                        AND
+                                                                            `start_date` <= time_par
+                                                                        AND
+                                                                            `end_date` >= time_par
+                                                                )
+                                );
+    RETURN no_of_participant > 0;
+END;
+$$
+CREATE FUNCTION `whedcapp`.`check_answer_other`(id_uid_par INT, id_proj_par INT,id_proj_round_par INT, other_uid_par INT,time_par DATETIME) RETURNS BOOLEAN DETERMINISTIC
+BEGIN
+    DECLARE no_of_supporters INT;
+    /* Check if other is not a participant */
+    IF NOT `whedcapp`.`check_answer_self`(other_uid_par,id_proj_par,id_proj_round_par) THEN
+        RETURN FALSE;
+    END IF;
+    IF `whedcapp`.`check_administrator_rights`(id_uid_par) THEN
+        RETURN TRUE;
+    END IF;
+    /* Check if calling is supporter */
+    SELECT COUNT(`id_spp`) INTO no_of_supporters
+        FROM `whedcapp`.`spp_rel`
+        WHERE
+                `id_uid` = id_uid_par
+            AND
+                `id_proj_round` = id_proj_round_par
+            AND
+                `spp_rel_start_date` <= time_par
+            AND
+                (( `spp_rel_end_date` IS NOT NULL AND `spp_rel_end_date` >= time_par) OR `spp_rel_end_date` IS NULL)
+            AND
+                `id_part` IN    (SELECT `id_part`
+                                    FROM `whedcapp`.`participant`
+                                    WHERE `id_uid` = other_uid_par
+                                );
+    IF no_of_supporters>0 THEN
+        RETURN TRUE;
+    END IF;
+    RETURN FALSE;
+END;
+$$
 CREATE FUNCTION `whedcapp`.`check_top_administrator_rights`(id_uid_par INT) RETURNS BOOLEAN DETERMINISTIC
 BEGIN
-	RETURN `whedcapp`.`check_acl`(id_uid_par,NULL,TRUE,FALSE,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE);
+	RETURN `whedcapp`.`check_administrator_rights`(id_uid_par);
 END;
 $$
 CREATE FUNCTION `whedcapp`.`check_project_owner_rights`(id_uid_par INT,id_proj_par INT) RETURNS BOOLEAN DETERMINISTIC
