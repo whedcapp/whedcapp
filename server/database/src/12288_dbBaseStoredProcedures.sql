@@ -77,7 +77,7 @@ BEGIN
     RETURN no_of_admin_rights>0;
 END;
 $$
-CREATE FUNCTION `whedcapp`.`check_project_owner_self`(id_uid_par INT, id_proj_par INT) RETURNS BOOLEAN DETERMINISTIC
+CREATE FUNCTION `whedcapp`.`check_project_write_access_rights_self`(id_uid_par INT, id_proj_par INT) RETURNS BOOLEAN DETERMINISTIC
 BEGIN
     DECLARE no_of_project_owner INT;
     SELECT COUNT(`id_uid`) INTO no_of_project_owner
@@ -95,9 +95,9 @@ BEGIN
                
 END;
 $$
-CREATE FUNCTION `whedcapp`.`check_project_owner_other`(id_uid_par INT, id_proj_par INT,other_uid_par INT, time_par DATETIME) RETURNS BOOLEAN DETERMINISTIC
+CREATE FUNCTION `whedcapp`.`check_project_write_access_rights_other`(id_uid_par INT, id_proj_par INT,other_uid_par INT, time_par DATETIME) RETURNS BOOLEAN DETERMINISTIC
 BEGIN
-    IF NOT `whedcapp`.`check_project_owner_self`(other_uid_par,id_proj_par) THEN
+    IF NOT `whedcapp`.`check_project_write_access_rights_self`(other_uid_par,id_proj_par) THEN
         RETURN FALSE;
     END IF;
     IF `whedcapp`.`check_administrator_rights`(id_uid_par) THEN
@@ -106,7 +106,7 @@ BEGIN
     RETURN FALSE;
 END;
 $$
-CREATE FUNCTION `whedcapp`.`check_answer_self`(id_uid_par INT, id_proj_par INT, id_proj_round_par INT) RETURNS BOOLEAN DETERMINISTIC
+CREATE FUNCTION `whedcapp`.`check_answer_write_access_rights_self`(id_uid_par INT, id_proj_par INT, id_proj_round_par INT) RETURNS BOOLEAN DETERMINISTIC
 BEGIN
     DECLARE no_of_participant INT;
     SELECT COUNT(`id_uid`) INTO no_of_participant
@@ -142,17 +142,17 @@ BEGIN
     RETURN no_of_participant > 0;
 END;
 $$
-CREATE FUNCTION `whedcapp`.`check_answer_other`(id_uid_par INT, id_proj_par INT,id_proj_round_par INT, other_uid_par INT,time_par DATETIME) RETURNS BOOLEAN DETERMINISTIC
+CREATE FUNCTION `whedcapp`.`check_answer_write_access_rights_other`(id_uid_par INT, id_proj_par INT,id_proj_round_par INT, other_uid_par INT,time_par DATETIME) RETURNS BOOLEAN DETERMINISTIC
 BEGIN
     DECLARE no_of_supporters INT;
     /* Check if other is not a participant */
-    IF NOT `whedcapp`.`check_answer_self`(other_uid_par,id_proj_par,id_proj_round_par) THEN
+    IF NOT `whedcapp`.`check_answer_write_access_rights_self`(other_uid_par,id_proj_par,id_proj_round_par) THEN
         RETURN FALSE;
     END IF;
     IF `whedcapp`.`check_administrator_rights`(id_uid_par) THEN
         RETURN TRUE;
     END IF;
-    /* Check if calling is supporter */
+    /* Check if calling uid is supporter */
     SELECT COUNT(`id_spp`) INTO no_of_supporters
         FROM `whedcapp`.`spp_rel`
         WHERE
@@ -174,7 +174,33 @@ BEGIN
     RETURN FALSE;
 END;
 $$
-CREATE FUNCTION `whedcapp`.`check_questionnaire_self`(id_uid_par INT, id_questionnaire_par INT) RETURNS BOOLEAN DETERMINISTIC
+CREATE FUNCTION `whedcapp`.`check_answer_read_access_rights_self`(id_uid_par INT, context_id_proj_par INT, context_id_proj_round_par INT, time_par DATETIME) RETURNS BOOLEAN DETERMINISTIC
+BEGIN
+    RETURN `whedcapp`.`check_answer_write_access_rights_self`(id_uid_par,context_id_proj_par, context_id_proj_round_par,time_par);
+END;
+$$
+CREATE FUNCTION `whedcapp`.`check_answer_read_access_rights_other`(id_uid_par INT, context_id_proj_par INT, context_id_proj_round_par INT,other_uid_par INT,  time_par DATETIME) RETURNS BOOLEAN DETERMINISTIC
+BEGIN
+    DECLARE no_of_researcher INT;
+    IF `whedcapp`.`check_answer_write_access_rights_other`(id_uid_par,context_id_proj_par, context_id_proj_round_par,other_uid_par,time_par) THEN
+        RETURN TRUE;
+    END IF;
+    /* Check if uid is a researcher associated with the project */
+    SELECT COUNT(`id_uid`) INTO no_of_researcher
+        FROM `whedcapp`.`acl`
+        WHERE
+                `id_uid` = calling_uid_par
+            AND
+                `id_proj` = context_id_proj_par
+            AND
+                `id_acl_level` IN   (SELECT `id_acl_level
+                                        FROM `whedcapp`.`acl_level`
+                                        WHERE `acl_level_key` = "researcher"
+                                    );
+    RETURN no_of_researcher>0;
+END;
+$$
+CREATE FUNCTION `whedcapp`.`check_questionnaire_write_acccess_rights_self`(id_uid_par INT, id_questionnaire_par INT,time_par DATETIME) RETURNS BOOLEAN DETERMINISTIC
 BEGIN
     DECLARE no_of_qm INT;
     SELECT COUNT(`id_uid`) INTO no_of_qm
@@ -192,14 +218,102 @@ BEGIN
     RETURN no_of_qm > 0;
 END;
 $$
-CREATE FUNCTION `whedcapp`.`check_questionnaire_other`(id_uid_par INT, id_questionnaire_par INT,other_uid_par INT, time_par DATETIME) RETURNS BOOLEAN DETERMINISTIC
+CREATE FUNCTION `whedcapp`.`check_questionnaire_write_access_rights_other`(calling_id_uid_par INT, context_id_questionnaire_par INT,other_uid_par INT, time_par DATETIME) RETURNS BOOLEAN DETERMINISTIC
 BEGIN
-    IF NOT `whedcapp`.`check_questionnaire_self`(other_uid_par,id_questionnaire_par) THEN
+    IF NOT `whedcapp`.`check_questionnaire_write_access_rights_self`(other_uid_par,context_id_questionnaire_par,time_par) THEN
         RETURN FALSE;
     END IF;
-    IF `whedcapp`.`check_administrator_rights`(id_uid_par) THEN
+    IF `whedcapp`.`check_administrator_rights`(calling_id_uid_par) THEN
         RETURN TRUE;
     END IF;
+    RETURN FALSE;
+END;
+$$
+CREATE FUNCTION `whedcapp`.`check_questionnaire_read_access_rights_self`(calling_id_uid_par INT,context_id_questionnaire_par INT, time_par DATETIME) RETURNS BOOLEAN DETERMINISTIC
+BEGIN
+    DECLARE no_of_questionnaires INT;
+    IF `whedcapp`.`check_questionnaire_write_access_rights_self`(calling_id_uid_par,context_id_questionnaire_par,time_par) THEN
+        RETURN TRUE;
+    END IF;
+    /* Check if researcher or participant associated with project using the questionnaire */
+    SELECT COUNT(`id_questionnaire`) INTO no_of_questionnaires
+        FROM `whedcapp`.`rq_rel`
+        WHERE
+                `id_questionnaire` = context_id_questionnaire
+            AND
+                `id_res_que` IN (SELECT `id_res_que`
+                                    FROM `whedcapp`.`aim_or_research_question`
+                                    WHERE
+                                            `id_proj` IN    (SELECT `id_proj`
+                                                                FROM `whedcapp`.`project_round`
+                                                                JOIN `whedcapp`.`pp_rel` ON `project_round`.`id_proj_round` = `pp_rel`.`id_proj_round`
+                                                                JOIN `whedcapp`.`participant` ON `pp_rel`.`id_part` = `participant`.`id_part`
+                                                                JOIN `whedcapp`.`acl` ON `participant`.`id_uid` = `acl`.`id_uid`
+                                                                WHERE
+                                                                        `acl`.`id_uid` = calling_id_uid
+                                                                    AND
+                                                                        `pp_rel`.`start_date` <= time_par
+                                                                    AND
+                                                                        `pp_rel`.`end_date` >= time_par
+                                                                    AND
+                                                                        `acl`.`id_acl_level` IN (SELECT `id_acl_level`
+                                                                                                    FROM `whedcapp`.`acl_level`
+                                                                                                    WHERE `acl_level_key` = "participant"
+                                                                                                )
+                                                            )
+                                       OR
+                                           `id_proj` IN     (SELECT `id_proj`
+                                                                FROM `whedcapp`.`acl`
+                                                                WHERE
+                                                                        `id_uid` = calling_id_uid
+                                                                    AND
+                                                                        `id_acl_level` IN   (SELECT `id_acl_level`
+                                                                                                FROM `whedcapp`.`acl_level`
+                                                                                                WHERE
+                                                                                                        `acl_level_key` = "researcher"
+                                                                                                    OR
+                                                                                                        `acl_level_key` = "project_owner"
+                                                                                            )
+                                                            )
+                                );
+    IF no_of_questionnaires>0 THEN
+        RETURN TRUE;
+    END IF;
+    RETURN FALSE;
+END;
+$$
+CREATE FUNCTION `whedcapp`.`check_questionnaire_read_access_rights_other`(calling_id_uid INT, context_id_questionnaire INT, other_uid_par INT, time_par DATETIME) RETURNS BOOLEAN DETERMINISTIC
+BEGIN
+    DECLARE no_of_project_owners INT;
+    IF NOT `whedcapp`.`check_questionnaire_read_access_rights_self`(other_uid_par,context_id_questionnaire,time_par) THEN
+        RETURN FALSE;
+    END IF;
+    IF `whedcapp`.`check_administrator_rights`(calling_id_uid) THEN
+        RETURN TRUE;
+    END IF;
+    SELECT COUNT(`id_uid`) INTO no_of_project_owners
+        FROM `whedcapp`.`acl`
+        WHERE
+                `id_uid` = calling_uid_par
+            AND
+                `id_proj` IN    (SELECT `id_proj`
+                                    FROM `whedcapp`.`aim_or_research_question`
+                                    WHERE
+                                            `id_res_que` IN (SELECT `id_res_que`
+                                                                FROM `whedcapp`.`rq_rel`
+                                                                WHERE `id_questionnaire` = context_id_questionnaie
+                                                            )
+                                )
+            AND
+                `id_acl_level` IN   (SELECT `id_acl_level`
+                                        FROM `whedcapp`.`acl_level`
+                                        WHERE `acl_level_key` = "project_owner"
+                                    );
+    IF no_of_project_owners > 0 THEN
+        RETURN TRUE;
+    END IF;
+        
+                                            `
     RETURN FALSE;
 END;
 $$
