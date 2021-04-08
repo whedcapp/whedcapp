@@ -77,30 +77,64 @@ BEGIN
     RETURN no_of_admin_rights>0;
 END;
 $$
-CREATE FUNCTION `whedcapp`.`check_project_write_access_rights_self`(id_uid_par INT, id_proj_par INT) RETURNS BOOLEAN DETERMINISTIC
+CREATE FUNCTION `whedcapp`.`check_project_write_access_rights_self`(calling_id_uid_par INT, context_id_proj_par INT) RETURNS BOOLEAN DETERMINISTIC
 BEGIN
     DECLARE no_of_project_owner INT;
     SELECT COUNT(`id_uid`) INTO no_of_project_owner
         FROM `whedcapp`.`acl`
         WHERE
-                `id_uid` = id_uid_par
+                `id_uid` = calling_id_uid_par
             AND
                 `id_acl_level` IN   (SELECT `id_acl_level`
                                         FROM `whedcapp`.`acl_level`
                                         WHERE `acl_level_key` = "project_owner"
                                     )
             AND
-                `id_proj` = id_proj_par;
+                `id_proj` = context_id_proj_par;
     RETURN no_of_project_owner > 0;
                
 END;
 $$
-CREATE FUNCTION `whedcapp`.`check_project_write_access_rights_other`(id_uid_par INT, id_proj_par INT,other_uid_par INT, time_par DATETIME) RETURNS BOOLEAN DETERMINISTIC
+CREATE FUNCTION `whedcapp`.`check_project_write_access_rights_other`(calling_id_uid_par INT, context_id_proj_par INT,other_uid_par INT, time_par DATETIME) RETURNS BOOLEAN DETERMINISTIC
 BEGIN
-    IF NOT `whedcapp`.`check_project_write_access_rights_self`(other_uid_par,id_proj_par) THEN
+    IF NOT `whedcapp`.`check_project_write_access_rights_self`(other_uid_par,context_id_proj_par) THEN
         RETURN FALSE;
     END IF;
-    IF `whedcapp`.`check_administrator_rights`(id_uid_par) THEN
+    IF `whedcapp`.`check_administrator_rights`(calling_id_uid_par) THEN
+        RETURN TRUE;
+    END IF;
+    RETURN FALSE;
+END;
+$$
+CREATE FUNCTION `whedcapp`.`check_project_read_access_rights_self`(calling_id_uid_par INT, context_id_proj_par INT,time_par DATETIME) RETURNS BOOLEAN DETERMINISTIC
+BEGIN
+    DECLARE no_of_uid INT;
+    IF `whedcapp`.`check_project_write_access_rights_self`(calling_id_uid_par,context_id_proj_par,time_par) THEN
+        RETURN TRUE;
+    END IF;
+    SELECT COUNT(`id_uid`) INTO no_of_uid
+        FROM `whedcapp`.`acl`
+        WHERE
+                `id_uid` = calling_id_uid_par
+            AND
+                `id_acl_level` IN   (SELECT `id_acl_level`
+                                        FROM `whedcapp`.`acl_level`
+                                        WHERE `acl_level_key` IN ("participant","researcher")
+                                    )
+            AND
+                `id_proj` = context_id_proj_par;
+    RETURN no_of_uid > 0;
+END;
+$$
+CREATE FUNCTION `whedcapp`.`check_project_read_access_rights_other`(calling_id_uid_par INT, context_id_proj_par INT,other_uid_par INT, time_par DATETIME) RETURNS BOOLEAN DETERMINISTIC
+BEGIN
+    IF NOT `whedcapp`.`check_project_read_access_rights_self(other_uid_par,context_id_proj_par,time_par) THEN
+        RETURN FALSE;
+    END IF;
+    IF `whedcapp`.`check_administrator_rights`(calling_id_uid_par) THEN
+        RETURN TRUE;
+    END IF;
+    IF `whedcapp`.`check_project_write_access_rights_self(calling_id_uid_par,context_id_proj_par) THEN
         RETURN TRUE;
     END IF;
     RETURN FALSE;

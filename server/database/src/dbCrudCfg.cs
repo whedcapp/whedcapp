@@ -869,7 +869,7 @@
                 "delete":
                 {"link": "$QUESTIONNAIRE$"},
                 "select":
-                {"link":"$QUESTIONNAIRE$"},
+                {"link": "$QUESTIONNAIRE$"},
                 "eidBase": 5300,
                 "acronym":"alt",
                 "hasKeyAttribute":  true
@@ -883,7 +883,7 @@
                 "delete":
                 {"link": "$QUESTIONNAIRE$"},
                 "select":
-                {"link":"$QUESTIONNAIRE$"},
+                {"link": "$QUESTIONNAIRE$"},
                 "eidBase": 5400,
                 "hasKeyAttribute": false
             },
@@ -1047,7 +1047,7 @@
                 "delete":
                 {"link":"$PROJECT$"},
                 "select":
-                {"link":"$PROJECT$"},
+                {"link":"$SELECT_ONLY$"},
                 "eidBase": 6300,
                 "acronym":"proj",
                 "hasKeyAttribute":true
@@ -1129,7 +1129,7 @@
                 "delete":
                 {"link": "$QUESTIONNAIRE$"},
                 "select":
-                {"link":"$QUESTIONNAIRE$"},
+                {"link":"$SELECT_ONLY$"},
                 "eidBase": 6800,
                 "acronym": "questionnaire",
                 "hasKeyAttribute": true
