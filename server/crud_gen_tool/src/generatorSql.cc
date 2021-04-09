@@ -197,7 +197,7 @@ namespace PartSqlCrudGen {
     const auto& tmplName = tc.getName();
 
     // get check context code
-    const auto& cc = options.getConfiguration().getCheckContext(tmplName);
+    const auto& cc = options.getConfiguration().getCheckContext(at,tmplName);
 
     // replace tags
     const auto& ccs = beautifyStoredProcedureCode(cc.getCheckContext(),options.outputCodeTabWidth);

@@ -19,6 +19,7 @@
 
 #include <iostream>
 #include <map>
+#include <sstream>
 #include <stdexcept>
 #include <vector>
 #include "configuration.hh"
@@ -85,6 +86,42 @@ namespace PartSqlCrudGen {
     std::make_pair(DatabaseOperation::Type::dbSelect,"select")
   };
 
+  ContextParameter::ContextParameter(IConfiguration& iConfiguration,nlohmann::json& contextParameter): ConfigurationItem(iConfiguration),contextParameter(contextParameter) {
+    if (!contextParameter.is_array()) {
+      throw std::logic_error("Context parameters does not contain a sequence (array) of specifications");
+    }
+    for (const auto& par: contextParameter) {
+      if (!par.is_object()) {
+        throw std::logic_error("Context parameter does not contain a specification of  parameter");
+      }
+      int count = 0;
+      for (auto& [key,value]: par.items()) {
+        if (!value.is_object()) {
+          throw std::logic_error("Context parameter specification does not contain a proper reference");
+        }
+        if (!value.contains("table") || !value.contains("column") || !value.contains("accessControl") || !value.contains("context")) {
+          throw std::logic_error("Context parameter specification, reference lacks either table or column in reference or accessControl/context specification is missing");
+        }
+        const Identity tid(tokenize(value["table"],'.'));
+        const Identity cid(tokenize(value["column"],'.'));
+        bool accessControl = value["accessControl"];
+        bool context = value["context"];
+        if (cid.isSplitIdentifier()) {
+          throw std::logic_error("Context parameter, column is a split identifier, disallowed for columns ");
+        }
+        const Reference reference(tid,cid);
+        const CtxtParSpec ctxtParSpec(reference,accessControl,context);
+        vecOfPar2Ref.push_back(std::make_pair(key,ctxtParSpec));
+        ++count;
+      }
+      if (count>1) {
+        std::ostringstream msg;
+        msg <<  "Context parameter specification contains more than one identifier: \"" << contextParameter << "\"";
+        throw std::logic_error(msg.str());
+      }
+    }
+  }
+    
   
 
   static bool checkSyntax(const std::string& str,const std::vector<std::regex>& vecOfRegex) {
@@ -124,8 +161,28 @@ namespace PartSqlCrudGen {
       std::regex("^;[[:space:]\n]*") // ";" 
                                
     };
-    if (!checkSyntax(checkContext,vecOfRegex)) {
-      throw std::logic_error("Syntax error in check context");
+    static std::vector<std::regex> commentVecOfRegex = {
+      std::regex("^[[:space:]\n]*"), // prologue
+      std::regex("^/\\*"),
+      std::regex("^[^\\*]*\\*/"),
+      std::regex("^[[:space:]\n]*")
+    };
+    static std::vector<std::regex> onlySignalVecOfRegex = {
+      std::regex("^[[:space:]\n]*"), // prologue
+      std::regex("^[sS][iI][gG][nN][aA][lL][[:space:]\n]+"), // SIGNAL
+      std::regex("^[sS][qQ][lL][sS][tT][aA][tT][eE][[:space:]\n]+"), // SQLSTATE
+      std::regex("^'4<ERR>'[[:space:]\n]+"), // '45<ERR>
+      std::regex("^[sS][eE][tT][[:space:]\n]+"), // SET
+      std::regex("^[mM][eE][sS][sS][aA][gG][eE]_[tT][eE][xX][tT][[:space:]\n]+"), // MESSAGE_TEXT
+      std::regex("^=[[:space:]\n]+"), // =
+      std::regex("^'.*'[[:space:]\n]*"), // '...'
+      std::regex("^;[[:space:]\n]*"), // ";"
+    };
+      
+    if (!checkSyntax(checkContext,vecOfRegex) && !checkSyntax(checkContext,commentVecOfRegex) && !checkSyntax(checkContext,onlySignalVecOfRegex)) {
+      std::ostringstream msg;
+      msg << "Syntax error in check context : \"" << checkContext << "\"";
+      throw std::logic_error(msg.str());
     } 
   }
 
@@ -296,9 +353,18 @@ namespace PartSqlCrudGen {
     if ( cc ==  nullptr) {
       throw std::logic_error("No check context statements in configuration");
     }
-    for (auto& el: cc.items()) {
-      auto cco = CheckContext(*this,el.value());
-      key2cc.insert(std::make_pair(el.key(),cco));
+    for (auto& [key,value]: cc.items()) {
+      const Access::Type& keyType = Access::getTypeFromString(key);
+      decltype(at2key2cc)::iterator a2k2cit = at2key2cc.find(keyType);
+      if (a2k2cit == at2key2cc.end()) {
+        decltype(at2key2cc)::mapped_type key2cc;
+        const auto& result = at2key2cc.insert(std::make_pair(keyType,key2cc));
+        a2k2cit = result.first;
+      }
+      for (auto& el: value.items()) {
+        auto cco = CheckContext(*this,el.value());
+        a2k2cit->second.insert(std::make_pair(el.key(),cco));
+      }
     }
     
   }
@@ -352,11 +418,11 @@ namespace PartSqlCrudGen {
 
   }
 
-  const ContextParameter& Configuration::getContextParameter(const OutputLanguage::Type& oltp, const Access::Type& attp, const std::string& templ) const {
-    return ol2at2te2cp.at(oltp).at(attp).at(templ);
+  const ContextParameter& Configuration::getContextParameter(const OutputLanguage::Type& oltp, const Access::Type& atp, const std::string& templ) const {
+    return ol2at2te2cp.at(oltp).at(atp).at(templ);
   }
-  const  CheckContext& Configuration::getCheckContext(const std::string& key) const {
-    return key2cc.at(key);
+  const  CheckContext& Configuration::getCheckContext(const Access::Type& at,const std::string& key) const {
+    return at2key2cc.at(at).at(key);
   }
   const  TabCfgTemplate& Configuration::getTabCfgTemplate(const std::string& key) const {
     return key2tct.at(key);

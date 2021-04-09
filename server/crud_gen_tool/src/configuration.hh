@@ -192,39 +192,7 @@ namespace PartSqlCrudGen {
     std::vector<std::pair<std::string,CtxtParSpec>> vecOfPar2Ref;
     nlohmann::json contextParameter;
   public:
-    ContextParameter(IConfiguration& iConfiguration,nlohmann::json& contextParameter): ConfigurationItem(iConfiguration),contextParameter(contextParameter) {
-      if (!contextParameter.is_array()) {
-        throw std::logic_error("Context parameters does not contain a sequence (array) of specifications");
-      }
-      for (const auto& par: contextParameter) {
-        if (!par.is_object()) {
-          throw std::logic_error("Context parameter does not contain a specification of  parameter");
-        }
-        int count = 0;
-        for (auto& [key,value]: par.items()) {
-          if (!value.is_object()) {
-            throw std::logic_error("Context parameter specification does not contain a proper reference");
-          }
-          if (!value.contains("table") || !value.contains("column") || !value.contains("accessControl") || !value.contains("context")) {
-            throw std::logic_error("Context parameter specification, reference lacks either table or column in reference or accessControl/context specification is missing");
-          }
-          const Identity tid(tokenize(value["table"],'.'));
-          const Identity cid(tokenize(value["column"],'.'));
-          bool accessControl = value["accessControl"];
-          bool context = value["context"];
-          if (cid.isSplitIdentifier()) {
-            throw std::logic_error("Context parameter, column is a split identifier, disallowed for columns ");
-          }
-          const Reference reference(tid,cid);
-          const CtxtParSpec ctxtParSpec(reference,accessControl,context);
-          vecOfPar2Ref.push_back(std::make_pair(key,ctxtParSpec));
-          ++count;
-        }
-        if (count>1) {
-          throw std::logic_error("Context parameter specification contains more than one identifier");
-        }
-      }
-    }
+    ContextParameter(IConfiguration& iConfiguration,nlohmann::json& contextParameter);
     ContextParameter(IConfiguration& iConfiguration,const ContextParameter& contextParameter): ConfigurationItem(iConfiguration),contextParameter(contextParameter.contextParameter),vecOfPar2Ref(contextParameter.vecOfPar2Ref) {};
     ContextParameter(IConfiguration& iConfiguration,const ContextParameter&& contextParameter): ConfigurationItem(iConfiguration),contextParameter(std::move(contextParameter.contextParameter)),vecOfPar2Ref(std::move(contextParameter.vecOfPar2Ref)) {};
 
@@ -398,7 +366,7 @@ namespace PartSqlCrudGen {
     virtual const std::set<Role>& getRoleSet() const = 0;
     virtual bool isRole(const std::string& roleDesc) const = 0;
     virtual const ContextParameter& getContextParameter(const OutputLanguage::Type& oltp, const Access::Type& attp, const std::string& templ) const = 0;
-    virtual const CheckContext& getCheckContext(const std::string& key) const = 0;
+    virtual const CheckContext& getCheckContext(const Access::Type& atp,const std::string& key) const = 0;
     virtual const TabCfgTemplate& getTabCfgTemplate(const std::string& key) const = 0;
     virtual const TableSpec& getTableSpec(const std::string& key) const = 0;
     virtual const Processing& getProcessing() const = 0;
@@ -409,7 +377,8 @@ namespace PartSqlCrudGen {
     std::set<Role> roleSet;
     std::map<OutputLanguage::Type,std::map<Access::Type,std::map<std::string,ContextParameter>>> ol2at2te2cp;
     std::map<std::string,ContextParameter> key2cp;
-    std::map<std::string,CheckContext> key2cc;
+    //std::map<std::string,CheckContext> key2cc;
+    std::map<Access::Type,std::map<std::string,CheckContext>> at2key2cc;
     std::map<std::string,TabCfgTemplate> key2tct;
     std::map<std::string,TableSpec,CaselessLessThan> key2ts;
     Processing processing;
@@ -427,7 +396,7 @@ namespace PartSqlCrudGen {
     const std::set<Role>& getRoleSet() const;
     bool isRole(const std::string& roleDesc) const;
     const ContextParameter& getContextParameter(const OutputLanguage::Type& oltp, const Access::Type& attp, const std::string& templ) const;
-    const CheckContext& getCheckContext(const std::string& key) const;
+    const CheckContext& getCheckContext(const Access::Type& atp,const std::string& key) const;
     const TabCfgTemplate& getTabCfgTemplate(const std::string& key) const;
     const TableSpec& getTableSpec(const std::string& key) const;
     const Processing& getProcessing() const;

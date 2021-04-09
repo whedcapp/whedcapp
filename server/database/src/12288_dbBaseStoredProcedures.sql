@@ -18,56 +18,6 @@
 
 
 DELIMITER $$
-CREATE FUNCTION `whedcapp`.`check_acl`(
-                                        id_uid_par INT, 
-				        id_proj_par INT,
-					is_superuser_par BOOLEAN, 
-					is_personal_data_controller_par BOOLEAN,
-                                        is_whedcapp_administrator_par BOOLEAN,
-                                        is_project_owner_par BOOLEAN,
-                                        is_researcher_par BOOLEAN,
-                                        is_supporter_par BOOLEAN,
-                                        is_participant_par BOOLEAN,
-                                        is_questionnaire_manager_par BOOLEAN) RETURNS BOOLEAN DETERMINISTIC
-BEGIN
-    DECLARE acl_check_var INT;
-    IF is_superuser_par OR is_personal_data_controller_par OR is_whedcapp_administrator_par THEN
-		SELECT COUNT(`id_uid`) INTO acl_check_var
-			FROM `whedcapp`.`uid` 
-                             WHERE `id_uid` = `id_uid_par` 
-				AND (
-						(`uid_is_superuser` AND is_superuser_par)
-					OR 
-						(`uid_is_whedcapp_administrator` AND is_whedcapp_administrator_par) 
-					OR 
-						(`uid_is_personal_data_controller` AND is_personal_data_controller_par)
-					);
-		IF acl_check_var > 0 THEN
-			RETURN TRUE;
-		END IF;
-    END IF;
-    SELECT COUNT(DISTINCT `id_acl`) INTO acl_check_var
-		FROM `whedcapp`.`acl`
-                     WHERE 
-				`id_proj`= id_proj_par AND `id_uid` = id_uid_par 
-			AND (
-					(is_superuser_par AND `id_acl_level` IN (SELECT `id_acl_level` FROM `whedcapp`.`acl_level` WHERE `acl_level_key` = "superuser"))
-				OR
-					(is_personal_data_controller_par AND `id_acl_level` IN (SELECT `id_acl_level` FROM `whedcapp`.`acl_level` WHERE `acl_level_key` = "personal_data_controller"))
-				OR
-					(is_whedcapp_administrator_par AND `id_acl_level` IN (SELECT `id_acl_level` FROM `whedcapp`.`acl_level` WHERE `acl_level_key` = "whedcapp_administrator"))
-				OR
-					(is_project_owner_par AND `id_acl_level` IN (SELECT `id_acl_level` FROM `whedcapp`.`acl_level` WHERE `acl_level_key` = "project_owneer"))
-				OR
-					(is_researcher_par AND `id_acl_level` IN (SELECT `id_acl_level` FROM `whedcapp`.`acl_level` WHERE `acl_level_key` = "researcher"))
-				OR
-					(is_supporter_par AND `id_acl_level` IN (SELECT `id_acl_level` FROM `whedcapp`.`acl_level` WHERE `acl_level_key` = "supporter"))
-				OR
-					(is_participant_par AND `id_acl_level` IN (SELECT `id_acl_level` FROM `whedcapp`.`acl_level` WHERE `acl_level_key` = "participant"))
-        );
-	RETURN acl_check_var>0;
-END;
-$$
 CREATE FUNCTION `whedcapp`.`check_administrator_rights`(id_uid_par INT) RETURNS BOOLEAN DETERMINISTIC
 BEGIN
     DECLARE no_of_admin_rights INT;
@@ -128,13 +78,13 @@ END;
 $$
 CREATE FUNCTION `whedcapp`.`check_project_read_access_rights_other`(calling_id_uid_par INT, context_id_proj_par INT,other_uid_par INT, time_par DATETIME) RETURNS BOOLEAN DETERMINISTIC
 BEGIN
-    IF NOT `whedcapp`.`check_project_read_access_rights_self(other_uid_par,context_id_proj_par,time_par) THEN
+    IF NOT `whedcapp`.`check_project_read_access_rights_self`(other_uid_par,context_id_proj_par,time_par) THEN
         RETURN FALSE;
     END IF;
     IF `whedcapp`.`check_administrator_rights`(calling_id_uid_par) THEN
         RETURN TRUE;
     END IF;
-    IF `whedcapp`.`check_project_write_access_rights_self(calling_id_uid_par,context_id_proj_par) THEN
+    IF `whedcapp`.`check_project_write_access_rights_self`(calling_id_uid_par,context_id_proj_par) THEN
         RETURN TRUE;
     END IF;
     RETURN FALSE;
@@ -227,7 +177,7 @@ BEGIN
             AND
                 `id_proj` = context_id_proj_par
             AND
-                `id_acl_level` IN   (SELECT `id_acl_level
+                `id_acl_level` IN   (SELECT `id_acl_level`
                                         FROM `whedcapp`.`acl_level`
                                         WHERE `acl_level_key` = "researcher"
                                     );
@@ -335,7 +285,7 @@ BEGIN
                                     WHERE
                                             `id_res_que` IN (SELECT `id_res_que`
                                                                 FROM `whedcapp`.`rq_rel`
-                                                                WHERE `id_questionnaire` = context_id_questionnaie
+                                                                WHERE `id_questionnaire` = context_id_questionnaire
                                                             )
                                 )
             AND
@@ -347,22 +297,26 @@ BEGIN
         RETURN TRUE;
     END IF;
         
-                                            `
+                                            
     RETURN FALSE;
 END;
 $$
-CREATE FUNCTION `whedcapp`.`check_top_administrator_rights`(id_uid_par INT) RETURNS BOOLEAN DETERMINISTIC
+CREATE FUNCTION `whedcapp`.`check_limited_select_rights`(calling_id_uid INT,context_id_proj_par INT) RETURNS BOOLEAN DETERMINISTIC
 BEGIN
-	RETURN `whedcapp`.`check_administrator_rights`(id_uid_par);
+    DECLARE no_of_project_owners_or_researchers INT;
+    SELECT COUNT(`id_uid`) INTO no_of_project_owners_or_researchers
+        FROM `whedcapp`.`acl`
+        WHERE
+                `id_uid` = calling_uid_par
+            AND
+                `id_proj` = context_id_proj_par
+            AND
+                `id_acl_level` IN   (SELECT `id_acl_level`
+                                        FROM `whedcapp`.`acl_level`
+                                        WHERE `acl_level_key` IN ( "project_owner", "researcher")
+                                    );
+    IF no_of_project_owners_or_researchers > 0 THEN
+        RETURN TRUE;
+    END IF;
+    RETURN FALSE;
 END;
-$$
-CREATE FUNCTION `whedcapp`.`check_project_owner_rights`(id_uid_par INT,id_proj_par INT) RETURNS BOOLEAN DETERMINISTIC
-BEGIN
-	RETURN `whedcapp`.`check_acl`(id_uid_par,id_proj_par,TRUE,FALSE,TRUE,TRUE,FALSE,FALSE,FALSE,FALSE);
-END;
-$$
-CREATE FUNCTION `whedcapp`.`check_project_supporter_rights`(id_uid_par INT,id_proj_par INT) RETURNS BOOLEAN DETERMINISTIC
-BEGIN
-	RETURN `whedcapp`.`check_acl`(id_uid_par,id_proj_par,TRUE,FALSE,TRUE,TRUE,FALSE,TRUE,FALSE,FALSE);
-END;
-$$

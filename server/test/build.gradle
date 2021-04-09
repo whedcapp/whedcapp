@@ -37,6 +37,23 @@ task tst_PrepareTest() {
     dependsOn ':database:dbs_OpenDatabaseAsWhedcappDatabaseTestAccessUser'
     inputs.files(tst_prepareTestInputFiles)
     outputs.files(tst_prepareTestOutputFiles)
+    outputs.upToDateWhen {
+        return outputs.files.every { f1 ->
+            if (!f1.exists()) {
+                return false;
+            }
+            return inputs.files.every { f2 ->
+                if (!f2.exists()) {
+                    return false;
+                }
+                if (f2.lastModified() > f1.lastModified()) {
+                    return false;
+                }
+            }
+            return true;
+        }
+    }
+    
     doLast {
         logger.info("Credentials = "+project(':database').ext.credentials['whedcappAdministrator']);
         logger.info("Test credentials = "+project(':database').ext.credentials['whedcappDatabaseTestAccessUser']);
@@ -73,6 +90,22 @@ task tst_PerformTest(type: Exec) {
     workingDir "${rootProject.buildDir}/${project.name}"
     inputs.files(tst_performTestInputFiles)
     outputs.files(tst_performTestOutputFiles)
+    outputs.upToDateWhen {
+        return outputs.files.every { f1 ->
+            if (!f1.exists()) {
+                return false;
+            }
+            return inputs.files.every { f2 ->
+                if (!f2.exists()) {
+                    return false;
+                }
+                if (f2.lastModified() > f1.lastModified()) {
+                    return false;
+                }
+            }
+            return true;
+        }
+    }
     commandLine "robot",'--outputdir',"${rootProject.buildDir}/reports","."
     standardOutput = new ByteArrayOutputStream()
     ext.output = {

@@ -984,6 +984,22 @@ task dbs_UploadToDatabase() {
     dependsOn 'dbs_CreateWhedcappDatabaseAccessUser'
     inputs.files(dbs_uploadToDatabaseInputFiles)
     outputs.files(dbs_uploadToDatabaseOutputFiles)
+    outputs.upToDateWhen {
+        return outputs.files.every { f1 ->
+            if (!f1.exists()) {
+                return false;
+            }
+            return inputs.files.every { f2 ->
+                if (!f2.exists()) {
+                    return false;
+                }
+                if (f2.lastModified() > f1.lastModified()) {
+                    return false;
+                }
+            }
+            return true;
+        }
+    }
     group = 'Database'
     description = "Uploads database scheme."
     doFirst {
