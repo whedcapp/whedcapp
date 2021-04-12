@@ -157,6 +157,32 @@ def backquotifySqlId(String sqlId) {
     }
     return result;
 }
+def upToDateWhenBasedOnFiles(FileCollection outputFiles, FileCollection inputFiles) {
+    logger.info("upToDateWhenBaseOnFiles called");
+    return outputFiles.every { f1 ->
+        logger.info("Checking file "+f1);
+        if (!f1.exists()) {
+            logger.info("File "+f1+" does not exist");
+            return false;
+        }
+        logger.info("File "+f1+" exists");
+        return inputFiles.every { f2 ->
+            logger.info("Comparing to file "+f2);
+            if (!f2.exists()) {
+                logger.info("File "+f2+" does not exist");
+                return false;
+            }
+            logger.info("File "+f2+" exists");
+            if (f2.lastModified() > f1.lastModified()) {
+                logger.info("File "+f2+" is younger than "+f1);
+                return false;
+            }
+            logger.info("File "+f2+" is older than or same age as "+f1);
+            return true;
+        }
+        return true;
+    }
+}
 ext {
     cgt_crudGenToolPath = this.&cgt_crudGenToolPath;
     dbs_dbDefPath = this.&dbs_dbDefPath;
@@ -170,4 +196,5 @@ ext {
     removeComments = this.&removeComments;
     quotifySqlUserId = this.&quotifySqlUserId;
     backquotifySqlId = this.&backquotifySqlId;
+    upToDateWhenBasedOnFiles = this.&upToDateWhenBasedOnFiles;
 }

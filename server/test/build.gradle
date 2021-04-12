@@ -38,20 +38,7 @@ task tst_PrepareTest() {
     inputs.files(tst_prepareTestInputFiles)
     outputs.files(tst_prepareTestOutputFiles)
     outputs.upToDateWhen {
-        return outputs.files.every { f1 ->
-            if (!f1.exists()) {
-                return false;
-            }
-            return inputs.files.every { f2 ->
-                if (!f2.exists()) {
-                    return false;
-                }
-                if (f2.lastModified() > f1.lastModified()) {
-                    return false;
-                }
-            }
-            return true;
-        }
+        return rootProject.upToDateWhenBasedOnFiles(outputs.getFiles(),inputs.getFiles());
     }
     
     doLast {
@@ -91,20 +78,7 @@ task tst_PerformTest(type: Exec) {
     inputs.files(tst_performTestInputFiles)
     outputs.files(tst_performTestOutputFiles)
     outputs.upToDateWhen {
-        return outputs.files.every { f1 ->
-            if (!f1.exists()) {
-                return false;
-            }
-            return inputs.files.every { f2 ->
-                if (!f2.exists()) {
-                    return false;
-                }
-                if (f2.lastModified() > f1.lastModified()) {
-                    return false;
-                }
-            }
-            return true;
-        }
+        return rootProject.upToDateWhenBasedOnFiles(outputs.getFiles(),inputs.getFiles());
     }
     commandLine "robot",'--outputdir',"${rootProject.buildDir}/reports","."
     standardOutput = new ByteArrayOutputStream()

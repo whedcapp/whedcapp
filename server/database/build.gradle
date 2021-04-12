@@ -670,6 +670,9 @@ task dbs_DropAndRecreateDatabaseIfNecessary() {
     dependsOn 'dbs_OpenDatabaseAsRoot'
     inputs.files(dbs_DropAndRecreateDatabaseIfNecessaryInputFiles);
     outputs.files(dbs_DropAndRecreateDatabaseIfNecessaryOutputFiles);
+    outputs.upToDateWhen {
+        return rootProject.upToDateWhenBasedOnFiles(outputs.getFiles(),inputs.getFiles());
+    }
     group = 'Database'
     description 'If database setup strategy is initialize, then drop and recreate whedcapp database. Use whedcapp database'
     doFirst {
@@ -743,6 +746,9 @@ task dbs_CreateWhedcappDatabaseAccessUser() {
     dependsOn 'dbs_DropAndRecreateDatabaseIfNecessary'
     inputs.files(dbs_CreateWhedcappDatabaseAccessUserInputFiles)
     outputs.files(dbs_CreateWhedcappDatabaseAccessUserOutputFiles);
+    outputs.upToDateWhen {
+        return rootProject.upToDateWhenBasedOnFiles(outputs.getFiles(),inputs.getFiles());
+    }
     group = 'Database'
     description 'Create whedcapp database access user as well as tables/triggers/procedures for keeping track of what has been uploaded'
     doFirst {
@@ -869,6 +875,9 @@ task dbs_CreateWhedcappDatabaseTestAccessUser() {
     dependsOn 'dbs_DropAndRecreateDatabaseIfNecessary'
     inputs.files(dbs_CreateWhedcappDatabaseTestAccessUserInputFiles)
     outputs.files(dbs_CreateWhedcappDatabaseTestAccessUserOutputFiles);
+    outputs.upToDateWhen {
+        return rootProject.upToDateWhenBasedOnFiles(outputs.getFiles(),inputs.getFiles());
+    }
     group = 'Database'
     description 'Create whedcapp database test access user'
     doFirst {
@@ -985,20 +994,7 @@ task dbs_UploadToDatabase() {
     inputs.files(dbs_uploadToDatabaseInputFiles)
     outputs.files(dbs_uploadToDatabaseOutputFiles)
     outputs.upToDateWhen {
-        return outputs.files.every { f1 ->
-            if (!f1.exists()) {
-                return false;
-            }
-            return inputs.files.every { f2 ->
-                if (!f2.exists()) {
-                    return false;
-                }
-                if (f2.lastModified() > f1.lastModified()) {
-                    return false;
-                }
-            }
-            return true;
-        }
+        return rootProject.upToDateWhenBasedOnFiles(outputs.getFiles(),inputs.getFiles());
     }
     group = 'Database'
     description = "Uploads database scheme."

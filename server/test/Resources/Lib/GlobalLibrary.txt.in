@@ -1,5 +1,6 @@
 *** Settings ***
 Library           DatabaseLibrary
+Library           String
 Resource          ../Keywords/DatabaseKeywords.txt
 Resource          ../Variables/GlobalVariables.txt
 Resource          ../Variables/DatabaseVariables.txt
