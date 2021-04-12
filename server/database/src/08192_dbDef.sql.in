@@ -17,7 +17,15 @@
     */
 
 
+/* Create table datatype_spec that contains data types for context parameter specification
+   when a context parameter does not point to table. Mainly used for time parameters */
 
+CREATE TABLE `whedcapp`.`datatype_spec` (
+    `id_ts` INTEGER NOT NULL AUTO_INCREMENT,
+    `datetime_` DATETIME,
+    `date_` DATE,
+    PRIMARY KEY(`id_ts`)
+    );
 
 
 /* Create table locale that contains implemented ICU locale codes of the form cc_LL, where 'cc' stands for

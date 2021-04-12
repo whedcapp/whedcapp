@@ -10,15 +10,24 @@
     "contextParameters": {
         "SQL": {
             "writeSelf": {
-                "$ADMIN$": [
-                    {
+                "$ADMIN$": [    
+                    {      
                         "calling_id_uid": {
                             "table": "whedcapp.uid",
                             "column": "id_uid",
                             "accessControl": true,
                             "context": true
                         }
+                    },
+                    {   
+                        "context_time_par": {
+                            "table": "whedcapp.datatype_spec",
+                            "column": "datetime_",
+                            "accessControl": false,
+                            "context": true
+                        }   
                     }
+                    
                 ],
                 "$ADMIN_LIMITED_SELECT$": [
                     {
@@ -28,6 +37,14 @@
                             "accessControl": true,
                             "context": true
                         }
+                    },
+                    {   
+                        "context_time_par": {
+                            "table": "whedcapp.datatype_spec",
+                            "column": "datetime_",
+                            "accessControl": false,
+                            "context": true
+                        }   
                     },
                     {
                         "context_id_proj": {
@@ -46,6 +63,14 @@
                             "accessControl": true,
                             "context": true
                         }
+                    },
+                    {   
+                        "context_time_par": {
+                            "table": "whedcapp.datatype_spec",
+                            "column": "datetime_",
+                            "accessControl": false,
+                            "context": true
+                        }   
                     }
                 ],
                 "$PROJECT$": [
@@ -56,6 +81,14 @@
                             "accessControl": true,
                             "context": true
                         }
+                    },
+                    {   
+                        "context_time_par": {
+                            "table": "whedcapp.datatype_spec",
+                            "column": "datetime_",
+                            "accessControl": false,
+                            "context": true
+                        }   
                     },
                     {
                         "context_id_proj": {
@@ -75,6 +108,14 @@
                             "context": true
                         }
                     },
+                    {   
+                        "context_time_par": {
+                            "table": "whedcapp.datatype_spec",
+                            "column": "datetime_",
+                            "accessControl": false,
+                            "context": true
+                        }   
+                    },
                     {
                         "context_id_proj": {
                             "table": "whedcapp.project",
@@ -84,7 +125,7 @@
                         }
                     },
                     {
-                        "proj_round_key": {
+                        "context_id_proj_round": {
                             "table": "whedcapp.project_round",
                             "column": "id_proj_round",
                             "accessControl": false,
@@ -100,6 +141,14 @@
                             "accessControl": true,
                             "context": true
                         }
+                    },
+                    {   
+                        "context_time_par": {
+                            "table": "whedcapp.datatype_spec",
+                            "column": "datetime_",
+                            "accessControl": false,
+                            "context": true
+                        }   
                     },
                     {
                         "context_id_questionnaire": {
@@ -121,6 +170,14 @@
                             "context": false
                         }
                     },
+                    {   
+                        "context_time_par": {
+                            "table": "whedcapp.datatype_spec",
+                            "column": "datetime_",
+                            "accessControl": false,
+                            "context": true
+                        }   
+                    },
                     {
                         "other_uid_key": {
                             "table": "whedcapp.uid",
@@ -139,6 +196,14 @@
                             "accessControl": true,
                             "context": false
                         }
+                    },
+                    {   
+                        "context_time_par": {
+                            "table": "whedcapp.datatype_spec",
+                            "column": "datetime_",
+                            "accessControl": false,
+                            "context": true
+                        }   
                     },
                     {
                         "context_id_proj": {
@@ -167,6 +232,14 @@
                             "context": false
                         }
                     },
+                    {   
+                        "context_time_par": {
+                            "table": "whedcapp.datatype_spec",
+                            "column": "datetime_",
+                            "accessControl": false,
+                            "context": true
+                        }   
+                    },
                     {
                         "other_uid_key": {
                             "table": "whedcapp.uid",
@@ -185,6 +258,14 @@
                             "accessControl": true,
                             "context": false
                         }
+                    },
+                    {   
+                        "context_time_par": {
+                            "table": "whedcapp.datatype_spec",
+                            "column": "datetime_",
+                            "accessControl": false,
+                            "context": true
+                        }   
                     }, 
                     {
                         "context_id_proj": {
@@ -213,6 +294,14 @@
                             "context": false
                         }
                     },
+                    {   
+                        "context_time_par": {
+                            "table": "whedcapp.datatype_spec",
+                            "column": "datetime_",
+                            "accessControl": false,
+                            "context": true
+                        }   
+                    },
                     {
                         "context_id_proj": {
                             "table": "whedcapp.project",
@@ -222,7 +311,7 @@
                         }
                     },
                     {
-                        "proj_round_key": {
+                        "context_id_proj_round": {
                             "table": "whedcapp.project_round",
                             "column": "id_proj_round",
                             "accessControl": false,
@@ -246,6 +335,14 @@
                             "accessControl": true,
                             "context": false
                         }
+                    },
+                    {   
+                        "context_time_par": {
+                            "table": "whedcapp.datatype_spec",
+                            "column": "datetime_",
+                            "accessControl": false,
+                            "context": true
+                        }   
                     },
                     {
                     
@@ -276,6 +373,14 @@
                             "accessControl": true,
                             "context": true
                         }
+                    },
+                    {   
+                        "context_time_par": {
+                            "table": "whedcapp.datatype_spec",
+                            "column": "datetime_",
+                            "accessControl": false,
+                            "context": true
+                        }   
                     }
                 ],
                 "$ADMIN_LIMITED_SELECT$": [
@@ -286,6 +391,14 @@
                             "accessControl": true,
                             "context": true
                         }
+                    },
+                    {   
+                        "context_time_par": {
+                            "table": "whedcapp.datatype_spec",
+                            "column": "datetime_",
+                            "accessControl": false,
+                            "context": true
+                        }   
                     },
                     {
                         "context_id_proj": {
@@ -304,6 +417,14 @@
                             "accessControl": true,
                             "context": true
                         }
+                    },
+                    {   
+                        "context_time_par": {
+                            "table": "whedcapp.datatype_spec",
+                            "column": "datetime_",
+                            "accessControl": false,
+                            "context": true
+                        }   
                     }
                 ],
                 "$PROJECT$": [
@@ -314,6 +435,14 @@
                             "accessControl": true,
                             "context": true
                         }
+                    },
+                    {   
+                        "context_time_par": {
+                            "table": "whedcapp.datatype_spec",
+                            "column": "datetime_",
+                            "accessControl": false,
+                            "context": true
+                        }   
                     },
                     {
                         "context_id_proj": {
@@ -333,6 +462,14 @@
                             "context": true
                         }
                     },
+                    {   
+                        "context_time_par": {
+                            "table": "whedcapp.datatype_spec",
+                            "column": "datetime_",
+                            "accessControl": false,
+                            "context": true
+                        }   
+                    },
                     {
                         "context_id_proj": {
                             "table": "whedcapp.project",
@@ -342,7 +479,7 @@
                         }
                     },
                     {
-                        "proj_round_key": {
+                        "context_id_proj_round": {
                             "table": "whedcapp.project_round",
                             "column": "id_proj_round",
                             "accessControl": false,
@@ -358,6 +495,14 @@
                             "accessControl": true,
                             "context": true
                         }
+                    },
+                    {   
+                        "context_time_par": {
+                            "table": "whedcapp.datatype_spec",
+                            "column": "datetime_",
+                            "accessControl": false,
+                            "context": true
+                        }   
                     },
                     {
                         "context_id_questionnaire": {
@@ -379,6 +524,14 @@
                             "context": false
                         }
                     },
+                    {   
+                        "context_time_par": {
+                            "table": "whedcapp.datatype_spec",
+                            "column": "datetime_",
+                            "accessControl": false,
+                            "context": true
+                        }   
+                    },
                     {
                         "other_uid_key": {
                             "table": "whedcapp.uid",
@@ -397,6 +550,14 @@
                             "accessControl": true,
                             "context": false
                         }
+                    },
+                    {   
+                        "context_time_par": {
+                            "table": "whedcapp.datatype_spec",
+                            "column": "datetime_",
+                            "accessControl": false,
+                            "context": true
+                        }   
                     },
                     {
                         "context_id_proj": {
@@ -425,6 +586,14 @@
                             "context": false
                         }
                     },
+                    {   
+                        "context_time_par": {
+                            "table": "whedcapp.datatype_spec",
+                            "column": "datetime_",
+                            "accessControl": false,
+                            "context": true
+                        }   
+                    },
                     {
                         "other_uid_key": {
                             "table": "whedcapp.uid",
@@ -443,6 +612,14 @@
                             "accessControl": true,
                             "context": false
                         }
+                    },
+                    {   
+                        "context_time_par": {
+                            "table": "whedcapp.datatype_spec",
+                            "column": "datetime_",
+                            "accessControl": false,
+                            "context": true
+                        }   
                     },
                     {
                         "context_id_proj": {
@@ -471,6 +648,14 @@
                             "context": false
                         }
                     },
+                    {   
+                        "context_time_par": {
+                            "table": "whedcapp.datatype_spec",
+                            "column": "datetime_",
+                            "accessControl": false,
+                            "context": true
+                        }   
+                    },
                     {
                         "context_id_proj": {
                             "table": "whedcapp.project",
@@ -480,7 +665,7 @@
                         }
                     },
                     {
-                        "proj_round_key": {
+                        "context_id_proj_round": {
                             "table": "whedcapp.project_round",
                             "column": "id_proj_round",
                             "accessControl": false,
@@ -504,6 +689,14 @@
                             "accessControl": true,
                             "context": false
                         }
+                    },
+                    {   
+                        "context_time_par": {
+                            "table": "whedcapp.datatype_spec",
+                            "column": "datetime_",
+                            "accessControl": false,
+                            "context": true
+                        }   
                     },
                     {
                         "context_id_questionnaire": {
@@ -944,6 +1137,19 @@
                 "select":
                 {"link": "$ANSWER$"},
                 "eidBase": 5600,
+                "hasKeyAttribute": false
+            },
+            "DATATYPE_SPEC":
+            {
+                "insert":
+                {"link": "$SELECT_ONLY$"},
+                "update":
+                {"link": "$SELECT_ONLY$"},
+                "delete":
+                {"link": "$SELECT_ONLY$"},
+                "select":
+                {"link": "$SELECT_ONLY$"},
+                "eidBase": 8500,
                 "hasKeyAttribute": false
             },
             "GDPR_STATUS":
