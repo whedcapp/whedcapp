@@ -6,19 +6,15 @@ Suite Teardown    Disconnect From Database
 Test Template     Update self uid should fail
 
 *** Variables ***
-${UID_NO1}     ${UID_AMOUNT1}
-${UID_NO2}     ${UID_AMOUNT2}
-${UID_NO3}     ${UID_AMOUNT3}
 ${UID_SPEC1}   'email@somewhere.org'
-${UID_SPEC2}   ${ADMIN}
-${UID_SPEC3}   '{a-zA-Z}{a-zA-Z0-9}*\@{a-zA-Z}{a-zA-Z0-9}*.{a-zA-Z}{a-zA-Z0-9}*'
+${TIME}        '2021-01-01 01:01:01'
 
 *** Keywords ***
 Update self uid should fail
-    [Arguments]                ${uid_no}    ${uid_spec}    
+    [Arguments]                ${uid_spec}    
     ${uidAdmin}                Query    SELECT `id_uid` FROM `whedcapp`.`uid` WHERE `uid_text` = ${ADMIN}    True
     ${result2} =     Run Keyword And Expect Error     EQUALS:OperationalError: (1644, 'Cannot delete whedcapp administrator')
-...                  Execute SQL String    CALL `whedcapp`.`uid_delete_writeSelf`(${uidAdmin[0][0]})    False
+...                  Execute SQL String    CALL `whedcapp`.`uid_delete_writeSelf`(${uidAdmin[0][0]},${TIME})    False
 
 
 Initialize Test Suite
@@ -31,8 +27,8 @@ Initialize Test Suite
 
 
 
-*** Test Cases ***                          UID_NO        UID_SPEC    
-Attempt 01 to Delete Self Uid Fails         ${UID_NO1}    ${UID_SPEC1}
+*** Test Cases ***                          UID_SPEC    
+Attempt 01 to Delete Self Uid Fails         ${UID_SPEC1}
 
 
 

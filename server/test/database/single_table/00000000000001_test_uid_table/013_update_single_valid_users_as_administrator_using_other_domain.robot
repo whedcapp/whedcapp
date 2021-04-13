@@ -8,22 +8,23 @@ Test Template     Update other uid as administrator should succeed
 *** Variables ***
 ${UID_SPEC2}   'testadm@somewhere.org'
 ${UID_SPEC3}   'testuser@somwhere.org'
+${TIME}        '2021-01-01 01:01:01'
 
 *** Keywords ***
 Update other uid as administrator should succeed
     [Arguments]             ${uid_spec}    ${is_superuser}    ${is_pdc}    ${is_adm}    ${is_qm}  
     ${uid_admin}            Query    SELECT `id_uid` FROM `whedcapp`.`uid` WHERE `uid_text` = ${ADMIN}    True
     ${uid_user}             Query    SELECT `id_uid` FROM `whedcapp`.`uid` WHERE `uid_text` = ${UID_SPEC3}    True
-    Execute SQL String      CALL `whedcapp`.`uid_update_writeOther`(${uid_admin[0][0]},${uid_user[0][0]},${UID_SPEC3},${is_superuser},${is_pdc},${is_adm},${is_qm})    True
+    Execute SQL String      CALL `whedcapp`.`uid_update_writeOther`(${uid_admin[0][0]},${TIME},${uid_user[0][0]},${UID_SPEC3},${is_superuser},${is_pdc},${is_adm},${is_qm})    True
     ${uid_admin1}            Query    SELECT `id_uid` FROM `whedcapp`.`uid` WHERE `uid_text` = ${ADMIN}    True
-    Execute SQL String      CALL `whedcapp`.`uid_update_writeOther`(${uid_admin1[0][0]},${uid_user[0][0]},${UID_SPEC3},${is_superuser},${is_pdc},${is_adm},${is_qm})    True
+    Execute SQL String      CALL `whedcapp`.`uid_update_writeOther`(${uid_admin1[0][0]},${TIME},${uid_user[0][0]},${UID_SPEC3},${is_superuser},${is_pdc},${is_adm},${is_qm})    True
 
 
 Initialize Test Suite
     Connect To Database Using Custom Params  pymysql    database=${dbName},user=${dbUserName},password=${dbPassword},host=${dbHost},port=${dbPort}
     ${uid_admin}    Query    SELECT `id_uid` FROM `whedcapp`.`uid` WHERE `uid_text` = ${ADMIN}    True
-    @{result}       Query    SELECT `whedcapp`.`uid_insert_writeSelf`(${uid_admin[0][0]},${UID_SPEC2},FALSE,FALSE,TRUE,FALSE)    True
-    @{result}       Query    SELECT `whedcapp`.`uid_insert_writeSelf`(${uid_admin[0][0]},${UID_SPEC3},FALSE,FALSE,FALSE,FALSE)    True
+    @{result}       Query    SELECT `whedcapp`.`uid_insert_writeSelf`(${uid_admin[0][0]},${TIME},${UID_SPEC2},FALSE,FALSE,TRUE,FALSE)    True
+    @{result}       Query    SELECT `whedcapp`.`uid_insert_writeSelf`(${uid_admin[0][0]},${TIME},${UID_SPEC3},FALSE,FALSE,FALSE,FALSE)    True
 
 
 
