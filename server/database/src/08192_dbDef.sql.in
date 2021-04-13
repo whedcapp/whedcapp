@@ -1332,7 +1332,7 @@ BEGIN
         WHERE
                 `id_proj` = id_proj_par
             AND
-                (`start_date` < start_date_par OR `start_date` > end_date_par OR `end_date` < start_date_par OR `end_date` > end_date_paer);
+                (`start_date` < start_date_par OR `start_date` > end_date_par OR `end_date` < start_date_par OR `end_date` > end_date_par);
     IF no_of_mismatching_project_rounds_var THEN
         SIGNAL SQLSTATE '45030'
             SET MESSAGE_TEXT = 'Project must encompass project rounds';
