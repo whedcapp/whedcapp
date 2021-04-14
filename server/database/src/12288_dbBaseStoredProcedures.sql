@@ -27,9 +27,12 @@ BEGIN
     RETURN no_of_admin_rights>0;
 END;
 $$
-CREATE FUNCTION `whedcapp`.`check_project_write_access_rights_self`(calling_id_uid_par INT, context_id_proj_par INT) RETURNS BOOLEAN DETERMINISTIC
+CREATE FUNCTION `whedcapp`.`check_project_write_access_rights_self`(calling_id_uid_par INT, context_id_proj_par INT,context_time_par DATETIME) RETURNS BOOLEAN DETERMINISTIC
 BEGIN
     DECLARE no_of_project_owner INT;
+    IF `whedcapp`.`check_administrator_rights`(calling_id_uid_par) THEN
+        RETURN TRUE;
+    END IF;
     SELECT COUNT(`id_uid`) INTO no_of_project_owner
         FROM `whedcapp`.`acl`
         WHERE

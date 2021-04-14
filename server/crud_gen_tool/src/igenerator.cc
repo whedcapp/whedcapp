@@ -40,7 +40,6 @@ namespace PartSqlCrudGen {
                   [this,shPtr2Column](const auto par2Ref) {
                     return
                       par2Ref.second.getReference().getColumnIdentity() == shPtr2Column->getIdentity() && par2Ref.second.getContext();
-                    //&& par2Ref.second.getTableIdentity() == this->getShPtr2Table()->getIdentity();
                   }
                   );
     return isContextParameter;

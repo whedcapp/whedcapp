@@ -30,6 +30,7 @@ static const std::regex errPattern("<ERR>");
 static const std::regex operationPattern("<OPERATION>");
 static const std::regex aTablePattern("<A_TABLE>");
 static const std::regex domainPattern("<DOMAIN>");
+static const std::regex realDomainPattern("<REAL_DOMAIN>");
 
 
 
@@ -205,7 +206,9 @@ namespace PartSqlCrudGen {
                                      {errPattern,std::to_string(ts.getEidBase()+op+at)},
                                      {operationPattern,DatabaseOperation::getStringFromType(op)},
                                      {aTablePattern,"a/an "+toupper(tableMetaData->getIdentity().getSecondary())},
-                                     {domainPattern,accessType2Output(at)}
+                                     {domainPattern,accessType2Output(at)},
+
+                                     {realDomainPattern,Access::getStringFromType(at)}
       });
     str << ccsr << std::endl;
     return str;
@@ -228,25 +231,25 @@ namespace PartSqlCrudGen {
     case DatabaseOperation::Type::dbInsert:
       {
         str << std::setw(options.outputCodeTabWidth) << " " << "INSERT INTO " << tableMetaData->getIdentity().getBackquoted() << " ( ";
-        std::unique_ptr<IGenerateColumnList> gclsOnlyColumnParameters =
+        std::unique_ptr<IGenerateColumnList> gclsColumnParametersForInsert =
           GenerateColumnListSql::create(
-                                        IGenerateColumnList::GenerateKind::onlyColumnParameters,
+                                        IGenerateColumnList::GenerateKind::columnParametersForInsert,
                                         str,
                                         tableMetaData,
                                         cp
                                         );
-        gclsOnlyColumnParameters->generate();
+        gclsColumnParametersForInsert->generate();
         str << ")" << std::endl;
         str << std::setw(options.outputCodeTabWidth*2) << " " << "VALUES (";
-        std::unique_ptr<IGenerateColumnList> gclsOnlyColumnParameters2 =
+        std::unique_ptr<IGenerateColumnList> gclsColumnParametersForInsert2 =
           GenerateColumnListSql::create(
-                                        IGenerateColumnList::GenerateKind::onlyColumnParameters,
+                                        IGenerateColumnList::GenerateKind::columnParametersForInsert,
                                         str,
                                         tableMetaData,
                                         cp,
                                         "_par"
                                         );
-        gclsOnlyColumnParameters2->generate();
+        gclsColumnParametersForInsert2->generate();
         str << ");";
       }
       break;
@@ -402,9 +405,10 @@ namespace PartSqlCrudGen {
                 const auto ppi = beautifyStoredProcedureCode(pps.getInstruction(),options.outputCodeTabWidth);
                 const auto ppir = replace(ppi,{
                     {errPattern,std::to_string(ts.getEidBase()+op+at+16)},
-                      {operationPattern,DatabaseOperation::getStringFromType(op)},
-                        {aTablePattern,"a/an "+tableName},
-                          {domainPattern,accessType2Output(at)}
+                    {operationPattern,DatabaseOperation::getStringFromType(op)},
+                    {aTablePattern,"a/an "+tableName},
+                    {domainPattern,accessType2Output(at)},
+                    {realDomainPattern,Access::getStringFromType(at)}
                   });
                 str << ppir << std::endl;
               }
@@ -430,9 +434,12 @@ namespace PartSqlCrudGen {
     }
     outputFile << "DELIMITER $$" << std::endl;
     for (auto tableMetaData : *shPtr2Driver->shPtr2VecOfShPtr2Table) {
+      std::cerr << "Generating for \"" << *tableMetaData << "\"" <<std::endl;
       for (auto op: DatabaseOperation::allType) {
         for (auto at: Access::allType) {
           if (DatabaseOperation::compatibleAccessType(op,at)) {
+            std::cerr << "Database operation " << op << std::endl;
+            std::cerr << "Access type " << at << std::endl;
             generateCreateProcedureOrFunction(outputFile,options,shPtr2Driver,tableMetaData,op,at);
             generateProcessing(outputFile,options,shPtr2Driver,tableMetaData,op,at,ProcessingStep::Phase::declaration);
             generateContextCheckParameters(outputFile,options,shPtr2Driver,tableMetaData,op,at);
@@ -467,6 +474,8 @@ namespace PartSqlCrudGen {
     switch(generateKind) {
     case onlyColumnParameters:
       return std::make_unique<GclsOnlyColumnParameters>(str,shPtr2Table, optContextParameter, suffix,notFirst);
+    case columnParametersForInsert:
+      return std::make_unique<GclsColumnParametersForInsert>(str,shPtr2Table, optContextParameter, suffix,notFirst);
     case columnParametersWithTypeInformationInParameterList:
       return std::make_unique<GclsColumnParametersWithTypeInformationInParameterList>(str,shPtr2Table, optContextParameter, suffix,notFirst);
     case columnParametersForUpdate:
@@ -486,6 +495,29 @@ namespace PartSqlCrudGen {
 
   const bool GclsOnlyColumnParameters::shouldAttributeBeListed(const ShPtr2Column& shPtr2Column) const {
     return !shPtr2Column->isPrimaryKey() && !isContextParameter(shPtr2Column);
+  }
+
+  const bool GclsColumnParametersForInsert::shouldAttributeBeListed(const ShPtr2Column& shPtr2Column) const {
+    return !shPtr2Column->isPrimaryKey() && !isContextParameter(shPtr2Column);
+  }
+
+  const bool GclsColumnParametersForInsert::shouldReplacementAttributeBeListed(const ShPtr2Column& shPtr2Column) const {
+    return !shPtr2Column->isPrimaryKey() && isContextParameter(shPtr2Column);
+  }
+
+  // set attribute = context parameter (replacement of parameter)
+  std::ostream&  GclsColumnParametersForInsert::generateReplacementColumn(const ShPtr2Column& shPtr2Column) {
+    // if needed, this can be optimized away by passing the iterator
+    // from a modified version of shouldReplacementAttributeBeListed
+    // however, this performance increase is small, the advantage
+    // is one place to modify the condition, but the cost is a less
+    // understandable design
+    const auto& vecOfPar2Ref = getOptContextParameter()->getVecOfPar2Ref();
+    const auto& contextParInfoIt = std::find_if(vecOfPar2Ref.begin(),vecOfPar2Ref.end(),[this,shPtr2Column](const auto par2Ref) { return par2Ref.second.getReference().getColumnIdentity() == shPtr2Column->getIdentity() && par2Ref.second.getContext(); });
+    Identity replacementId(contextParInfoIt->first);
+    getStr() << replacementId.getBackquoted(getSuffix());
+    return getStr();
+      
   }
 
   const bool GclsColumnParametersWithTypeInformationInParameterList::shouldAttributeBeListed(const ShPtr2Column& shPtr2Column) const  {

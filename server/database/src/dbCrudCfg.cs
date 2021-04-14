@@ -20,11 +20,11 @@
                         }
                     },
                     {   
-                        "context_time_par": {
+                        "context_time": {
                             "table": "whedcapp.datatype_spec",
                             "column": "datetime_",
                             "accessControl": false,
-                            "context": true
+                            "context": false
                         }   
                     }
                     
@@ -39,11 +39,11 @@
                         }
                     },
                     {   
-                        "context_time_par": {
+                        "context_time": {
                             "table": "whedcapp.datatype_spec",
                             "column": "datetime_",
                             "accessControl": false,
-                            "context": true
+                            "context": false
                         }   
                     },
                     {
@@ -65,11 +65,11 @@
                         }
                     },
                     {   
-                        "context_time_par": {
+                        "context_time": {
                             "table": "whedcapp.datatype_spec",
                             "column": "datetime_",
                             "accessControl": false,
-                            "context": true
+                            "context": false
                         }   
                     }
                 ],
@@ -83,11 +83,11 @@
                         }
                     },
                     {   
-                        "context_time_par": {
+                        "context_time": {
                             "table": "whedcapp.datatype_spec",
                             "column": "datetime_",
                             "accessControl": false,
-                            "context": true
+                            "context": false
                         }   
                     },
                     {
@@ -109,11 +109,11 @@
                         }
                     },
                     {   
-                        "context_time_par": {
+                        "context_time": {
                             "table": "whedcapp.datatype_spec",
                             "column": "datetime_",
                             "accessControl": false,
-                            "context": true
+                            "context": false
                         }   
                     },
                     {
@@ -143,11 +143,11 @@
                         }
                     },
                     {   
-                        "context_time_par": {
+                        "context_time": {
                             "table": "whedcapp.datatype_spec",
                             "column": "datetime_",
                             "accessControl": false,
-                            "context": true
+                            "context": false
                         }   
                     },
                     {
@@ -171,11 +171,11 @@
                         }
                     },
                     {   
-                        "context_time_par": {
+                        "context_time": {
                             "table": "whedcapp.datatype_spec",
                             "column": "datetime_",
                             "accessControl": false,
-                            "context": true
+                            "context": false
                         }   
                     },
                     {
@@ -198,11 +198,11 @@
                         }
                     },
                     {   
-                        "context_time_par": {
+                        "context_time": {
                             "table": "whedcapp.datatype_spec",
                             "column": "datetime_",
                             "accessControl": false,
-                            "context": true
+                            "context": false
                         }   
                     },
                     {
@@ -233,11 +233,11 @@
                         }
                     },
                     {   
-                        "context_time_par": {
+                        "context_time": {
                             "table": "whedcapp.datatype_spec",
                             "column": "datetime_",
                             "accessControl": false,
-                            "context": true
+                            "context": false
                         }   
                     },
                     {
@@ -260,11 +260,11 @@
                         }
                     },
                     {   
-                        "context_time_par": {
+                        "context_time": {
                             "table": "whedcapp.datatype_spec",
                             "column": "datetime_",
                             "accessControl": false,
-                            "context": true
+                            "context": false
                         }   
                     }, 
                     {
@@ -295,11 +295,11 @@
                         }
                     },
                     {   
-                        "context_time_par": {
+                        "context_time": {
                             "table": "whedcapp.datatype_spec",
                             "column": "datetime_",
                             "accessControl": false,
-                            "context": true
+                            "context": false
                         }   
                     },
                     {
@@ -337,11 +337,11 @@
                         }
                     },
                     {   
-                        "context_time_par": {
+                        "context_time": {
                             "table": "whedcapp.datatype_spec",
                             "column": "datetime_",
                             "accessControl": false,
-                            "context": true
+                            "context": false
                         }   
                     },
                     {
@@ -375,11 +375,11 @@
                         }
                     },
                     {   
-                        "context_time_par": {
+                        "context_time": {
                             "table": "whedcapp.datatype_spec",
                             "column": "datetime_",
                             "accessControl": false,
-                            "context": true
+                            "context": false
                         }   
                     }
                 ],
@@ -393,11 +393,11 @@
                         }
                     },
                     {   
-                        "context_time_par": {
+                        "context_time": {
                             "table": "whedcapp.datatype_spec",
                             "column": "datetime_",
                             "accessControl": false,
-                            "context": true
+                            "context": false
                         }   
                     },
                     {
@@ -419,11 +419,11 @@
                         }
                     },
                     {   
-                        "context_time_par": {
+                        "context_time": {
                             "table": "whedcapp.datatype_spec",
                             "column": "datetime_",
                             "accessControl": false,
-                            "context": true
+                            "context": false
                         }   
                     }
                 ],
@@ -437,11 +437,11 @@
                         }
                     },
                     {   
-                        "context_time_par": {
+                        "context_time": {
                             "table": "whedcapp.datatype_spec",
                             "column": "datetime_",
                             "accessControl": false,
-                            "context": true
+                            "context": false
                         }   
                     },
                     {
@@ -463,11 +463,11 @@
                         }
                     },
                     {   
-                        "context_time_par": {
+                        "context_time": {
                             "table": "whedcapp.datatype_spec",
                             "column": "datetime_",
                             "accessControl": false,
-                            "context": true
+                            "context": false
                         }   
                     },
                     {
@@ -497,11 +497,11 @@
                         }
                     },
                     {   
-                        "context_time_par": {
+                        "context_time": {
                             "table": "whedcapp.datatype_spec",
                             "column": "datetime_",
                             "accessControl": false,
-                            "context": true
+                            "context": false
                         }   
                     },
                     {
@@ -525,11 +525,11 @@
                         }
                     },
                     {   
-                        "context_time_par": {
+                        "context_time": {
                             "table": "whedcapp.datatype_spec",
                             "column": "datetime_",
                             "accessControl": false,
-                            "context": true
+                            "context": false
                         }   
                     },
                     {
@@ -552,11 +552,11 @@
                         }
                     },
                     {   
-                        "context_time_par": {
+                        "context_time": {
                             "table": "whedcapp.datatype_spec",
                             "column": "datetime_",
                             "accessControl": false,
-                            "context": true
+                            "context": false
                         }   
                     },
                     {
@@ -587,11 +587,11 @@
                         }
                     },
                     {   
-                        "context_time_par": {
+                        "context_time": {
                             "table": "whedcapp.datatype_spec",
                             "column": "datetime_",
                             "accessControl": false,
-                            "context": true
+                            "context": false
                         }   
                     },
                     {
@@ -614,11 +614,11 @@
                         }
                     },
                     {   
-                        "context_time_par": {
+                        "context_time": {
                             "table": "whedcapp.datatype_spec",
                             "column": "datetime_",
                             "accessControl": false,
-                            "context": true
+                            "context": false
                         }   
                     },
                     {
@@ -649,11 +649,11 @@
                         }
                     },
                     {   
-                        "context_time_par": {
+                        "context_time": {
                             "table": "whedcapp.datatype_spec",
                             "column": "datetime_",
                             "accessControl": false,
-                            "context": true
+                            "context": false
                         }   
                     },
                     {
@@ -691,11 +691,11 @@
                         }
                     },
                     {   
-                        "context_time_par": {
+                        "context_time": {
                             "table": "whedcapp.datatype_spec",
                             "column": "datetime_",
                             "accessControl": false,
-                            "context": true
+                            "context": false
                         }   
                     },
                     {
@@ -731,17 +731,17 @@
             "\tIF NOT `whedcapp`.`check_limited_select_rights`(calling_id_uid_par,context_id_par) THEN\n\t\tSIGNAL SQLSTATE '4<ERR>'\n\t\t\tSET MESSAGE_TEXT = 'You are not allowed to <OPERATION> <A_TABLE> for <DOMAIN>. You must be either a superuser, a whedcapp administrator, a project owner or a researcher.';\n\tEND IF;\n",
 
             "$PROJECT$":
-            "\tIF NOT `whedcapp`.`check_project_read_access_rights_self`(calling_id_uid_par,context_id_proj,time_par) THEN\n\t\tSIGNAL SQLSTATE '4<ERR>'\n\t\t\tSET MESSAGE_TEXT = 'You are not allowed to <OPERATION> <A_TABLE> for <DOMAIN>. You must be either a superuser, a whedcapp administrator, a project owner, a participant or a supporter.';\n\tEND IF;\n",
+            "\tIF NOT `whedcapp`.`check_project_read_access_rights_self`(calling_id_uid_par,context_id_proj_par,context_time_par) THEN\n\t\tSIGNAL SQLSTATE '4<ERR>'\n\t\t\tSET MESSAGE_TEXT = 'You are not allowed to <OPERATION> <A_TABLE> for <DOMAIN>. You must be either a superuser, a whedcapp administrator, a project owner, a participant or a supporter.';\n\tEND IF;\n",
 
             "$SELECT_ONLY$":
             "\t\/* No context check is required *\/\n",
 
 
             "$ANSWER$":
-            "\tIF NOT `whedcapp`.`check_answer_write_access_rights_self`(calling_id_uid_par,context_id_proj,context_id_proj_round_par,time_par) THEN\n\t\tSIGNAL SQLSTATE '4<ERR>'\n\t\t\tSET MESSAGE_TEXT = 'You are not allowed to <OPERATION> <A_TABLE> for <DOMAIN>. You must either be a supporter or a participant.';\n\tEND IF;\n",
+            "\tIF NOT `whedcapp`.`check_answer_write_access_rights_self`(calling_id_uid_par,context_id_proj_par,context_id_proj_round_par,context_time_par) THEN\n\t\tSIGNAL SQLSTATE '4<ERR>'\n\t\t\tSET MESSAGE_TEXT = 'You are not allowed to <OPERATION> <A_TABLE> for <DOMAIN>. You must either be a supporter or a participant.';\n\tEND IF;\n",
 
             "$QUESTIONNAIRE$":
-            "\tIF NOT `whedcapp`.`check_questionnaire_read_access_rights_self`(calling_id_uid_par,context_id_questionnaire,time_par) THEN\n\t\tSIGNAL SQLSTATE '4<ERR>'\n\t\t\tSET MESSAGE_TEXT = 'You are not allowed to <OPERATION> <A_TABLE> for <DOMAIN>. You must  be a questionnaire maintainer.';\n\tEND IF;\n"
+            "\tIF NOT `whedcapp`.`check_questionnaire_read_access_rights_self`(calling_id_uid_par,context_id_questionnaire,context_time_par) THEN\n\t\tSIGNAL SQLSTATE '4<ERR>'\n\t\t\tSET MESSAGE_TEXT = 'You are not allowed to <OPERATION> <A_TABLE> for <DOMAIN>. You must  be a questionnaire maintainer.';\n\tEND IF;\n"
         },
         "readOther": {
             
@@ -752,17 +752,17 @@
             "\tIF NOT `whedcapp`.`check_limited_select_rights`(calling_id_uid_par,context_id_proj_par) THEN\n\t\tSIGNAL SQLSTATE '4<ERR>'\n\t\t\tSET MESSAGE_TEXT = 'You are not allowed to <OPERATION> <A_TABLE> for <DOMAIN>. You must be either a superuser, a whedcapp administrator, a project owner or a researcher.';\n\tEND IF;\n",
 
             "$PROJECT$":
-            "\tIF NOT `whedcapp`.`check_project_read_access_rights_other`(calling_id_uid_par,context_id_proj,other_uid_par,time_par) THEN\n\t\tSIGNAL SQLSTATE '4<ERR>'\n\t\t\tSET MESSAGE_TEXT = 'You are not allowed to <OPERATION> <A_TABLE> for <DOMAIN>. You must be either a superuser, a whedcapp administrator or a project owner.';\n\tEND IF;\n",
+            "\tIF NOT `whedcapp`.`check_project_read_access_rights_other`(calling_id_uid_par,context_id_proj_par,other_uid_par,context_time_par) THEN\n\t\tSIGNAL SQLSTATE '4<ERR>'\n\t\t\tSET MESSAGE_TEXT = 'You are not allowed to <OPERATION> <A_TABLE> for <DOMAIN>. You must be either a superuser, a whedcapp administrator or a project owner.';\n\tEND IF;\n",
 
             "$SELECT_ONLY$":
             "\t\/* No context check is required *\/\n",
 
 
             "$ANSWER$":
-            "\tIF NOT `whedcapp`.`check_answer_read_access_rights_other`(calling_id_uid_par,context_id_proj,context_id_proj_round_par,other_uid_par,time_par) THEN\n\t\tSIGNAL SQLSTATE '4<ERR>'\n\t\t\tSET MESSAGE_TEXT = 'You are not allowed to <OPERATION> <A_TABLE> for <DOMAIN>. You must either be a supporter or a participant.';\n\tEND IF;\n",
+            "\tIF NOT `whedcapp`.`check_answer_read_access_rights_other`(calling_id_uid_par,context_id_proj_par,context_id_proj_round_par,other_uid_par,context_time_par) THEN\n\t\tSIGNAL SQLSTATE '4<ERR>'\n\t\t\tSET MESSAGE_TEXT = 'You are not allowed to <OPERATION> <A_TABLE> for <DOMAIN>. You must either be a supporter or a participant.';\n\tEND IF;\n",
 
             "$QUESTIONNAIRE$":
-            "\tIF NOT `whedcapp`.`check_questionnaire_read_access_rights_other`(calling_id_uid_par,context_id_questionnaire,other_uid_par,time_par) THEN\n\t\tSIGNAL SQLSTATE '4<ERR>'\n\t\t\tSET MESSAGE_TEXT = 'You are not allowed to <OPERATION> <A_TABLE> for <DOMAIN>. You must  be a questionnaire maintainer.';\n\tEND IF;\n"
+            "\tIF NOT `whedcapp`.`check_questionnaire_read_access_rights_other`(calling_id_uid_par,context_id_questionnaire,other_uid_par,context_time_par) THEN\n\t\tSIGNAL SQLSTATE '4<ERR>'\n\t\t\tSET MESSAGE_TEXT = 'You are not allowed to <OPERATION> <A_TABLE> for <DOMAIN>. You must  be a questionnaire maintainer.';\n\tEND IF;\n"
         },
         "writeSelf": {
             
@@ -773,17 +773,17 @@
             "\tIF NOT `whedcapp`.`check_administrator_rights`(calling_id_uid_par) THEN\n\t\tSIGNAL SQLSTATE '4<ERR>'\n\t\t\tSET MESSAGE_TEXT = 'You are not allowed to <OPERATION> <A_TABLE> for <DOMAIN>. You must be either a superuser, a whedcapp administrator, a project owner or a researcher.';\n\tEND IF;\n",
 
             "$PROJECT$":
-            "\tIF NOT `whedcapp`.`check_project_write_access_rights_self`(calling_id_uid_par,context_id_proj,time_par) THEN\n\t\tSIGNAL SQLSTATE '4<ERR>'\n\t\t\tSET MESSAGE_TEXT = 'You are not allowed to <OPERATION> <A_TABLE> for <DOMAIN>. You must be either a superuser, a whedcapp administrator or a project owner.';\n\tEND IF;\n",
+            "\tIF NOT `whedcapp`.`check_project_write_access_rights_self`(calling_id_uid_par,context_id_proj_par,context_time_par) THEN\n\t\tSIGNAL SQLSTATE '4<ERR>'\n\t\t\tSET MESSAGE_TEXT = 'You are not allowed to <OPERATION> <A_TABLE> for <DOMAIN>. You must be either an administrator or a project owner.';\n\tEND IF;\n",
 
             "$SELECT_ONLY$":
             "\tSIGNAL SQLSTATE '4<ERR>'\n\t\t\tSET MESSAGE_TEXT = 'You are not allowed to <OPERATION> <A_TABLE> for <DOMAIN>. ';\n\n",
 
 
             "$ANSWER$":
-            "\tIF NOT `whedcapp`.`check_answer_write_access_rights_self`(calling_id_uid_par,context_id_proj,context_id_proj_round_par,time_par) THEN\n\t\tSIGNAL SQLSTATE '4<ERR>'\n\t\t\tSET MESSAGE_TEXT = 'You are not allowed to <OPERATION> <A_TABLE> for <DOMAIN>. You must either be a supporter or a participant.';\n\tEND IF;\n",
+            "\tIF NOT `whedcapp`.`check_answer_write_access_rights_self`(calling_id_uid_par,context_id_proj_par,context_id_proj_round_par,context_time_par) THEN\n\t\tSIGNAL SQLSTATE '4<ERR>'\n\t\t\tSET MESSAGE_TEXT = 'You are not allowed to <OPERATION> <A_TABLE> for <DOMAIN>. You must either be a supporter or a participant.';\n\tEND IF;\n",
 
             "$QUESTIONNAIRE$":
-            "\tIF NOT `whedcapp`.`check_questionnaire_write_access_rights_self`(calling_id_uid_par,context_id_questionnaire,time_par) THEN\n\t\tSIGNAL SQLSTATE '4<ERR>'\n\t\t\tSET MESSAGE_TEXT = 'You are not allowed to <OPERATION> <A_TABLE> for <DOMAIN>. You must  be a questionnaire maintainer.';\n\tEND IF;\n"
+            "\tIF NOT `whedcapp`.`check_questionnaire_write_access_rights_self`(calling_id_uid_par,context_id_questionnaire,context_time_par) THEN\n\t\tSIGNAL SQLSTATE '4<ERR>'\n\t\t\tSET MESSAGE_TEXT = 'You are not allowed to <OPERATION> <A_TABLE> for <DOMAIN>. You must  be a questionnaire maintainer.';\n\tEND IF;\n"
         },
         "writeOther": {
             
@@ -794,14 +794,14 @@
             "\tIF NOT `whedcapp`.`check_administrator_rights`(calling_id_uid_par) THEN\n\t\tSIGNAL SQLSTATE '4<ERR>'\n\t\t\tSET MESSAGE_TEXT = 'You are not allowed to <OPERATION> <A_TABLE> for <DOMAIN>. You must be either a superuser, a whedcapp administrator, a project owner or a researcher.';\n\tEND IF;\n",
 
             "$PROJECT$":
-            "\tIF NOT `whedcapp`.`check_project_write_access_rights_other`(calling_id_uid_par,context_id_proj,other_uid_par,time_par) THEN\n\t\tSIGNAL SQLSTATE '4<ERR>'\n\t\t\tSET MESSAGE_TEXT = 'You are not allowed to <OPERATION> <A_TABLE> for <DOMAIN>. You must be either a superuser, a whedcapp administrator or a project owner.';\n\tEND IF;\n",
+            "\tIF NOT `whedcapp`.`check_project_write_access_rights_other`(calling_id_uid_par,context_id_proj_par,other_uid_par,context_time_par) THEN\n\t\tSIGNAL SQLSTATE '4<ERR>'\n\t\t\tSET MESSAGE_TEXT = 'You are not allowed to <OPERATION> <A_TABLE> for <DOMAIN>. You must be either a superuser, a whedcapp administrator or a project owner.';\n\tEND IF;\n",
 
             "$SELECT_ONLY$":
             "\tSIGNAL SQLSTATE '4<ERR>'\n\t\t\tSET MESSAGE_TEXT = 'You are not allowed to <OPERATION> <A_TABLE> for <DOMAIN>. ';\n\n",
 
 
             "$ANSWER$":
-            "\tIF NOT `whedcapp`.`check_answer_write_access_rights_other`(calling_id_uid_par,context_id_proj,context_id_proj_round,other_uid_par,time_par) THEN\n\t\tSIGNAL SQLSTATE '4<ERR>'\n\t\t\tSET MESSAGE_TEXT = 'You are not allowed to <OPERATION> <A_TABLE> for <DOMAIN>. You must either be a supporter or a participant.';\n\tEND IF;\n",
+            "\tIF NOT `whedcapp`.`check_answer_write_access_rights_other`(calling_id_uid_par,context_id_proj_par,context_id_proj_round,other_uid_par,context_time_par) THEN\n\t\tSIGNAL SQLSTATE '4<ERR>'\n\t\t\tSET MESSAGE_TEXT = 'You are not allowed to <OPERATION> <A_TABLE> for <DOMAIN>. You must either be a supporter or a participant.';\n\tEND IF;\n",
 
             "$QUESTIONNAIRE$":
             "\tIF NOT `whedcapp`.`check_questionnaire_write_access_rights_other`(calling_id_uid_par,context_id_questionnaire,other_uid_par) THEN\n\t\tSIGNAL SQLSTATE '4<ERR>'\n\t\t\tSET MESSAGE_TEXT = 'You are not allowed to <OPERATION> <A_TABLE> for <DOMAIN>. You must  be a questionnaire maintainer.';\n\tEND IF;\n"
@@ -856,7 +856,7 @@
             "tablePattern": "^PROJECT$",
             "domainPattern": "write.*",
             "operationPattern": "insert",
-            "instruction": "\tSET id_proj_round_var = `whedcapp`.`project_round_insert_<DOMAIN>`(calling_uid_key_par,start_date_par,end_date_par,proj_key_par);\n"
+            "instruction": "\tSET id_proj_round_var = `whedcapp`.`project_round_insert_<REAL_DOMAIN>`(calling_id_uid_par,context_time_par,result_id_var,start_date_par,end_date_par,proj_key_par,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE);\n"
         },
         {
             "step": 100,
