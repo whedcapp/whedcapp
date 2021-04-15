@@ -206,7 +206,8 @@ CREATE TABLE `whedcapp`.`project` (
     `proj_marked_for_deletion` BOOLEAN DEFAULT FALSE,
     PRIMARY KEY (`id_proj`),
     UNIQUE INDEX `proj_key_idx` (`proj_key`),
-    CONSTRAINT `project_start_date_end_date_constraint` CHECK (`start_date` < `end_date`)
+    CONSTRAINT `project_start_date_end_date_constraint` CHECK (`start_date` < `end_date`),
+    CONSTRAINT `project_key_not_empty_constraint` CHECK (`proj_key` <> '')
 );    
 
       
@@ -1356,6 +1357,10 @@ CREATE TRIGGER `whedcapp`.`project_insert_check`
     ON `whedcapp`.`project` FOR EACH ROW
 BEGIN
    CALL `whedcapp`.`project_insert_or_update_check`(NEW.id_proj,NEW.start_date,NEW.end_date);
+   IF NEW.proj_marked_for_deletion THEN
+       SIGNAL SQLSTATE '45047'
+           SET MESSAGE_TEXT = 'Cannot insert project marked for deletion';
+   END IF;
 END;
 $$
 CREATE TRIGGER `whedcapp`.`project_update_check`
