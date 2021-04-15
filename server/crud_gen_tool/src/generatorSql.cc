@@ -231,25 +231,25 @@ namespace PartSqlCrudGen {
     case DatabaseOperation::Type::dbInsert:
       {
         str << std::setw(options.outputCodeTabWidth) << " " << "INSERT INTO " << tableMetaData->getIdentity().getBackquoted() << " ( ";
-        std::unique_ptr<IGenerateColumnList> gclsColumnParametersForInsert =
+        std::unique_ptr<IGenerateColumnList> gclsColumnParametersForInsertInFieldList =
           GenerateColumnListSql::create(
-                                        IGenerateColumnList::GenerateKind::columnParametersForInsert,
+                                        IGenerateColumnList::GenerateKind::columnParametersForInsertInFieldList,
                                         str,
                                         tableMetaData,
                                         cp
                                         );
-        gclsColumnParametersForInsert->generate();
+        gclsColumnParametersForInsertInFieldList->generate();
         str << ")" << std::endl;
         str << std::setw(options.outputCodeTabWidth*2) << " " << "VALUES (";
-        std::unique_ptr<IGenerateColumnList> gclsColumnParametersForInsert2 =
+        std::unique_ptr<IGenerateColumnList> gclsColumnParametersForInsertInValues =
           GenerateColumnListSql::create(
-                                        IGenerateColumnList::GenerateKind::columnParametersForInsert,
+                                        IGenerateColumnList::GenerateKind::columnParametersForInsertInValues,
                                         str,
                                         tableMetaData,
                                         cp,
                                         "_par"
                                         );
-        gclsColumnParametersForInsert2->generate();
+        gclsColumnParametersForInsertInValues->generate();
         str << ");";
       }
       break;
@@ -474,8 +474,10 @@ namespace PartSqlCrudGen {
     switch(generateKind) {
     case onlyColumnParameters:
       return std::make_unique<GclsOnlyColumnParameters>(str,shPtr2Table, optContextParameter, suffix,notFirst);
-    case columnParametersForInsert:
-      return std::make_unique<GclsColumnParametersForInsert>(str,shPtr2Table, optContextParameter, suffix,notFirst);
+    case columnParametersForInsertInValues:
+      return std::make_unique<GclsColumnParametersForInsertInValues>(str,shPtr2Table, optContextParameter, suffix,notFirst);
+    case columnParametersForInsertInFieldList:
+      return std::make_unique<GclsColumnParametersForInsertInFieldList>(str,shPtr2Table, optContextParameter, suffix,notFirst);
     case columnParametersWithTypeInformationInParameterList:
       return std::make_unique<GclsColumnParametersWithTypeInformationInParameterList>(str,shPtr2Table, optContextParameter, suffix,notFirst);
     case columnParametersForUpdate:
@@ -497,16 +499,16 @@ namespace PartSqlCrudGen {
     return !shPtr2Column->isPrimaryKey() && !isContextParameter(shPtr2Column);
   }
 
-  const bool GclsColumnParametersForInsert::shouldAttributeBeListed(const ShPtr2Column& shPtr2Column) const {
+  const bool GclsColumnParametersForInsertInValues::shouldAttributeBeListed(const ShPtr2Column& shPtr2Column) const {
     return !shPtr2Column->isPrimaryKey() && !isContextParameter(shPtr2Column);
   }
 
-  const bool GclsColumnParametersForInsert::shouldReplacementAttributeBeListed(const ShPtr2Column& shPtr2Column) const {
+  const bool GclsColumnParametersForInsertInValues::shouldReplacementAttributeBeListed(const ShPtr2Column& shPtr2Column) const {
     return !shPtr2Column->isPrimaryKey() && isContextParameter(shPtr2Column);
   }
 
   // set attribute = context parameter (replacement of parameter)
-  std::ostream&  GclsColumnParametersForInsert::generateReplacementColumn(const ShPtr2Column& shPtr2Column) {
+  std::ostream&  GclsColumnParametersForInsertInValues::generateReplacementColumn(const ShPtr2Column& shPtr2Column) {
     // if needed, this can be optimized away by passing the iterator
     // from a modified version of shouldReplacementAttributeBeListed
     // however, this performance increase is small, the advantage
@@ -518,6 +520,14 @@ namespace PartSqlCrudGen {
     getStr() << replacementId.getBackquoted(getSuffix());
     return getStr();
       
+  }
+
+  const bool GclsColumnParametersForInsertInFieldList::shouldAttributeBeListed(const ShPtr2Column& shPtr2Column) const {
+    return !shPtr2Column->isPrimaryKey();
+  }
+
+  const bool GclsColumnParametersForInsertInFieldList::shouldReplacementAttributeBeListed(const ShPtr2Column& shPtr2Column) const {
+    return false;
   }
 
   const bool GclsColumnParametersWithTypeInformationInParameterList::shouldAttributeBeListed(const ShPtr2Column& shPtr2Column) const  {

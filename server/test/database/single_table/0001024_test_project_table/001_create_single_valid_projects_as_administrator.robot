@@ -12,9 +12,10 @@ ${TIME}        '2021-01-01 01:01:01'
 Create single consistent UID should succeed
     [Arguments]           ${start_date}  ${end_date}  ${proj_key}  ${proj_marked_for_deletion}
     ${uidAdmin}  Query    SELECT `id_uid` FROM `whedcapp`.`uid` WHERE `uid_text` = ${ADMIN}    True
-    @{result}    Query    SELECT `whedcapp`.`project_insert_writeSelf`(${uidAdmin[0][0]},${TIME},${start_date},${end_date},${proj_key},${proj_marked_for_deletion});
+    @{result}    Query    SELECT `whedcapp`.`project_insert_writeSelf`(${uidAdmin[0][0]},${TIME},${start_date},${end_date},${proj_key},${proj_marked_for_deletion});    True
     Log Many    @{result}
-    Row Count Is Equal To X    SELECT * FROM `whedcapp`.`uid` WHERE `proj_key` = ${proj_key}    1    False
+    Row Count Is Equal To X    SELECT * FROM `whedcapp`.`project` WHERE `proj_key` = ${proj_key}         1    True
+    Row Count Is Equal To X    SELECT * FROM `whedcapp`.`project_round` WHERE `id_proj` = ${result[0][0]}   1    False
 
 
 

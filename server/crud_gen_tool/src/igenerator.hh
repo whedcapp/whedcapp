@@ -33,7 +33,8 @@ namespace PartSqlCrudGen {
   public:
     IGenerateColumnList();
     enum GenerateKind { onlyColumnParameters,
-                        columnParametersForInsert,
+                        columnParametersForInsertInValues,
+                        columnParametersForInsertInFieldList,
                         columnParametersWithTypeInformationInParameterList,
                         columnParametersForUpdate,
                         onlyPrimaryKeyInParameterList,
