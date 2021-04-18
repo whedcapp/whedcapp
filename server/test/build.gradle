@@ -56,13 +56,17 @@ task tst_PrepareTest() {
         logger.info("TR = "+tokenReplacements)
         copy {
             from "${projectDir}"
-            include "**/*.robot"
             include "**/*.robot.in"
-            include "**/*.txt"
             include "**/*.txt.in"
             into "${rootProject.buildDir}/${project.name}"
             filter(ReplaceTokens,tokens:tokenReplacements)
             rename '(.*)\\.in$', '$1'
+        }
+        copy {
+            from "${projectDir}"
+            include "**/*.robot"
+            include "**/*.txt"
+            into "${rootProject.buildDir}/${project.name}"
         }
         mkdir "${rootProject.buildDir}/reports"
     }
