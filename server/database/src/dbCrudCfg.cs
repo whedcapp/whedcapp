@@ -179,7 +179,7 @@
                         }   
                     },
                     {
-                        "other_uid_key": {
+                        "other_uid": {
                             "table": "whedcapp.uid",
                             "column": "id_uid",
                             "accessControl": false,
@@ -214,7 +214,7 @@
                         }
                     },
                     {
-                        "other_uid_key": {
+                        "other_uid": {
                             "table": "whedcapp.uid",
                             "column": "id_uid",
                             "accessControl": false,
@@ -241,7 +241,7 @@
                         }   
                     },
                     {
-                        "other_uid_key": {
+                        "other_uid": {
                             "table": "whedcapp.uid",
                             "column": "id_uid",
                             "accessControl": false,
@@ -276,7 +276,7 @@
                         }
                     },
                     {
-                        "other_uid_key": {
+                        "other_uid": {
                             "table": "whedcapp.uid",
                             "column": "id_uid",
                             "accessControl": false,
@@ -319,7 +319,7 @@
                         }
                     },
                     {
-                        "other_uid_key": {
+                        "other_uid": {
                             "table": "whedcapp.uid",
                             "column": "id_uid",
                             "accessControl": false,
@@ -533,7 +533,7 @@
                         }   
                     },
                     {
-                        "other_uid_key": {
+                        "other_uid": {
                             "table": "whedcapp.uid",
                             "column": "id_uid",
                             "accessControl": false,
@@ -568,7 +568,7 @@
                         }
                     },
                     {
-                        "other_uid_key": {
+                        "other_uid": {
                             "table": "whedcapp.uid",
                             "column": "id_uid",
                             "accessControl": false,
@@ -595,7 +595,7 @@
                         }   
                     },
                     {
-                        "other_uid_key": {
+                        "other_uid": {
                             "table": "whedcapp.uid",
                             "column": "id_uid",
                             "accessControl": false,
@@ -630,7 +630,7 @@
                         }
                     },
                     {
-                        "other_uid_key": {
+                        "other_uid": {
                             "table": "whedcapp.uid",
                             "column": "id_uid",
                             "accessControl": false,
@@ -673,7 +673,7 @@
                         }
                     },
                     {
-                        "other_uid_key": {
+                        "other_uid": {
                             "table": "whedcapp.uid",
                             "column": "id_uid",
                             "accessControl": false,
@@ -794,7 +794,7 @@
             "\tIF NOT `whedcapp`.`check_administrator_rights`(calling_id_uid_par) THEN\n\t\tSIGNAL SQLSTATE '4<ERR>'\n\t\t\tSET MESSAGE_TEXT = 'You are not allowed to <OPERATION> <A_TABLE> for <DOMAIN>. You must be either a superuser, a whedcapp administrator, a project owner or a researcher.';\n\tEND IF;\n",
 
             "$PROJECT$":
-            "\tIF NOT `whedcapp`.`check_project_write_access_rights_other`(calling_id_uid_par,context_id_proj_par,other_uid_par,context_time_par) THEN\n\t\tSIGNAL SQLSTATE '4<ERR>'\n\t\t\tSET MESSAGE_TEXT = 'You are not allowed to <OPERATION> <A_TABLE> for <DOMAIN>. You must be either a superuser, a whedcapp administrator or a project owner.';\n\tEND IF;\n",
+            "\tIF NOT `whedcapp`.`check_project_write_access_rights_other`(calling_id_uid_par,context_id_proj_par,other_uid_par,context_time_par) THEN\n\t\tSIGNAL SQLSTATE '4<ERR>'\n\t\t\tSET MESSAGE_TEXT = 'You are not allowed to <OPERATION> <A_TABLE> for <DOMAIN>. You must be either an administrator or a project owner.';\n\tEND IF;\n",
 
             "$SELECT_ONLY$":
             "\tSIGNAL SQLSTATE '4<ERR>'\n\t\t\tSET MESSAGE_TEXT = 'You are not allowed to <OPERATION> <A_TABLE> for <DOMAIN>. ';\n\n",
@@ -854,9 +854,16 @@
         {
             "step": 3,
             "tablePattern": "^PROJECT$",
-            "domainPattern": "write.*",
+            "domainPattern": "writeSelf",
             "operationPattern": "insert",
             "instruction": "\tSET id_proj_round_var = `whedcapp`.`project_round_insert_<REAL_DOMAIN>`(calling_id_uid_par,context_time_par,result_id_var,start_date_par,end_date_par,proj_key_par,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE);\n"
+        },
+        {
+            "step": 3,
+            "tablePattern": "^PROJECT$",
+            "domainPattern": "writeOther",
+            "operationPattern": "insert",
+            "instruction": "\tSET id_proj_round_var = `whedcapp`.`project_round_insert_<REAL_DOMAIN>`(calling_id_uid_par,context_time_par,result_id_var,other_uid_par,start_date_par,end_date_par,proj_key_par,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE);\n"
         },
         {
             "step": 100,

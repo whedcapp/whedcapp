@@ -21,9 +21,15 @@ DELIMITER $$
 CREATE FUNCTION `whedcapp`.`check_administrator_rights`(id_uid_par INT) RETURNS BOOLEAN DETERMINISTIC
 BEGIN
     DECLARE no_of_admin_rights INT;
+    /*#
+    doLog(CONCAT('Check if ',id_uid_par,' has administrator rights'));
+    #*/
     SELECT COUNT(`id_uid`) INTO no_of_admin_rights
         FROM `whedcapp`.`uid`
         WHERE ( `uid_is_superuser` OR `uid_is_whedcapp_administrator`) AND `id_uid` = id_uid_par;
+    /*# 
+    doLog(CONCAT('If ',no_of_admin_rights,' > 0, then ',id_uid_par,'has administrator rights'));
+    #*/
     RETURN no_of_admin_rights>0;
 END;
 $$
@@ -50,7 +56,7 @@ END;
 $$
 CREATE FUNCTION `whedcapp`.`check_project_write_access_rights_other`(calling_id_uid_par INT, context_id_proj_par INT,other_uid_par INT, time_par DATETIME) RETURNS BOOLEAN DETERMINISTIC
 BEGIN
-    IF NOT `whedcapp`.`check_project_write_access_rights_self`(other_uid_par,context_id_proj_par) THEN
+    IF NOT `whedcapp`.`check_project_write_access_rights_self`(other_uid_par,context_id_proj_par,time_par) THEN
         RETURN FALSE;
     END IF;
     IF `whedcapp`.`check_administrator_rights`(calling_id_uid_par) THEN
