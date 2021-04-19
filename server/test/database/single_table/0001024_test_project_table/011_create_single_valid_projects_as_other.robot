@@ -1,5 +1,5 @@
 *** Settings ***
-Documentation     This test suite tests creation of single valid projects as Whedcapp administrator
+Documentation     This test suite tests creation of single valid projects as other
 Resource          ../../../Resources/Lib/GlobalLibrary.txt
 Suite Setup       Initialize Test Suite
 Suite Teardown    Disconnect From Database
@@ -16,14 +16,12 @@ ${PROJ_KEY2}    'bertil'
 ${PROJ_KEY3}    'cesar'
 ${PROJ_KEY4}    'david'
 ${OTHERADMIN}   'testadm@somewhere.org'
-${uidAdmin}     ()
-${uidOtherAdmin}   ()
 
 *** Keywords ***
 Create single consistent project should succeed
     [Arguments]           ${start_date}  ${end_date}  ${proj_key}  ${proj_marked_for_deletion}
     ${uidAdmin}  Query    SELECT `id_uid` FROM `whedcapp`.`uid` WHERE `uid_text` = ${ADMIN}    True
-    ${uidOtherAdmin}  Query    SELECT `id_uid` FROM `whedcapp`.`uid` WHERE `uid_text` = ${OTHERADMIN}    True
+
     @{result}    Query    SELECT `whedcapp`.`project_insert_writeOther`(${uidAdmin[0][0]},'${TIME}',${uidOtherAdmin[0][0]},'${start_date}','${end_date}',${proj_key},${proj_marked_for_deletion});    True
     Log Many    @{result}
     @{result2}   Query    SELECT `proj_round_key`,`start_date`,time(`start_date`),`end_date`,time(`end_date`),`id_proj` FROM `whedcapp`.`project_round`    True

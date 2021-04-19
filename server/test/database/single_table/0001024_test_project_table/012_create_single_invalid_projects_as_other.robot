@@ -1,7 +1,7 @@
 *** Settings ***
-Documentation     This test suite tests creation of single valid projects as Whedcapp administrator
+Documentation     This test suite tests creation of single invalid projects as other
 Resource          ../../../Resources/Lib/GlobalLibrary.txt
-Suite Setup       Connect To Database Using Custom Params  pymysql    database=${dbName},user=${dbUserName},password=${dbPassword},host=${dbHost},port=${dbPort}
+Suite Setup       Initialize Test Suite
 Suite Teardown    Disconnect From Database
 Test Template     Create single invalid project should fail
 
@@ -17,15 +17,22 @@ ${PROJ_KEY3}    'cesar'
 ${PROJ_KEY4}    'david'
 ${PROJ_KEY5}    ''
 ${PROJ_KEY6}    'fredrik'
+${OTHERADMIN}   'testadm@somewhere.org'
 
 *** Keywords ***
 Create single invalid project should fail
     [Arguments]           ${start_date}  ${end_date}  ${proj_key}  ${proj_marked_for_deletion}
     ${uidAdmin}  Query    SELECT `id_uid` FROM `whedcapp`.`uid` WHERE `uid_text` = ${ADMIN}    True
+    ${uidOtherAdmin}  Query    SELECT `id_uid` FROM `whedcapp`.`uid` WHERE `uid_text` = ${OTHERADMIN}    True
     ${result} =     Run Keyword And Expect Error     STARTS:OperationalError:
-...                 Query    SELECT `whedcapp`.`project_insert_writeSelf`(${uidAdmin[0][0]},'${TIME}','${start_date}','${end_date}',${proj_key},${proj_marked_for_deletion});    True
+...                 Query    SELECT `whedcapp`.`project_insert_writeOther`(${uidAdmin[0][0]},'${TIME}',${uidOtherAdmin[0][0]},'${start_date}','${end_date}',${proj_key},${proj_marked_for_deletion});    True
     Row Count Is Equal To X    SELECT * FROM `whedcapp`.`project` WHERE `proj_key` = ${proj_key}                                            0    True
 
+Initialize Test Suite
+    Connect To Database Using Custom Params  pymysql    database=${dbName},user=${dbUserName},password=${dbPassword},host=${dbHost},port=${dbPort}
+    ${uidAdmin}  Query    SELECT `id_uid` FROM `whedcapp`.`uid` WHERE `uid_text` = ${ADMIN}    True
+    ${uidOtherAdmin}    Query    SELECT `whedcapp`.`uid_insert_writeSelf`(${uidAdmin[0][0]},'${TIME}',${OTHERADMIN},FALSE,FALSE,TRUE,FALSE)    True
+    Row Count Is Equal To X    SELECT * FROM `whedcapp`.`uid` WHERE `id_uid` = ${uidOtherAdmin[0][0]} AND `uid_is_whedcapp_administrator`    1     True
 
 
 
