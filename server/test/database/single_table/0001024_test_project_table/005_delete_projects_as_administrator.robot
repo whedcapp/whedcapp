@@ -3,7 +3,7 @@ Documentation     This test suite tests deletion of projects as administrator
 Resource          ../../../Resources/Lib/GlobalLibrary.txt
 Suite Setup       Connect To Database Using Custom Params  pymysql    database=${dbName},user=${dbUserName},password=${dbPassword},host=${dbHost},port=${dbPort}
 Suite Teardown    Disconnect From Database
-Test Template     Create single invalid project should fail
+Test Template     Delete project marked for deletion as administrator should succeed
 
 *** Variables ***
 ${TIME} =       2021-01-01
@@ -17,7 +17,7 @@ ${PROJ_KEY3}    'cesar'
 ${PROJ_KEY4}    'david'
 
 *** Keywords ***
-Create single invalid project should fail
+Delete project marked for deletion as administrator should succeed
     [Arguments]           ${start_date}  ${end_date}  ${proj_key}  ${proj_marked_for_deletion}
     ${uidAdmin}      Query    SELECT `id_uid` FROM `whedcapp`.`uid` WHERE `uid_text` = ${ADMIN}    True
     ${result1} =     Query    SELECT `whedcapp`.`project_insert_writeSelf`(${uidAdmin[0][0]},'${TIME}','${start_date}','${end_date}',${proj_key},${proj_marked_for_deletion});    True
