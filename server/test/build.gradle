@@ -20,7 +20,7 @@
 import org.apache.tools.ant.filters.*;
 import java.io.File;
 
-def testSrcFiles = [ "**/*.robot.in", "**/*.robot", "**/*.txt", "**/*.txt.in" ].inject([]) { acc, val -> acc+project.fileTree(dir: "${projectDir}", include: val ) }
+def testSrcFiles = [ "**/*.robot.in", "**/*.robot", "**/*.txt", "**/*.txt.in", "**/*.py", "**/*.csv" ].inject([]) { acc, val -> acc+project.fileTree(dir: "${projectDir}", include: val ) }
 
 
 
@@ -66,6 +66,8 @@ task tst_PrepareTest() {
             from "${projectDir}"
             include "**/*.robot"
             include "**/*.txt"
+            include "**/*.py"
+            include "**/*.csv"
             into "${rootProject.buildDir}/${project.name}"
         }
         mkdir "${rootProject.buildDir}/reports"
@@ -84,7 +86,7 @@ task tst_PerformTest(type: Exec) {
     outputs.upToDateWhen {
         return rootProject.upToDateWhenBasedOnFiles(outputs.getFiles(),inputs.getFiles());
     }
-    commandLine "robot",'--outputdir',"${rootProject.buildDir}/reports","."
+    commandLine "robot",'--outputdir',"${rootProject.buildDir}/reports",'--pythonpath',"${rootProject.buildDir}/test/Resources/Lib","."
     standardOutput = new ByteArrayOutputStream()
     ext.output = {
         return standardOutput.toString()

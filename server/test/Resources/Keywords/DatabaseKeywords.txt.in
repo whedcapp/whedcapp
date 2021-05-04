@@ -1,1 +1,36 @@
+*** Keywords ***
+Whedcapp Get Uid
+    [Arguments]        ${time}  ${user_identity}
+    Run Keyword And Return        Query        SELECT `id_uid` FROM `whedcapp`.`uid` WHERE `uid_text` = ${user_identity}        True
+    
+Whedcapp Create Administrative User
+    [Arguments]        ${time}  ${admin_user_identity}  ${user_identity}
+    ${uid_admin} =     Run Keyword        Whedcapp Get Uid        ${time}        ${admin_user_identity}       
+    ${id_uid} =        Run Keyword And Ignore Error
+...                    Query        `whedcapp`.`uid_insert_writeSelf(${uid_admin[0][0]},'${time}',${user_identity},FALSE,FALSE,TRUE,FALSE)        True
+    Row Count Is Equal To X         SELECT * FROM `whedcapp`.`uid` WHERE `uid_text` = ${user_identity[0][0]}        True
+    Run Keyword And Return
+....                   Query        SELECT `id_uid` FROM `whedcapp`.`uid` WHERE `uid_text` = ${user_identity[0][0]}        True
 
+Whedcapp Create Project
+    [Arguments]        ${time}  ${admin_user_identity}  ${start_date}  ${end_date}  ${project_key}
+    ${uid_admin} =     Run Keyword        Whedcapp Get Uid        ${time}        ${admin_user_identity}       
+    Run Keyword And Ignore Error
+...                    Query        SELECT `whedcapp`.`project_insert_writeSelf`(${uid_admin[0][0]},'${time}','${start_date}','${end_date}',${project_key},FALSE)    True
+    Run Keyword And Return
+...                    Query        SELECT `id_proj` FROM `whedcapp`.`project` WHERE `proj_key` = ${project_key}        True
+    
+
+Whedcapp Create Project And Owner
+    [Arguments]        ${time}  ${admin_user_identity}  ${user_identity}  ${project_key}  ${start_date}  ${end_date}
+    ${uid_admin} =     Run Keyword        Whedcapp Get Uid        ${time}        ${admin_user_identity}       
+    ${id_uid} =        Run Keyword And Ignore Error
+...                    Query        `whedcapp`.`uid_insert_writeSelf(${uid_admin[0][0]},'${time}',${user_identity},FALSE,FALSE,FALSE,FALSE)        True
+    Row Count Is Equal To X         SELECT * FROM `whedcapp`.`uid` WHERE `uid_text` = ${user_identity[0][0]}        True
+    ${id_uid}          Run Keyword
+...                   Query        SELECT `id_uid` FROM `whedcapp`.`uid` WHERE `uid_text` = ${user_identity[0][0]}        True
+    ${id_proj} =       Run Keyword    Whedcapp Create Project    ${time}    ${admin_user_identity}    ${project_key}    ${start_date}    ${end_date}
+    ${id_acl_level}    Query    SELECT `id_acl_level` FROM `whedcapp`.`acl_level` WHERE `acl_level_key` = "project_owner"    True    
+    ${id_acl} =        Run Keyword
+...                   Query        SELECT `whedcapp`.`acl_insert_writeOther`(${uid_admin[0][0]},'${time}',${id_uid[0][0]},${id_acl_level[0][0]},${id_proj[0][0]})        True
+    Return From Keyword        ${id_proj}
