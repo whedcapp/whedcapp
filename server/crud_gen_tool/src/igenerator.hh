@@ -36,6 +36,7 @@ namespace PartSqlCrudGen {
                         columnParametersForInsertInValues,
                         columnParametersForInsertInFieldList,
                         columnParametersWithTypeInformationInParameterList,
+                        columnParametersForUpdateInParameterList,
                         columnParametersForUpdate,
                         onlyPrimaryKeyInParameterList,
                         columnParametersForSelectInParameterList,

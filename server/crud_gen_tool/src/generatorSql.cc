@@ -134,7 +134,7 @@ namespace PartSqlCrudGen {
       if (votit == vecOfShPtr2Table.end()) {
         throw std::logic_error("There must be an table definition missing");
       }
-      if (op != DatabaseOperation::Type::dbDelete && op != DatabaseOperation::Type::dbSelect) {
+      if (op == DatabaseOperation::Type::dbInsert) {
         std::cerr << "Start generating for " << tableMetaData->getIdentity() << std::endl;
         std::unique_ptr<IGenerateColumnList> gclsColumnParametersWithTypeInformationInParameterList =
           GenerateColumnListSql::create(
@@ -147,6 +147,19 @@ namespace PartSqlCrudGen {
                                         );
         gclsColumnParametersWithTypeInformationInParameterList->generate();
         std::cerr << "End generating for " << tableMetaData->getIdentity() << std::endl;
+      } else if (op == DatabaseOperation::Type::dbUpdate) {
+        std::cerr << "Start generating for " << tableMetaData->getIdentity() << std::endl;
+        std::unique_ptr<IGenerateColumnList> gclsColumnParametersForUpdateInParameterList =
+          GenerateColumnListSql::create(
+                                        IGenerateColumnList::GenerateKind::columnParametersForUpdateInParameterList,
+                                        str,
+                                        tableMetaData,
+                                        cp,
+                                        "_par",
+                                        notFirstContextParameter
+                                        );
+        gclsColumnParametersForUpdateInParameterList->generate();
+        std::cerr << "End generating for " << tableMetaData->getIdentity() << std::endl;        
 
       } else if (op == DatabaseOperation::Type::dbDelete) {
         std::unique_ptr<IGenerateColumnList> gclsOnlyPrimaryKeyInParameterList =
@@ -480,6 +493,8 @@ namespace PartSqlCrudGen {
       return std::make_unique<GclsColumnParametersForInsertInFieldList>(str,shPtr2Table, optContextParameter, suffix,notFirst);
     case columnParametersWithTypeInformationInParameterList:
       return std::make_unique<GclsColumnParametersWithTypeInformationInParameterList>(str,shPtr2Table, optContextParameter, suffix,notFirst);
+    case columnParametersForUpdateInParameterList:
+      return std::make_unique<GclsColumnParametersForUpdateInParameterList>(str,shPtr2Table, optContextParameter, suffix,notFirst);
     case columnParametersForUpdate:
       return std::make_unique<GclsColumnParametersForUpdate>(str,shPtr2Table, optContextParameter, suffix,notFirst);
     case onlyPrimaryKeyInParameterList:
@@ -540,6 +555,18 @@ namespace PartSqlCrudGen {
     getStr() << " " << shPtr2Column->getType();
     return getStr();
   }
+
+  const bool GclsColumnParametersForUpdateInParameterList::shouldAttributeBeListed(const ShPtr2Column& shPtr2Column) const  {
+    std::cerr << shPtr2Column->getIdentity() << "=> pk = " << shPtr2Column->isPrimaryKey() << ", cp = " << isContextParameter(shPtr2Column) << std::endl;
+    return !isContextParameter(shPtr2Column);
+  }
+
+  std::ostream& GclsColumnParametersForUpdateInParameterList::generateColumn(const ShPtr2Column& shPtr2Column)  {
+    GclsOnlyColumnParameters::generateColumn(shPtr2Column);
+    getStr() << " " << shPtr2Column->getType();
+    return getStr();
+  }
+
 
   // true if not primary key or not covered by a context parameter
   const bool GclsColumnParametersForUpdate::shouldAttributeBeListed(const ShPtr2Column& shPtr2Column) const {
