@@ -1,0 +1,45 @@
+# focus around project adam start date 2020-04-01 end date 2020-09-30
+newProjectStartDateMonth: 1, 2, 4
+newProjectEndDateMonth: 9, 10, 12
+operation1: insert,update,delete
+target1: adam, bertil
+operation2: insert,update,delete
+target2: adam, bertil
+startDate1Month: 1,2,3,11,-1
+endDate1Month: 2,3,10,12,-1
+startDate2Month: 1,2,3,11,-1
+endDate2Month: 2,3,10,12,-1
+v1: True, False
+
+IF [operation1] = "delete" THEN [startDate1Month] = -1 AND [endDate1Month] = -1;
+IF [operation2] = "delete" THEN [startDate2Month] = -1 AND [endDate2Month] = -1;
+[startDate1Month] <= [endDate1Month];
+[startDate2Month] <= [endDate2Month];
+
+# If not delete, then there must be start/end dates
+
+IF [operation1] IN { "insert", "update" } THEN [startDate1Month] <> -1 AND [endDate1Month] <> -1;
+IF [operation2] IN { "insert", "update" } THEN [startDate2Month] <> -1 AND [endDate2Month] <> -1;
+
+# Check operation compatiblity
+IF [operation1] IN { "update","delete"} THEN [target1] = "adam";
+IF [target1] = "adam" THEN [operation1] IN { "update","delete" };
+IF [target2] = "bertil" THEN [operation1] = "insert" AND [target1] = "bertil";
+IF [operation2] = "insert" AND [target2] = "adam" THEN [operation1] = "delete" AND [target1] = "adam";
+IF [operation1] = "delete" THEN [operation2] = "insert";
+IF [operation1] = "insert" AND [target1] = "bertil" THEN [operation2] <> "insert";
+
+
+# Determine success based on dates:
+
+# Check violation 1 w.r.t. project date
+IF ([startDate1Month] <> -1 AND [newProjectStartDateMonth] > [startDate1Month]) OR
+   ([startDate2Month] <> -1 AND [newProjectStartDateMonth] > [startDate2Month]) OR
+   ([endDate1Month] <> -1 AND [newProjectEndDateMonth] < [endDate1Month]) OR
+   ([endDate2Month] <> -1 AND [newProjectEndDateMonth] < [endDate2Month]) THEN [v1] = "True" ELSE [v1] = "False";
+
+  
+   
+
+
+

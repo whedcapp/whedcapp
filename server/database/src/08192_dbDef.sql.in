@@ -1456,7 +1456,7 @@ BEGIN
         SIGNAL SQLSTATE '45018' 
         SET MESSAGE_TEXT = 'Cannot move a project round from one project to another';
     END IF;
-   CALL `whedcapp`.`check_project_round`(NEW.start_date,NEW.end_date,NEW.id_proj,NEW.id_proj_round);
+   CALL `whedcapp`.`project_round_insert_or_update_check`(NEW.start_date,NEW.end_date,NEW.id_proj,NEW.id_proj_round);
 END;
 $$
 /* RQ_REL
