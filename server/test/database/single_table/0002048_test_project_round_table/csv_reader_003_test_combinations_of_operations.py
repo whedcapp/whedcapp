@@ -12,8 +12,8 @@ class TestCasePar(TestCaseParIface):
             return 4 <= end_month < 9
         def check_start_month_and_end_month_overlaps_adam():
             return \
-                start_month != -1 and \
-                end_month != -1 and \
+                start_month > 0 and \
+                end_month > 0 and \
                 start_month <= 4 and \
                 end_month >= 9
         return \
@@ -64,18 +64,18 @@ class TestCasePar(TestCaseParIface):
     @test_case_transformer_in_phase(3, bool, TestCaseTransScope.PER_TEST_CASE)
     def violation_of_project_operation1(self):
         return \
-            (self.startDate1Month_ != -1 and \
+            (self.startDate1Month_ > 0 and \
              self.newProjectStartDateMonth_ > self.startDate1Month_) or \
-            (self.endDate1Month_ != -1 and \
+            (self.endDate1Month_ > 0 and \
              self.newProjectEndDateMonth_ < self.endDate1Month_)
         
 
     @test_case_transformer_in_phase(3, bool, TestCaseTransScope.PER_TEST_CASE)
     def violation_of_project_operation2(self):
         return \
-            (self.startDate2Month_ != -1 and \
+            (self.startDate2Month_ > 0  and \
              self.newProjectStartDateMonth_ > self.startDate2Month_) or \
-            (self.endDate2Month_ != -1 and \
+            (self.endDate2Month_ > 0   and \
              self.newProjectEndDateMonth_ < self.endDate2Month_)
     
     @test_case_transformer_in_phase(4, bool, TestCaseTransScope.PER_TEST_CASE)

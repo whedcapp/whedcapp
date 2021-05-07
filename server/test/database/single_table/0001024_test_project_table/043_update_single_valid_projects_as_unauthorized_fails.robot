@@ -24,7 +24,7 @@ Update Some Combination
     ${uidUser}   Query    SELECT `id_uid` FROM `whedcapp`.`uid` WHERE `uid_text` = ${USER}    True
     @{result1}   Query    SELECT `whedcapp`.`project_insert_writeSelf`(${uidAdmin[0][0]},'${TIME}','${start_date}','${end_date}',${proj_key},${proj_marked_for_deletion});    True
     Log Many    @{result1}
-    Run Keyword And Expect Error    EQUALS:OperationalError: (1644, 'You are not allowed to update a/an PROJECT for own domain. You must be either an administrator or a project owner.')
+    Run Keyword And Expect Error    EQUALS:InternalError: (1644, 'You are not allowed to update a/an PROJECT for own domain. You must be either an administrator or a project owner.')
 ...                   Execute SQL String    CALL `whedcapp`.`project_update_writeSelf`(${uidUser[0][0]},'${TIME}',${result1[0][0]},'${nstart_date}','${nend_date}',${nproj_key},${nproj_marked_for_deletion})    True
     @{result2}    Query    SELECT * FROM `whedcapp`.`project`    True
     Log Many    @{result2}

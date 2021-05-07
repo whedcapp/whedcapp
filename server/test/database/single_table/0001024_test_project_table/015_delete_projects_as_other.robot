@@ -3,6 +3,7 @@ Documentation     This test suite tests deletion of projects as administrator
 Resource          ../../../Resources/Lib/GlobalLibrary.txt
 Suite Setup       Initialize Test Suite
 Suite Teardown    Disconnect From Database
+Test Setup        Run Keyword    Whedcapp Truncate Project
 Test Template     Delete project marked for deletion as other administrator should succeed
 
 *** Variables ***

@@ -3,6 +3,7 @@ Documentation     This test suite tests creation of single invalid projects as o
 Resource          ../../../Resources/Lib/GlobalLibrary.txt
 Suite Setup       Initialize Test Suite
 Suite Teardown    Disconnect From Database
+Test Setup        Run Keyword    Whedcapp Truncate Project
 Test Template     Create single invalid project should fail
 
 *** Variables ***
@@ -24,7 +25,7 @@ Create single invalid project should fail
     [Arguments]           ${start_date}  ${end_date}  ${proj_key}  ${proj_marked_for_deletion}
     ${uidAdmin}  Query    SELECT `id_uid` FROM `whedcapp`.`uid` WHERE `uid_text` = ${ADMIN}    True
     ${uidOtherAdmin}  Query    SELECT `id_uid` FROM `whedcapp`.`uid` WHERE `uid_text` = ${OTHERADMIN}    True
-    ${result} =     Run Keyword And Expect Error     STARTS:OperationalError:
+    ${result} =     Run Keyword And Expect Error     STARTS:InternalError:
 ...                 Query    SELECT `whedcapp`.`project_insert_writeOther`(${uidAdmin[0][0]},'${TIME}',${uidOtherAdmin[0][0]},'${start_date}','${end_date}',${proj_key},${proj_marked_for_deletion});    True
     Row Count Is Equal To X    SELECT * FROM `whedcapp`.`project` WHERE `proj_key` = ${proj_key}                                            0    True
 

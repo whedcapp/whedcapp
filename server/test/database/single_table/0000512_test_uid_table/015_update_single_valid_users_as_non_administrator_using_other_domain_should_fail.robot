@@ -16,7 +16,7 @@ Update other uid as administrator in an invalid way should fail
     [Arguments]             ${uid_spec}    ${is_superuser}    ${is_pdc}    ${is_adm}    ${is_qm}  
     ${uid_admin}            Query    SELECT `id_uid` FROM `whedcapp`.`uid` WHERE `uid_text` = ${UID_SPEC2}    True
     ${uid_user}             Query    SELECT `id_uid` FROM `whedcapp`.`uid` WHERE `uid_text` = ${UID_SPEC3}    True
-    ${result2}              Run Keyword And Expect Error    EQUALS:OperationalError: (1644, 'You are not allowed to update a/an UID for others domain. You must be either a superuser or a whedcapp administrator.')
+    ${result2}              Run Keyword And Expect Error    EQUALS:InternalError: (1644, 'You are not allowed to update a/an UID for others domain. You must be either a superuser or a whedcapp administrator.')
 ...                         Execute SQL String    CALL `whedcapp`.`uid_update_writeOther`(${uid_admin[0][0]},${TIME},${uid_user[0][0]},${UID_SPEC3},${is_superuser},${is_pdc},${is_adm},${is_qm})    True
 
 

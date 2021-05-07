@@ -3,6 +3,7 @@ Documentation     This test suite tests deletion of projects as administrator
 Resource          ../../../Resources/Lib/GlobalLibrary.txt
 Suite Setup       Initialize Test Suite
 Suite Teardown    Disconnect From Database
+Test Setup        Run Keyword    Whedcapp Truncate Project
 Test Template     Delete project not marked for deletion as other administrator should fail
 
 *** Variables ***
@@ -26,7 +27,7 @@ Delete project not marked for deletion as other administrator should fail
     Row Count Is Equal To X    SELECT * FROM `whedcapp`.`project` WHERE `proj_key` = ${proj_key}                                            1    True
     Row Count Is Equal To X    SELECT * FROM `whedcapp`.`project_round` WHERE `id_proj` IN (SELECT `id_proj` FROM `whedcapp`.`project` WHERE `proj_key` = ${proj_key})                                            1    True
     Execute SQL String    CALL `whedcapp`.`project_update_writeSelf`(${uidAdmin[0][0]},'${TIME}',${result1[0][0]},'${start_date}','${end_date}',${proj_key},FALSE);    True
-    Run Keyword And Expect Error    STARTS:OperationalError:
+    Run Keyword And Expect Error    STARTS:InternalError:
 ...                            Execute SQL String    CALL `whedcapp`.`project_delete_writeOther`(${uidAdmin[0][0]},'${TIME}',${result1[0][0]},${uidOtherAdmin[0][0]});    True
     Row Count Is Equal To X    SELECT * FROM `whedcapp`.`project` WHERE `proj_key` = ${proj_key}                                            1    True
 

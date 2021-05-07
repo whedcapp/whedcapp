@@ -27,7 +27,7 @@ Update Some Combination
     Run Keyword If    ${success}  
 ...                   Execute SQL String    CALL `whedcapp`.`project_update_writeOther`(${uidAdmin[0][0]},'${TIME}',${result1[0][0]},${uidOtherAdmin[0][0]},'${nstart_date}','${nend_date}',${nproj_key},${nproj_marked_for_deletion})    True
     Run Keyword Unless    ${success}
-...                   Run Keyword And Expect Error    STARTS:OperationalError:
+...                   Run Keyword And Expect Error    STARTS:InternalError:
 ...                   Execute SQL String    CALL `whedcapp`.`project_update_writeOther`(${uidAdmin[0][0]},'${TIME}',${result1[0][0]},${uidOtherAdmin[0][0]},'${nstart_date}','${nend_date}',${nproj_key},${nproj_marked_for_deletion})    True
     @{result2}    Query    SELECT * FROM `whedcapp`.`project`    True
     Log Many    @{result2}

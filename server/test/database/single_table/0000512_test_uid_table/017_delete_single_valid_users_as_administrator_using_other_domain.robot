@@ -18,7 +18,7 @@ Delete other uid as non administrator should fail
     @{result}               Query    SELECT `whedcapp`.`uid_insert_writeSelf`(${uid_admin[0][0]},${TIME},${UID_SPEC2},FALSE,FALSE,FALSE,FALSE)    True
     ${uid_user2}            Query    SELECT `id_uid` FROM `whedcapp`.`uid` WHERE `uid_text` = ${UID_SPEC2}    True
     ${uid_user3}            Query    SELECT `id_uid` FROM `whedcapp`.`uid` WHERE `uid_text` = ${UID_SPEC3}    True
-    ${result2}              Run Keyword And Expect Error    EQUALS:OperationalError: (1644, 'You are not allowed to delete a/an UID for others domain. You must be either a superuser or a whedcapp administrator.')
+    ${result2}              Run Keyword And Expect Error    EQUALS:InternalError: (1644, 'You are not allowed to delete a/an UID for others domain. You must be either a superuser or a whedcapp administrator.')
 ...                         Execute SQL String      CALL `whedcapp`.`uid_delete_writeOther`(${uid_user2[0][0]},${TIME},${uid_user3[0][0]})    False
 
 

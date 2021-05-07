@@ -3,6 +3,7 @@ Documentation     This test suite tests deletion of projects as administrator wi
 Resource          ../../../Resources/Lib/GlobalLibrary.txt
 Suite Setup       Connect To Database Using Custom Params  pymysql    database=${dbName},user=${dbUserName},password=${dbPassword},host=${dbHost},port=${dbPort}
 Suite Teardown    Disconnect From Database
+Test Setup        Run Keyword    Whedcapp Truncate Project
 Test Template     Delete project without marking it for deletion should fail
 
 *** Variables ***
@@ -25,7 +26,7 @@ Delete project without marking it for deletion should fail
     Row Count Is Equal To X    SELECT * FROM `whedcapp`.`project_round` WHERE `id_proj` IN (SELECT `id_proj` FROM `whedcapp`.`project` WHERE `proj_key` = ${proj_key})                                            1    True
     Execute SQL String         CALL `whedcapp`.`project_update_writeSelf`(${uidAdmin[0][0]},'${TIME}',${result1[0][0]},'${start_date}','${end_date}',${proj_key},FALSE);    True
     
-    Run Keyword And Expect Error    STARTS:OperationalError:
+    Run Keyword And Expect Error    STARTS:InternalError:
 ...                            Execute SQL String    CALL `whedcapp`.`project_delete_writeSelf`(${uidAdmin[0][0]},'${TIME}',${result1[0][0]});    True
     Row Count Is Equal To X    SELECT * FROM `whedcapp`.`project` WHERE `proj_key` = ${proj_key}                                            1    True
 

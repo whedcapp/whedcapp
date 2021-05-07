@@ -34,3 +34,20 @@ Whedcapp Create Project And Owner
     ${id_acl} =        Run Keyword
 ...                   Query        SELECT `whedcapp`.`acl_insert_writeOther`(${uid_admin[0][0]},'${time}',${id_uid[0][0]},${id_acl_level[0][0]},${id_proj[0][0]})        True
     Return From Keyword        ${id_proj}
+
+Whedcapp Truncate Project
+    @{noOfIdProj}    Query    SELECT COUNT(`id_proj`) FROM `whedcapp`.`project`    True
+    @{initIdProj}    Run Keyword If    ${noOfIdProj[0][0]} > 0
+...                  Query    SELECT `id_proj` FROM `whedcapp`.`project`    True
+    Run Keyword If   @{initIdProj} != []
+...                  Whedcapp Delete Projects    @{initIdProj}
+
+Whedcapp Delete Projects
+    [Arguments]    @{initIdProj}
+    ${uidAdmin}    Query    SELECT `id_uid` FROM `whedcapp`.`uid` WHERE `uid_text` = ${ADMIN}    True
+    ${TIME}        Set Variable    1901-01-01
+    FOR    ${id_proj}    IN    @{initIdProj}
+        @{project}    Query    SELECT `start_date`,`end_date`,`proj_key` FROM `whedcapp`.`project` WHERE `id_proj` = ${id_proj[0]}    True
+        Execute SQL String    CALL `whedcapp`.`project_update_writeSelf`(${uidAdmin[0][0]},'${TIME}',${id_proj[0]},'${project[0][0]}','${project[0][1]}','${project[0][2]}',TRUE)    True
+        Execute SQL String    CALL `whedcapp`.`project_delete_writeSelf`(${uidAdmin[0][0]},'${TIME}',${id_proj[0]})    True
+    END

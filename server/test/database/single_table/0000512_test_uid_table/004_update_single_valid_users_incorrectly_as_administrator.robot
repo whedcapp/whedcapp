@@ -13,7 +13,7 @@ ${TIME}        '2021-01-01 01:01:01'
 Update self uid should fail
     [Arguments]                ${uid_spec}    ${is_superuser}    ${is_pdc}    ${is_adm}    ${is_qm}  
     ${uidAdmin}                Query    SELECT `id_uid` FROM `whedcapp`.`uid` WHERE `uid_text` = ${ADMIN}    True
-    ${result2} =     Run Keyword And Expect Error     EQUALS:OperationalError: (1644, 'Cannot demote whedcapp administrator')
+    ${result2} =     Run Keyword And Expect Error     EQUALS:InternalError: (1644, 'Cannot demote whedcapp administrator')
 ...                  Execute SQL String    CALL `whedcapp`.`uid_update_writeSelf`(${uidAdmin[0][0]},${TIME},${uid_spec},${is_superuser},${is_pdc},${is_adm},${is_qm})    False
 
 

@@ -3,6 +3,7 @@ Documentation     This test suite tests deletion of projects as administrator
 Resource          ../../../Resources/Lib/GlobalLibrary.txt
 Suite Setup       Connect To Database Using Custom Params  pymysql    database=${dbName},user=${dbUserName},password=${dbPassword},host=${dbHost},port=${dbPort}
 Suite Teardown    Disconnect From Database
+Test Setup        Run Keyword    Whedcapp Truncate Project
 Test Template     Delete project marked for deletion as administrator should succeed
 
 *** Variables ***

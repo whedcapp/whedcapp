@@ -3,6 +3,7 @@ Documentation     This test suite tests creation of single valid projects as Whe
 Resource          ../../../Resources/Lib/GlobalLibrary.txt
 Suite Setup       Connect To Database Using Custom Params  pymysql    database=${dbName},user=${dbUserName},password=${dbPassword},host=${dbHost},port=${dbPort}
 Suite Teardown    Disconnect From Database
+Test Setup        Run Keyword    Whedcapp Truncate Project
 Test Template     Create single consistent project should succeed
 
 *** Variables ***

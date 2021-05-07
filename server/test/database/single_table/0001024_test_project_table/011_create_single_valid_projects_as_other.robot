@@ -3,6 +3,7 @@ Documentation     This test suite tests creation of single valid projects as oth
 Resource          ../../../Resources/Lib/GlobalLibrary.txt
 Suite Setup       Initialize Test Suite
 Suite Teardown    Disconnect From Database
+Test Setup        Run Keyword    Whedcapp Truncate Project
 Test Template     Create single consistent project should succeed
 
 *** Variables ***

@@ -1333,8 +1333,8 @@ BEGIN
         WHERE
                 `id_proj` = id_proj_par
             AND
-                (`start_date` < start_date_par OR `start_date` > end_date_par OR `end_date` < start_date_par OR `end_date` > end_date_par);
-    IF no_of_mismatching_project_rounds_var THEN
+                (`start_date` < start_date_par OR `start_date` >= end_date_par OR `end_date` <= start_date_par OR `end_date` > end_date_par);
+    IF no_of_mismatching_project_rounds_var > 0 THEN
         SIGNAL SQLSTATE '45030'
             SET MESSAGE_TEXT = 'Project must encompass project rounds';
     END IF;
@@ -1393,7 +1393,8 @@ CREATE PROCEDURE `whedcapp`.`project_round_insert_or_update_check`(
     in `start_date_par` DATE,
     in `end_date_par`DATE,
     in `id_proj_par` INTEGER,
-    in `id_proj_round_par`INTEGER
+    in `id_proj_round_par` INTEGER,
+    in `proj_round_key_par` VARCHAR(32)
     )
 BEGIN
     DECLARE `violating_start_date_count` INTEGER;
@@ -1406,13 +1407,19 @@ BEGIN
         FROM `whedcapp`.`project_round`
         WHERE ( (`start_date` <= `start_date_par` AND `end_date` > `start_date_par` )
                 OR
-                (`start_date_par` < `start_date` AND `start_date` <`end_date_par`)) AND `id_proj` = `id_proj_par`;
+                (`start_date_par` < `start_date` AND `start_date` <`end_date_par`)
+              )
+              AND `id_proj` = `id_proj_par`
+              AND `proj_round_key` <> proj_round_key_par;
     /* Check if insert or update overlaps with some other project round in the same project*/
     SELECT COUNT(*) INTO `violating_end_date_count`
         FROM `whedcapp`.`project_round`
         WHERE ( (`start_date` < `end_date_par` AND `end_date` >= `end_date_par`)
                 OR
-                (`start_date_par` < `end_date` AND `end_date` <`end_date_par`)) AND `id_proj` = `id_proj_par`;
+                (`start_date_par` < `end_date` AND `end_date` <`end_date_par`)
+              )
+              AND `id_proj` = `id_proj_par`
+              AND `proj_round_key` <> proj_round_key_par;
     IF (`violating_start_date_count` > 0 OR `violating_end_date_count` > 0) THEN
         SIGNAL SQLSTATE '45000'
             SET MESSAGE_TEXT = 'Overlapping project rounds is disallowed';
@@ -1445,7 +1452,7 @@ CREATE TRIGGER `whedcapp`.`project_round_insert_check`
     BEFORE INSERT
     ON `whedcapp`.`project_round` FOR EACH ROW
 BEGIN
-   CALL `whedcapp`.`project_round_insert_or_update_check`(NEW.start_date,NEW.end_date,NEW.id_proj,NEW.id_proj_round);
+   CALL `whedcapp`.`project_round_insert_or_update_check`(NEW.start_date,NEW.end_date,NEW.id_proj,NEW.id_proj_round,NEW.proj_round_key);
 END;
 $$
 CREATE TRIGGER `whedcapp`.`project_round_update_check`
@@ -1456,7 +1463,7 @@ BEGIN
         SIGNAL SQLSTATE '45018' 
         SET MESSAGE_TEXT = 'Cannot move a project round from one project to another';
     END IF;
-   CALL `whedcapp`.`project_round_insert_or_update_check`(NEW.start_date,NEW.end_date,NEW.id_proj,NEW.id_proj_round);
+   CALL `whedcapp`.`project_round_insert_or_update_check`(NEW.start_date,NEW.end_date,NEW.id_proj,NEW.id_proj_round,OLD.proj_round_key);
 END;
 $$
 /* RQ_REL
