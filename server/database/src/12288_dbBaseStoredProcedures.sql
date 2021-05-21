@@ -329,3 +329,8 @@ BEGIN
     END IF;
     RETURN FALSE;
 END;
+$$
+CREATE PROCEDURE `whedcapp`.`uid_get`(IN uid_text_par VARCHAR(64))
+BEGIN
+  SELECT `id_uid` FROM `whedcapp`.`uid` WHERE `uid_text` = uid_text_par;
+END;
