@@ -24,7 +24,7 @@
 
 void PartSqlCrudGen::Options::parseArguments(int argc,char *argv[]) {
   int opt;
-  while ((opt = getopt(argc,argv,"d:c:lp:s:tw:"))!=EOF) {
+  while ((opt = getopt(argc,argv,"d:c:g:lp:s:tw:"))!=EOF) {
     switch(opt) {
     case 'c':
       vecOfCfgPath.push_back(optarg);
@@ -36,6 +36,10 @@ void PartSqlCrudGen::Options::parseArguments(int argc,char *argv[]) {
     case 'd':
       outputDart = true;
       outputFilePath.insert(std::make_pair(OutputLanguage::Dart,optarg));
+      break;
+    case 'g':
+      outputProto = true;
+      outputFilePath.insert(std::make_pair(OutputLanguage::Proto,optarg));
       break;
     case 'l':
       listTableMetaData = true;

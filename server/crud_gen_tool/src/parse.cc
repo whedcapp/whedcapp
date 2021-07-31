@@ -56,5 +56,10 @@ int main(int argc, char *argv[]) {
     
     generator->generate(options,drv);
   }
+  if (options.outputProto && !options.outputFilePath.empty()) {
+    std::unique_ptr<IGenerator> generator = IGenerator::create("Proto");
+    
+    generator->generate(options,drv);
+  }
  
 }

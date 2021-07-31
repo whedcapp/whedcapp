@@ -31,6 +31,7 @@ namespace PartSqlCrudGen {
     std::vector<std::string> vecOfSrcPath;
     bool outputSql = false;
     bool outputDart = false;
+    bool outputProto = false;
     bool traceParsing = false;
     bool listTableMetaData = false;
     std::map<OutputLanguage::Type,std::string> outputFilePath;

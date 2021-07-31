@@ -91,6 +91,14 @@ namespace PartSqlCrudGen {
       }
       return result.str();
     }
+    inline std::string getUnquoted(const std::string& suffix = "") const {
+      std::ostringstream result;
+      result << getPrimary() << (isSplitIdentifier()?"":suffix);
+      if (isSplitIdentifier()) {
+        result << "_" << getSecondary() << suffix;
+      }
+      return result.str();
+    }
   };
 
   inline std::ostream& operator << (std::ostream& strm, const Identity& identity) {

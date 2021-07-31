@@ -37,7 +37,7 @@ BISON_TARGET(Parser partialSql.y ${CMAKE_CURRENT_BINARY_DIR}/partialSql.tab.cc
 FLEX_TARGET(Scanner partialSql.l ${CMAKE_CURRENT_BINARY_DIR}/lex.yy.cc)
 ADD_FLEX_BISON_DEPENDENCY(Scanner Parser)
 
-add_executable(${TARGET}  configuration.cc  common.cc  driver.cc  generatorSql.cc  genConfig.cc  identity.cc  igenerator.cc  lex.yy.cc  options.cc  parse.cc   relationalOperator.cc  table.cc  tableSpecItem.cc  type.cc ${BISON_Parser_OUTPUTS} ${FLEX_Scanner_OUTPUTS})
+add_executable(${TARGET}  configuration.cc  common.cc  driver.cc  generatorSql.cc  generatorProto.cc genConfig.cc  identity.cc  igenerator.cc  lex.yy.cc  options.cc  parse.cc   relationalOperator.cc  table.cc  tableSpecItem.cc  type.cc ${BISON_Parser_OUTPUTS} ${FLEX_Scanner_OUTPUTS})
 
   
 

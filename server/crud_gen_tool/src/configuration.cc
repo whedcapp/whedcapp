@@ -66,11 +66,13 @@ namespace PartSqlCrudGen {
 
   const std::map<std::string,OutputLanguage::Type,CaselessLessThan> OutputLanguage::string2outputLanguageType = {
     std::make_pair("SQL",OutputLanguage::Type::Sql),
-    std::make_pair("Dart",OutputLanguage::Type::Dart)
+    std::make_pair("Dart",OutputLanguage::Type::Dart),
+    std::make_pair("Proto",OutputLanguage::Type::Proto)
   };
   const  std::map<OutputLanguage::Type,std::string> OutputLanguage::outputLanguageType2string = {
     std::make_pair(OutputLanguage::Type::Sql,"SQL"),
-    std::make_pair(OutputLanguage::Type::Dart,"Dart")
+    std::make_pair(OutputLanguage::Type::Dart,"Dart"),
+    std::make_pair(OutputLanguage::Type::Proto,"Proto")
   };
 
   const  std::map<std::string,DatabaseOperation::Type,CaselessLessThan> DatabaseOperation::string2dbOpType = {

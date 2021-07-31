@@ -17,6 +17,7 @@
 */
 #include "common.hh"
 #include "igenerator.hh"
+#include "generatorProto.hh"
 #include "generatorSql.hh"
 
 namespace PartSqlCrudGen {
@@ -25,6 +26,8 @@ namespace PartSqlCrudGen {
     std::string tmp = toupper(cfg);
     if (tmp == "SQL") {
       return std::make_unique<GeneratorSql>();
+    } else if (tmp == "PROTO") {
+      return std::make_unique<GeneratorProto>();
     }
     throw std::logic_error("Configuration string \""+cfg+"\" is not implemented yet");
   }

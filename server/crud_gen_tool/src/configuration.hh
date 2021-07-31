@@ -107,8 +107,8 @@ namespace PartSqlCrudGen {
 
   class OutputLanguage: public ConfigurationItem {
   public:
-    enum Type { Sql, Dart };
-    static constexpr std::initializer_list<Type> allType = { Sql,Dart};
+    enum Type { Sql, Dart, Proto };
+    static constexpr std::initializer_list<Type> allType = { Sql, Dart, Proto};
   private:
     const static std::map<std::string,Type,CaselessLessThan> string2outputLanguageType;
     const static std::map<Type,std::string> outputLanguageType2string;

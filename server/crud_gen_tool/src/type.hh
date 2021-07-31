@@ -61,6 +61,7 @@ namespace PartSqlCrudGen {
       initCat(typeName);
     }
     Type(const Type& type): array(type.array), size(type.size), cat(type.cat) {}
+    Type(const Cat cat): array(false), size(0), cat(cat) {}
 
     const std::string& getTypeName() const;
     inline bool isArray() const {
